@@ -6,6 +6,32 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.3.0 — 2026-04-28 *(versión en pantalla: v1.3.0)*
+
+### Añadido — Infraestructura de Sub-Agentes (Fase 2 continuación)
+
+- **Subcarpetas `Jurisprudencia/` y `Doctrina/` creadas en las 9 materias de Drive.**
+  - *Motivo*: Establecer los drop zones para alimentar cada sub-agente vía Cowork o Web App.
+  - *Contenido*: 17 carpetas nuevas (Jurisprudencia en 9 materias + Doctrina en 8 — Probatorio ya tiene sus subcarpetas de doctrina). Todas vacías, listas para recibir documentos.
+
+- **Stubs de system prompts para los 9 sub-agentes creados.**
+  - *Ubicación*: `prompts/sub_agentes/[materia].md`
+  - *Contenido*: Rol, fuentes a consultar (índice + carpetas Drive), reglas de citación, integración con skills existentes, protocolo de alimentación y documentos prioritarios sugeridos.
+  - *Estado*: Estructurados y listos. Sin contenido real hasta cargar jurisprudencia/doctrina.
+
+- **Protocolo de alimentación documentado en CLAUDE.md.**
+  - *Vía Cowork*: Drop en carpeta Drive → Claude procesa → actualiza jurista_index.json → push GitHub.
+  - *Vía Web App*: Endpoint `/subir` del GAS (futuro).
+
+- **IDs de Drive de todas las nuevas subcarpetas registrados en CLAUDE.md.**
+
+### Nota operativa
+
+- GAS backup trigger activado (`configurarTriggerBackup()` ejecutado por el usuario).
+- 3 carpetas duplicadas a eliminar manualmente: ver sección de IDs en CLAUDE.md.
+
+---
+
 ## v1.2.0 — 2026-04-28 *(versión en pantalla: v1.2.0)*
 
 ### Añadido — FASE 2: Carga masiva LEXIUS Venezuela
