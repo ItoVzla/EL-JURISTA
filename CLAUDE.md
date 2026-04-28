@@ -5,7 +5,7 @@
 
 ## 🔢 Versión actual del sistema
 
-**v1.1.0** — Estado: FASE 1 COMPLETA (infraestructura base desplegada). Pendiente: despliegue manual del GAS y creación del repo GitHub.
+**v1.2.0** — Estado: FASE 2 EN PROGRESO (2,979 docs LEXIUS cargados en índice). jurista_index.json poblado y replicado en GitHub.
 
 ---
 
@@ -194,9 +194,17 @@ Ver tabla completa en: `DET_EL_JURISTA.md` → Sección 11.
 
 **Criterio de done de Fase 1:** El Jurista responde desde Mac Y teléfono con datos actualizados.
 
-**FASE 2 — Carga inicial y sub-agentes** → Próxima (después de completar Fase 1)
-- Cargar ~50 documentos prioritarios (CRBV, LOTTT, COPP, tratados probatorios)
-- Desarrollar Sub-Agente Laboral y Sub-Agente Probatorio
-- Integrar Sub-Agente Probatorio con skill `escrito-pruebas`
+**FASE 2 — Carga inicial y sub-agentes** 🔄 EN PROGRESO
+
+### ✅ Completado en Fase 2
+- `jurista_index.json` poblado con **2,979 documentos** de LEXIUS Venezuela (5.8 MB)
+  - Distribución: Constitucional (1,109) · Administrativo (558) · Mercantil (428) · Penal (232) · Laboral (216) · Procesal (166) · Civil (157) · Probatorio (67) · Electoral (46)
+- Réplica GitHub actualizada (`data/jurista_index.json`)
+
+### ⏳ Pendiente — Fase 2
+- Desarrollar Sub-Agente Laboral (especializado en LOTTT/LOPTRA)
+- Desarrollar Sub-Agente Probatorio (integrado con skill `escrito-pruebas`)
+- Procesar carpeta `Jurisprudencia/` de LEXIUS (0 archivos encontrados — verificar scraper)
+- Activar trigger de backup dominical en GAS (`configurarTriggerBackup()`)
 
 Ver roadmap completo en: `DET_EL_JURISTA.md` → Sección 12.
