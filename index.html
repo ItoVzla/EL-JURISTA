@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Jurista — Biblioteca Jurídica</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3350;
+    --gold: #c9a227;
+    --gold-dim: #8a6d1a;
+    --text: #e8eaf0;
+    --text-muted: #8892b0;
+    --accent: #4a7fa5;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --yellow: #f39c12;
+    --radius: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── LOGIN ─────────────────────────────────────── */
+  #loginScreen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 20px;
+    background: radial-gradient(ellipse at 50% 30%, #1a2240 0%, var(--bg) 70%);
+  }
+  .login-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 400px;
+    box-shadow: var(--shadow), 0 0 60px rgba(201,162,39,.08);
+    text-align: center;
+  }
+  .logo-icon { font-size: 52px; margin-bottom: 16px; }
+  .login-box h1 { font-size: 26px; font-weight: 700; color: var(--gold); letter-spacing: .5px; }
+  .login-box p { color: var(--text-muted); margin: 8px 0 32px; font-size: 14px; }
+  .login-box input {
+    width: 100%; padding: 12px 16px; border-radius: var(--radius);
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-size: 15px; outline: none; transition: border .2s;
+    text-align: center; letter-spacing: 2px;
+  }
+  .login-box input:focus { border-color: var(--gold); }
+  .login-box button {
+    margin-top: 16px; width: 100%; padding: 13px; border-radius: var(--radius);
+    background: var(--gold); border: none; color: #0f1117; font-size: 15px;
+    font-weight: 700; cursor: pointer; transition: opacity .2s;
+  }
+  .login-box button:hover { opacity: .85; }
+  .login-error { color: var(--red); font-size: 13px; margin-top: 10px; display: none; }
+
+  /* ── APP SHELL ──────────────────────────────────── */
+  #app { display: none; min-height: 100vh; flex-direction: column; }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 20px; height: 56px; display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: var(--gold); }
+  .topbar-logo span { font-size: 22px; }
+  .version-badge {
+    background: var(--gold-dim); color: var(--gold); font-size: 11px;
+    font-weight: 700; padding: 2px 8px; border-radius: 20px;
+  }
+  .topbar-nav { display: flex; gap: 4px; margin-left: 20px; }
+  .nav-btn {
+    background: none; border: none; color: var(--text-muted); padding: 6px 14px;
+    border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;
+    transition: all .2s;
+  }
+  .nav-btn:hover { background: var(--surface2); color: var(--text); }
+  .nav-btn.active { background: var(--surface2); color: var(--gold); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .stats-pill {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+    padding: 4px 12px; font-size: 12px; color: var(--text-muted);
+  }
+  .stats-pill strong { color: var(--gold); }
+  .logout-btn {
+    background: none; border: 1px solid var(--border); color: var(--text-muted);
+    padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    transition: all .2s;
+  }
+  .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* ── VIEWS ──────────────────────────────────────── */
+  .view { display: none; padding: 24px 20px; max-width: 1400px; margin: 0 auto; width: 100%; }
+  .view.active { display: block; }
+
+  /* ── BIBLIOTECA ─────────────────────────────────── */
+  .filter-bar {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+  }
+  .filter-bar input, .filter-bar select {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 8px 12px; font-size: 13px; outline: none; transition: border .2s;
+  }
+  .filter-bar input { flex: 1; min-width: 180px; }
+  .filter-bar input:focus, .filter-bar select:focus { border-color: var(--gold); }
+  .filter-bar select { cursor: pointer; }
+  .filter-bar button {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted);
+    border-radius: 6px; padding: 8px 14px; cursor: pointer; font-size: 13px; transition: all .2s;
+  }
+  .filter-bar button:hover { border-color: var(--gold); color: var(--gold); }
+
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: var(--surface2); }
+  th { padding: 11px 14px; text-align: left; color: var(--text-muted); font-weight: 600;
+       font-size: 11px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--border); }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+
+  .badge {
+    display: inline-block; padding: 3px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-materia { background: rgba(74,127,165,.2); color: #7ab8d9; }
+  .badge-tipo { background: rgba(201,162,39,.15); color: var(--gold); }
+  .badge-vigente { background: rgba(46,204,113,.15); color: var(--green); }
+  .badge-derogado { background: rgba(231,76,60,.15); color: var(--red); }
+  .badge-modificado { background: rgba(243,156,18,.15); color: var(--yellow); }
+
+  .action-btn {
+    background: none; border: 1px solid var(--border); color: var(--text-muted);
+    padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;
+    transition: all .15s; margin-right: 4px;
+  }
+  .action-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 18px; }
+  .pg-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+    width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all .15s;
+  }
+  .pg-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+  .pg-btn:disabled { opacity: .35; cursor: default; }
+  .pg-btn.active { background: var(--gold); border-color: var(--gold); color: #0f1117; font-weight: 700; }
+  .pg-info { color: var(--text-muted); font-size: 13px; }
+
+  /* ── DASHBOARD ──────────────────────────────────── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; position: relative; overflow: hidden;
+  }
+  .card-label { color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  .card-value { font-size: 32px; font-weight: 700; color: var(--gold); margin: 8px 0 4px; }
+  .card-sub { font-size: 12px; color: var(--text-muted); }
+  .card-icon { position: absolute; right: 16px; top: 16px; font-size: 28px; opacity: .25; }
+
+  .chart-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+  .chart-title { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 16px; }
+  .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-label { min-width: 160px; font-size: 12px; color: var(--text-muted); text-align: right; }
+  .bar-track { flex: 1; height: 18px; background: var(--surface2); border-radius: 9px; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); border-radius: 9px; transition: width .8s ease; }
+  .bar-num { min-width: 50px; font-size: 12px; color: var(--gold); font-weight: 600; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:700px) { .two-col { grid-template-columns: 1fr; } }
+
+  .recent-list { list-style: none; }
+  .recent-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); margin-top: 4px; flex-shrink: 0; }
+  .recent-title { color: var(--text); }
+  .recent-meta { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+
+  /* ── INGESTA ────────────────────────────────────── */
+  .ingesta-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .itab {
+    padding: 10px 20px; cursor: pointer; font-size: 14px; color: var(--text-muted);
+    border-bottom: 2px solid transparent; transition: all .2s; background: none; border-top: none;
+    border-left: none; border-right: none;
+  }
+  .itab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 40px; text-align: center; cursor: pointer; transition: all .2s;
+    background: var(--surface);
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--gold); background: rgba(201,162,39,.04); }
+  .upload-zone-icon { font-size: 40px; margin-bottom: 12px; }
+  .upload-zone p { color: var(--text-muted); font-size: 14px; }
+  .upload-zone strong { color: var(--gold); }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+  @media(max-width:600px) { .form-grid { grid-template-columns: 1fr; } }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+  .form-group input, .form-group select, .form-group textarea {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 9px 12px; font-size: 14px; outline: none; transition: border .2s;
+    font-family: inherit;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--gold); }
+  .form-group.full { grid-column: 1 / -1; }
+
+  .btn-primary {
+    background: var(--gold); color: #0f1117; border: none; padding: 11px 24px;
+    border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .2s;
+  }
+  .btn-primary:hover { opacity: .85; }
+  .btn-secondary {
+    background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 11px 24px;
+    border-radius: var(--radius); font-size: 14px; cursor: pointer; transition: all .2s;
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  .url-form { display: flex; gap: 10px; margin-top: 10px; }
+  .url-form input { flex: 1; }
+
+  /* ── LOADING/STATES ──────────────────────────────── */
+  .loading-bar {
+    position: fixed; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    background-size: 200% 100%; animation: shimmer 1.2s infinite;
+    z-index: 200; display: none;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .loading-bar.show { display: block; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: .5; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px 18px; font-size: 14px; z-index: 300; box-shadow: var(--shadow);
+    transform: translateY(80px); opacity: 0; transition: all .3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.ok { border-color: var(--green); }
+  .toast.err { border-color: var(--red); }
+
+  /* ── PENDING CLASSIFIER ──────────────────────────── */
+  .pending-item {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  }
+  .pending-name { flex: 1; font-size: 13px; }
+  .pending-name span { color: var(--text-muted); font-size: 11px; display: block; margin-top: 2px; }
+
+  /* RESPONSIVE */
+  @media(max-width:600px) {
+    .topbar-nav { display: none; }
+    .filter-bar { flex-direction: column; }
+    .filter-bar input { min-width: 0; }
+    .cards { grid-template-columns: 1fr 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+  .mobile-nav {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 8px 0; z-index: 100;
+  }
+  @media(max-width:600px) { .mobile-nav { display: flex; justify-content: space-around; } }
+  .mobile-nav-btn {
+    background: none; border: none; color: var(--text-muted);
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2px; padding: 4px 12px; cursor: pointer; font-size: 10px; transition: color .2s;
+  }
+  .mobile-nav-btn .ico { font-size: 20px; }
+  .mobile-nav-btn.active { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="loading-bar" id="loadingBar"></div>
+
+<!-- ═══ LOGIN ═══════════════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="logo-icon">⚖️</div>
+    <h1>EL JURISTA</h1>
+    <p>Biblioteca Jurídica Venezolana · Sistema IA</p>
+    <input type="password" id="keyInput" placeholder="Clave de acceso" autofocus>
+    <button onclick="login()">Ingresar</button>
+    <div class="login-error" id="loginError">Clave incorrecta. Intente nuevamente.</div>
+  </div>
+</div>
+
+<!-- ═══ APP ══════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
+    <span class="version-badge" id="versionBadge">v1.3.0</span>
+    <nav class="topbar-nav">
+      <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
+      <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
+      <button class="nav-btn" onclick="switchView('ingesta')">📥 Ingesta</button>
+    </nav>
+    <div class="topbar-right">
+      <div class="stats-pill">
+        <strong id="totalDocs">—</strong> documentos
+      </div>
+      <button class="logout-btn" onclick="logout()">Salir</button>
+    </div>
+  </div>
+
+  <!-- ─── VISTA: BIBLIOTECA ─────────────────────────────────── -->
+  <div class="view active" id="view-biblioteca">
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="🔍  Buscar por título, autor, tags…" oninput="applyFilters()">
+      <select id="filtMateria" onchange="applyFilters()">
+        <option value="">Todas las materias</option>
+        <option value="Constitucional">Constitucional</option>
+        <option value="Laboral_Venezuela">Laboral</option>
+        <option value="Civil">Civil</option>
+        <option value="Mercantil">Mercantil</option>
+        <option value="Penal">Penal</option>
+        <option value="Administrativo">Administrativo</option>
+        <option value="Procesal">Procesal</option>
+        <option value="Electoral">Electoral</option>
+        <option value="Derecho_Probatorio">Derecho Probatorio</option>
+      </select>
+      <select id="filtTipo" onchange="applyFilters()">
+        <option value="">Todos los tipos</option>
+        <option value="legislacion">Legislación</option>
+        <option value="sentencia">Sentencia</option>
+        <option value="doctrina">Doctrina</option>
+        <option value="articulo">Artículo</option>
+        <option value="convenio">Convenio</option>
+      </select>
+      <select id="filtVigencia" onchange="applyFilters()">
+        <option value="">Toda vigencia</option>
+        <option value="vigente">Vigente</option>
+        <option value="derogado">Derogado</option>
+        <option value="modificado">Modificado</option>
+      </select>
+      <button onclick="clearFilters()">✕ Limpiar</button>
+    </div>
+
+    <div class="table-wrap" id="tableWrap">
+      <div class="empty-state">
+        <div class="icon">📡</div>
+        <p>Conectando con la base de datos…</p>
+      </div>
+    </div>
+
+    <div class="pagination" id="paginationEl" style="display:none"></div>
+  </div>
+
+  <!-- ─── VISTA: DASHBOARD ──────────────────────────────────── -->
+  <div class="view" id="view-dashboard">
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">📄</div>
+        <div class="card-label">Total Documentos</div>
+        <div class="card-value" id="d-total">—</div>
+        <div class="card-sub">en la base de datos</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚖️</div>
+        <div class="card-label">Materias Activas</div>
+        <div class="card-value" id="d-materias">9</div>
+        <div class="card-sub">áreas del Derecho</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <div class="card-label">Legislación</div>
+        <div class="card-value" id="d-legis">—</div>
+        <div class="card-sub">leyes, códigos y decretos</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <div class="card-label">Backup</div>
+        <div class="card-value" style="font-size:16px;margin-top:12px" id="d-backup">Domingos 2am</div>
+        <div class="card-sub">trigger GAS activo ✅</div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-title">Distribución por Materia</div>
+      <div class="bar-chart" id="barChart">
+        <div style="color:var(--text-muted);font-size:13px">Cargando estadísticas…</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="chart-section">
+        <div class="chart-title">Últimos Añadidos</div>
+        <ul class="recent-list" id="recentList">
+          <li style="color:var(--text-muted);font-size:13px">Cargando…</li>
+        </ul>
+      </div>
+      <div class="chart-section">
+        <div class="chart-title">Estado del Sistema</div>
+        <div style="display:flex;flex-direction:column;gap:12px;font-size:13px" id="systemStatus">
+          <div>🟡 Cargando estado…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VISTA: INGESTA ────────────────────────────────────── -->
+  <div class="view" id="view-ingesta">
+    <div class="ingesta-tabs">
+      <button class="itab active" onclick="switchItab('manual',this)">📁 Subida Manual</button>
+      <button class="itab" onclick="switchItab('url',this)">🔗 Importar por URL</button>
+      <button class="itab" onclick="switchItab('pendientes',this)">📂 Pendientes <span id="pendBadge"></span></button>
+    </div>
+
+    <!-- Manual -->
+    <div id="itab-manual">
+      <div class="upload-zone" id="dropZone"
+           onclick="document.getElementById('fileInput').click()"
+           ondragover="event.preventDefault();this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="handleDrop(event)">
+        <div class="upload-zone-icon">📄</div>
+        <p>Arrastra un PDF o DOCX aquí, o <strong>haz clic para seleccionar</strong></p>
+        <p style="margin-top:6px;font-size:12px">PDF · DOCX · TXT</p>
+      </div>
+      <input type="file" id="fileInput" style="display:none" accept=".pdf,.docx,.txt" onchange="handleFile(this.files[0])">
+
+      <div id="uploadForm" style="display:none;margin-top:20px">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Título del documento</label>
+            <input type="text" id="f-titulo" placeholder="Título completo…">
+          </div>
+          <div class="form-group">
+            <label>Tipo</label>
+            <select id="f-tipo" onchange="updateFormFields()">
+              <option value="legislacion">Legislación</option>
+              <option value="sentencia">Sentencia</option>
+              <option value="doctrina">Doctrina</option>
+              <option value="articulo">Artículo</option>
+              <option value="convenio">Convenio Internacional</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Materia</label>
+            <select id="f-materia">
+              <option value="Constitucional">Constitucional</option>
+              <option value="Laboral_Venezuela">Laboral Venezuela</option>
+              <option value="Civil">Civil</option>
+              <option value="Mercantil">Mercantil</option>
+              <option value="Penal">Penal</option>
+              <option value="Administrativo">Administrativo</option>
+              <option value="Procesal">Procesal</option>
+              <option value="Electoral">Electoral</option>
+              <option value="Derecho_Probatorio">Derecho Probatorio</option>
+            </select>
+          </div>
+          <div class="form-group" id="fg-autor">
+            <label>Autor / Sala</label>
+            <input type="text" id="f-autor" placeholder="Apellido, Nombre o Sala TSJ…">
+          </div>
+          <div class="form-group">
+            <label>Año</label>
+            <input type="number" id="f-anio" placeholder="2024" min="1800" max="2099">
+          </div>
+          <div class="form-group" id="fg-expediente" style="display:none">
+            <label>N° Expediente</label>
+            <input type="text" id="f-expediente" placeholder="AA60-S-2023-000001">
+          </div>
+          <div class="form-group">
+            <label>Vigencia</label>
+            <select id="f-vigencia">
+              <option value="vigente">Vigente</option>
+              <option value="derogado">Derogado</option>
+              <option value="modificado">Modificado</option>
+              <option value="historico">Histórico</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label>Tags (separados por comas)</label>
+            <input type="text" id="f-tags" placeholder="prestaciones sociales, vacaciones, despido injustificado…">
+          </div>
+          <div class="form-group full">
+            <label>Resumen (opcional)</label>
+            <textarea id="f-resumen" rows="3" placeholder="Breve descripción del documento…"></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn-primary" onclick="submitUpload()">📤 Subir documento</button>
+          <button class="btn-secondary" onclick="cancelUpload()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- URL -->
+    <div id="itab-url" style="display:none">
+      <div class="chart-section">
+        <div class="chart-title">Importar desde URL</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">
+          Introduce la URL de un documento legal en línea. El sistema intentará extraer el texto y clasificarlo automáticamente.
+        </p>
+        <div class="url-form">
+          <input type="url" id="scrapeUrl" placeholder="https://www.tsj.gob.ve/..." style="flex:1;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;outline:none">
+          <button class="btn-primary" onclick="submitScrape()">Importar</button>
+        </div>
+        <div id="scrapeStatus" style="margin-top:14px;font-size:13px;color:var(--text-muted)"></div>
+      </div>
+    </div>
+
+    <!-- Pendientes -->
+    <div id="itab-pendientes" style="display:none">
+      <div class="chart-section">
+        <div class="chart-title">Documentos en _Por_Clasificar</div>
+        <div id="pendientesList">
+          <div style="color:var(--text-muted);font-size:13px">Cargando documentos pendientes…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile nav -->
+  <nav class="mobile-nav">
+    <button class="mobile-nav-btn active" onclick="switchView('biblioteca');setMobileActive(this)">
+      <span class="ico">📚</span>Biblioteca
+    </button>
+    <button class="mobile-nav-btn" onclick="switchView('dashboard');setMobileActive(this)">
+      <span class="ico">📊</span>Dashboard
+    </button>
+    <button class="mobile-nav-btn" onclick="switchView('ingesta');setMobileActive(this)">
+      <span class="ico">📥</span>Ingesta
+    </button>
+  </nav>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS = 'https://script.google.com/macros/s/AKfycbwMPuY32Y84n3kQM6mAXR6xJgBaybHAW6MYtOPsS0oyVYoCwkXZ689zvbVNN269jZBU/exec';
+const CLAVE = 'ElJurista#2026';
+const PER_PAGE = 50;
+
+let allDocs = [];
+let filtered = [];
+let currentPage = 1;
+let selectedFile = null;
+
+// ── AUTH ─────────────────────────────────────────────────────
+function login() {
+  const val = document.getElementById('keyInput').value;
+  if (val === CLAVE) {
+    sessionStorage.setItem('jurista_auth', CLAVE);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('app').style.flexDirection = 'column';
+    init();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('keyInput').value = '';
+    document.getElementById('keyInput').focus();
+  }
+}
+function logout() {
+  sessionStorage.removeItem('jurista_auth');
+  location.reload();
+}
+document.getElementById('keyInput').addEventListener('keypress', e => { if(e.key==='Enter') login(); });
+
+// Auto-login si ya tiene sesión
+if (sessionStorage.getItem('jurista_auth') === CLAVE) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('app').style.flexDirection = 'column';
+  window.addEventListener('load', init);
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+async function init() {
+  loading(true);
+  try {
+    const r = await fetch(GAS + '?action=indice/resumen');
+    const data = await r.json();
+    allDocs = Array.isArray(data) ? data : (data.documentos || []);
+    document.getElementById('totalDocs').textContent = allDocs.length.toLocaleString('es');
+    filtered = [...allDocs];
+    renderTable();
+    renderDashboard();
+    loading(false);
+    toast('✅ ' + allDocs.length.toLocaleString('es') + ' documentos cargados', 'ok');
+  } catch(e) {
+    loading(false);
+    document.getElementById('tableWrap').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">⚠️</div>
+        <p>No se pudo conectar con la base de datos.</p>
+        <p style="font-size:12px;margin-top:8px;color:#666">Verifica que el GAS esté desplegado y el índice tenga documentos.</p>
+        <button class="btn-secondary" style="margin-top:16px" onclick="init()">Reintentar</button>
+      </div>`;
+    toast('⚠️ Error al conectar con GAS', 'err');
+  }
+}
+
+// ── TABLA ────────────────────────────────────────────────────
+function renderTable() {
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / PER_PAGE);
+  if (currentPage > totalPages) currentPage = 1;
+  const start = (currentPage - 1) * PER_PAGE;
+  const page = filtered.slice(start, start + PER_PAGE);
+
+  if (!total) {
+    document.getElementById('tableWrap').innerHTML = `
+      <div class="empty-state"><div class="icon">🔍</div><p>No se encontraron documentos con esos filtros.</p></div>`;
+    document.getElementById('paginationEl').style.display = 'none';
+    return;
+  }
+
+  const rows = page.map(d => `
+    <tr>
+      <td style="max-width:320px">
+        <div style="font-weight:500;color:var(--text)">${esc(d.titulo || '—')}</div>
+        ${d.autor ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${esc(d.autor)}</div>` : ''}
+      </td>
+      <td><span class="badge badge-materia">${fmtMateria(d.materia)}</span></td>
+      <td><span class="badge badge-tipo">${d.tipo || '—'}</span></td>
+      <td style="color:var(--text-muted)">${d.año || '—'}</td>
+      <td>${vigenciaBadge(d.vigencia)}</td>
+      <td>
+        ${d.lexius_url ? `<button class="action-btn" onclick="window.open('${d.lexius_url}','_blank')">Ver fuente</button>` : ''}
+        <button class="action-btn" onclick="showDoc('${esc(d.id)}')">Detalle</button>
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('tableWrap').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Título</th><th>Materia</th><th>Tipo</th><th>Año</th><th>Vigencia</th><th>Acciones</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+  renderPagination(total, totalPages);
+}
+
+function renderPagination(total, totalPages) {
+  const pg = document.getElementById('paginationEl');
+  if (totalPages <= 1) { pg.style.display = 'none'; return; }
+  pg.style.display = 'flex';
+
+  let html = `<button class="pg-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  const range = pageRange(currentPage, totalPages);
+  range.forEach(p => {
+    if (p === '…') html += `<span style="color:var(--text-muted);padding:0 4px">…</span>`;
+    else html += `<button class="pg-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+  });
+  html += `<button class="pg-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+  html += `<span class="pg-info">${((currentPage-1)*PER_PAGE+1)}–${Math.min(currentPage*PER_PAGE,total)} de ${total.toLocaleString('es')}</span>`;
+  pg.innerHTML = html;
+}
+
+function pageRange(cur, total) {
+  if (total <= 7) return Array.from({length:total},(_,i)=>i+1);
+  const r = [1];
+  if (cur > 3) r.push('…');
+  for (let i=Math.max(2,cur-1); i<=Math.min(total-1,cur+1); i++) r.push(i);
+  if (cur < total - 2) r.push('…');
+  r.push(total);
+  return r;
+}
+
+function goPage(p) { currentPage = p; renderTable(); window.scrollTo(0,0); }
+
+// ── FILTERS ──────────────────────────────────────────────────
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const m = document.getElementById('filtMateria').value;
+  const t = document.getElementById('filtTipo').value;
+  const v = document.getElementById('filtVigencia').value;
+  filtered = allDocs.filter(d => {
+    const text = ((d.titulo||'')+(d.autor||'')+(d.tags||[]).join(' ')).toLowerCase();
+    if (q && !text.includes(q)) return false;
+    if (m && d.materia !== m) return false;
+    if (t && d.tipo !== t) return false;
+    if (v && !(d.vigencia||'').includes(v)) return false;
+    return true;
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filtMateria').value = '';
+  document.getElementById('filtTipo').value = '';
+  document.getElementById('filtVigencia').value = '';
+  filtered = [...allDocs];
+  currentPage = 1;
+  renderTable();
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────
+function renderDashboard() {
+  const total = allDocs.length;
+  document.getElementById('d-total').textContent = total.toLocaleString('es');
+
+  const legis = allDocs.filter(d => d.tipo === 'legislacion').length;
+  document.getElementById('d-legis').textContent = legis.toLocaleString('es');
+
+  // Count by materia
+  const counts = {};
+  allDocs.forEach(d => { counts[d.materia] = (counts[d.materia]||0)+1; });
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max = sorted[0]?.[1] || 1;
+
+  document.getElementById('barChart').innerHTML = sorted.map(([mat, cnt]) => `
+    <div class="bar-row">
+      <div class="bar-label">${fmtMateria(mat)}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${(cnt/max*100).toFixed(1)}%"></div>
+      </div>
+      <div class="bar-num">${cnt.toLocaleString('es')}</div>
+    </div>`).join('');
+
+  // Recent (last 10)
+  const recent = [...allDocs].sort((a,b)=>(b.fecha_ingesta||'').localeCompare(a.fecha_ingesta||'')).slice(0,8);
+  document.getElementById('recentList').innerHTML = recent.map(d => `
+    <li class="recent-item">
+      <div class="recent-dot"></div>
+      <div>
+        <div class="recent-title">${esc(d.titulo?.substring(0,60)||'Sin título')}${(d.titulo?.length||0)>60?'…':''}</div>
+        <div class="recent-meta">${fmtMateria(d.materia)} · ${d.año||'s/f'} · ${d.fecha_ingesta||''}</div>
+      </div>
+    </li>`).join('');
+
+  // System status
+  document.getElementById('systemStatus').innerHTML = `
+    <div>🟢 <strong>GAS API</strong> — Conectado</div>
+    <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs · v1.1</div>
+    <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA</div>
+    <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am)</div>
+    <div>🟡 <strong>Web App</strong> — v1.3.0 · GitHub Pages pendiente</div>
+    <div>🔵 <strong>Sub-Agentes</strong> — 9 stubs · pendiente alimentar</div>`;
+}
+
+// ── INGESTA ──────────────────────────────────────────────────
+function switchItab(tab, btn) {
+  document.querySelectorAll('.itab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['manual','url','pendientes'].forEach(t => {
+    document.getElementById('itab-'+t).style.display = t===tab?'block':'none';
+  });
+  if (tab==='pendientes') loadPendientes();
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+}
+
+function handleFile(f) {
+  if (!f) return;
+  selectedFile = f;
+  document.getElementById('uploadForm').style.display = 'block';
+  document.getElementById('f-titulo').value = f.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
+}
+
+function updateFormFields() {
+  const tipo = document.getElementById('f-tipo').value;
+  document.getElementById('fg-expediente').style.display = tipo==='sentencia'?'block':'none';
+}
+
+function cancelUpload() {
+  selectedFile = null;
+  document.getElementById('uploadForm').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+}
+
+async function submitUpload() {
+  const titulo = document.getElementById('f-titulo').value.trim();
+  if (!titulo) { toast('❌ El título es obligatorio','err'); return; }
+  if (!selectedFile) { toast('❌ Selecciona un archivo','err'); return; }
+
+  toast('📤 Subiendo documento… (el proceso puede tardar 30s)');
+  // Nota: la subida real requiere que el GAS endpoint /subir esté configurado para recibir multipart
+  // Por ahora mostramos el formulario y avisamos
+  toast('ℹ️ Subida vía API lista — arrastra el archivo a Drive y Claude lo procesará automáticamente', 'ok');
+}
+
+async function submitScrape() {
+  const url = document.getElementById('scrapeUrl').value.trim();
+  if (!url) { toast('❌ Introduce una URL','err'); return; }
+  document.getElementById('scrapeStatus').textContent = '⏳ Procesando URL…';
+  try {
+    const r = await fetch(GAS+'?action=scrape&url='+encodeURIComponent(url));
+    const d = await r.json();
+    document.getElementById('scrapeStatus').textContent = d.success
+      ? '✅ Documento importado: ' + d.titulo
+      : '❌ Error: ' + (d.error || 'No se pudo procesar la URL');
+  } catch(e) {
+    document.getElementById('scrapeStatus').textContent = '❌ Error de conexión con GAS';
+  }
+}
+
+async function loadPendientes() {
+  document.getElementById('pendientesList').innerHTML = '<div style="color:var(--text-muted);font-size:13px">Consultando _Por_Clasificar…</div>';
+  try {
+    const r = await fetch(GAS+'?action=listar&materia=_Por_Clasificar');
+    const d = await r.json();
+    const items = Array.isArray(d) ? d : [];
+    document.getElementById('pendBadge').textContent = items.length ? ` (${items.length})` : '';
+    if (!items.length) {
+      document.getElementById('pendientesList').innerHTML = '<div style="color:var(--text-muted);font-size:13px">✅ No hay documentos pendientes de clasificación.</div>';
+      return;
+    }
+    document.getElementById('pendientesList').innerHTML = items.map(it => `
+      <div class="pending-item">
+        <div>📄</div>
+        <div class="pending-name">
+          ${esc(it.titulo||it.nombre||'Sin nombre')}
+          <span>${it.tipo||''} · ${it.fecha_ingesta||''}</span>
+        </div>
+        <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:13px" id="sel-${it.id}">
+          <option value="">Seleccionar materia…</option>
+          <option value="Constitucional">Constitucional</option>
+          <option value="Laboral_Venezuela">Laboral Venezuela</option>
+          <option value="Civil">Civil</option>
+          <option value="Mercantil">Mercantil</option>
+          <option value="Penal">Penal</option>
+          <option value="Administrativo">Administrativo</option>
+          <option value="Procesal">Procesal</option>
+          <option value="Electoral">Electoral</option>
+          <option value="Derecho_Probatorio">Derecho Probatorio</option>
+        </select>
+        <button class="btn-primary" style="padding:7px 14px;font-size:12px" onclick="clasificar('${it.id}','${esc(it.drive_id||'')}')">Clasificar</button>
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('pendientesList').innerHTML = '<div style="color:var(--red);font-size:13px">❌ Error al conectar con GAS</div>';
+  }
+}
+
+async function clasificar(id, driveId) {
+  const materia = document.getElementById('sel-'+id)?.value;
+  if (!materia) { toast('Selecciona una materia','err'); return; }
+  try {
+    const r = await fetch(GAS, { method:'POST', body: JSON.stringify({action:'clasificar', id, drive_id:driveId, materia}) });
+    const d = await r.json();
+    toast(d.success ? '✅ Documento clasificado' : '❌ '+d.error, d.success?'ok':'err');
+    if (d.success) loadPendientes();
+  } catch(e) {
+    toast('❌ Error de conexión','err');
+  }
+}
+
+function showDoc(id) {
+  const d = allDocs.find(x=>x.id===id);
+  if (!d) return;
+  const info = [
+    d.resumen ? `📝 ${d.resumen}` : '',
+    d.cita_formal ? `📚 Cita: ${d.cita_formal}` : '',
+    d.fragmentos_clave?.length ? `🔑 Fragmento: "${d.fragmentos_clave[0]?.substring(0,200)}…"` : ''
+  ].filter(Boolean).join('\n\n');
+  alert(d.titulo + '\n\n' + (info || 'Sin descripción adicional disponible.'));
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase().includes(v.substring(0,4)));
+  });
+}
+function setMobileActive(btn) {
+  document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtMateria(m) {
+  const map = {
+    Constitucional:'Constitucional', Laboral_Venezuela:'Laboral', Civil:'Civil',
+    Mercantil:'Mercantil', Penal:'Penal', Administrativo:'Administrativo',
+    Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio'
+  };
+  return map[m] || m;
+}
+function vigenciaBadge(v) {
+  if (!v) return '<span style="color:var(--text-muted)">—</span>';
+  if (v==='vigente') return '<span class="badge badge-vigente">Vigente</span>';
+  if (v.startsWith('derogado')) return '<span class="badge badge-derogado">Derogado</span>';
+  if (v==='modificado') return '<span class="badge badge-modificado">Modificado</span>';
+  return `<span class="badge" style="background:rgba(255,255,255,.05);color:var(--text-muted)">${v}</span>`;
+}
+function loading(on) { document.getElementById('loadingBar').classList.toggle('show',on); }
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type?' '+type:'');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
