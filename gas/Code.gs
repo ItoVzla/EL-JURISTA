@@ -20,7 +20,7 @@ const CONFIG = {
   BACKUPS_ID:       '1BVUD0NZgE5hKYNoPJxY57ZjO6YX2fqIS', // carpeta "_BACKUPS"
   MAX_BACKUPS:      4,
   GITHUB_TOKEN:     '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',
-  GITHUB_REPO:      'irvinleandro/EL-JURISTA',             // actualizar al crear el repo
+  GITHUB_REPO:      'ItoVzla/EL-JURISTA',
   GITHUB_BRANCH:    'main',
   GITHUB_INDEX_PATH:'data/jurista_index.json',
 };
