@@ -19,7 +19,7 @@ const CONFIG = {
   INDEX_FILE_NAME:  'jurista_index.json',
   BACKUPS_ID:       '1BVUD0NZgE5hKYNoPJxY57ZjO6YX2fqIS', // carpeta "_BACKUPS"
   MAX_BACKUPS:      4,
-  GITHUB_TOKEN:     '[GITHUB_TOKEN — copiar desde Credenciales.rtf]',
+  GITHUB_TOKEN:     '[GITHUB_TOKEN — ver Credenciales.rtf en Drive]',
   GITHUB_REPO:      'ItoVzla/EL-JURISTA',
   GITHUB_BRANCH:    'main',
   GITHUB_INDEX_PATH:'data/jurista_index.json',
@@ -50,6 +50,7 @@ function doGet(e) {
   try {
     if (path === 'indice/resumen')  return jsonResponse(getIndiceResumen());
     if (path === 'indice/buscar')   return jsonResponse(buscarEnIndice(params));
+    if (path === 'indice/doc')      return jsonResponse(getDocMeta(params.id));
     if (path === 'documento')       return jsonResponse(getDocumento(params.id));
     if (path === 'listar')          return jsonResponse(listarArchivos(params));
     if (path === 'descargar')       return jsonResponse(getUrlDescarga(params.id));
@@ -66,10 +67,11 @@ function doPost(e) {
   try {
     const body = e.postData ? JSON.parse(e.postData.contents) : {};
 
-    if (path === 'subir')      return jsonResponse(subirDocumento(body));
-    if (path === 'clasificar') return jsonResponse(clasificarDocumento(body));
-    if (path === 'eliminar')   return jsonResponse(eliminarDocumento(body));
-    if (path === 'scrape')     return jsonResponse(scrapeUrl(body));
+    if (path === 'subir')          return jsonResponse(subirDocumento(body));
+    if (path === 'clasificar')     return jsonResponse(clasificarDocumento(body));
+    if (path === 'eliminar')       return jsonResponse(eliminarDocumento(body));
+    if (path === 'scrape')         return jsonResponse(scrapeUrl(body));
+    if (path === 'indice/update')  return jsonResponse(actualizarDocMeta(body));
     return jsonResponse({ error: 'Endpoint no encontrado', path: path }, 404);
   } catch (err) {
     return jsonResponse({ error: err.message }, 500);
@@ -498,6 +500,49 @@ function copiarCarpetaRecursivo(origen, destino, excluirId) {
     const nuevaSub = destino.createFolder(sub.getName());
     copiarCarpetaRecursivo(sub, nuevaSub, excluirId);
   }
+}
+
+
+// ─────────────────────────────────────────────
+// GET /indice/doc?id=UUID
+// Retorna todos los campos de un documento del índice
+// ─────────────────────────────────────────────
+function getDocMeta(id) {
+  if (!id) throw new Error('Parámetro id requerido');
+  const index = leerIndex();
+  const doc = index.documentos.find(d => d.id === id);
+  if (!doc) throw new Error('Documento no encontrado: ' + id);
+  return doc;
+}
+
+
+// ─────────────────────────────────────────────
+// POST /indice/update
+// Actualiza campos editables de un documento en el índice
+// ─────────────────────────────────────────────
+function actualizarDocMeta(body) {
+  if (!body.id) throw new Error('Campo id requerido');
+  const index = leerIndex();
+  const i = index.documentos.findIndex(d => d.id === body.id);
+  if (i === -1) throw new Error('Documento no encontrado: ' + body.id);
+
+  const EDITABLES = [
+    'titulo', 'autor', 'año', 'materia', 'sub_materia', 'tipo', 'vigencia',
+    'resumen', 'cita_formal', 'tags', 'ponente', 'sala', 'expediente',
+    'fecha_sentencia', 'partes', 'editorial'
+  ];
+  EDITABLES.forEach(k => {
+    if (body[k] !== undefined) index.documentos[i][k] = body[k];
+  });
+  index.ultima_actualizacion = new Date().toISOString();
+
+  guardarIndex(index);
+  replicarIndexAGitHub(index);
+  registrarDBChangelog('EDITADO',
+    index.documentos[i].nombre_archivo || index.documentos[i].titulo,
+    index.documentos[i].materia);
+
+  return { success: true, doc: index.documentos[i] };
 }
 
 
