@@ -5,7 +5,7 @@
 
 ## 🔢 Versión actual del sistema
 
-**v1.2.0** — Estado: FASE 2 EN PROGRESO (2,979 docs LEXIUS cargados en índice). jurista_index.json poblado y replicado en GitHub.
+**v1.3.0** — Estado: FASE 2 EN PROGRESO (2,979 docs LEXIUS cargados en índice). Infraestructura de sub-agentes lista. Pendiente alimentar carpetas Jurisprudencia/Doctrina.
 
 ---
 
@@ -107,8 +107,71 @@ Authorization: ninguna (URL es la clave de acceso)
 | `jurista_index.json` (archivo) | `1P4MAvfb0_YKlNsxwOeK_oza-gMxH4zIq` |
 | `prompts/` | `1_Ijo49DweOn9L9FEE_8EzqMp1nbb5p87` |
 | `prompts/orquestador.md` | `1HQkxkERnaNSqJH3lSA4suci5EQe92XAy` |
+| `prompts/sub_agentes/` | `1JXXco-kB70bd_Rr_BnoP1-ow08k4Wrqf` |
+| `Constitucional/Jurisprudencia/` | `18KNuft_WUFgOtt5rgBeHaZNkD0l6IZ4-` |
+| `Constitucional/Doctrina/` | `1EZReIJQfed-VdGnWYg3d6AC9tp_b1ZNQ` |
+| `Civil/Jurisprudencia/` | `1-tEHbv7JCoc1rzxq6IimkTnfXSguE9lX` |
+| `Civil/Doctrina/` | `1sj31fn6lMzRq3xdesS2qTXQcFHZ3kFkn` |
+| `Mercantil/Jurisprudencia/` | `1t8CiuDe-dM2JfKg7NJwSK9l9VL0yrUYP` |
+| `Mercantil/Doctrina/` | `1qySSsyUUnylaUs0ZIB3JAN7T0WsfKT2R` |
+| `Laboral_Venezuela/Jurisprudencia/` | `105upg1lqBfDc3Thwbb89VdDvOOML9Egr` |
+| `Laboral_Venezuela/Doctrina/` | `1DW7paa0QNOOKtfhHPhb5xWlqfqBa6FvO` |
+| `Penal/Jurisprudencia/` | `1c8nFYVGGlPoilPGQ7PfjkOfNnalyjieR` |
+| `Penal/Doctrina/` | `1nCcILkEVSqPGC3Qja5FkTAAknyLTycup` |
+| `Administrativo/Jurisprudencia/` | `1kfbSQawzUkKdou-hJg1YdubHRL11Idym` |
+| `Administrativo/Doctrina/` | `1qiaF48WbDpvfVxMs8hrrvM77qn95NhgK` |
+| `Procesal/Jurisprudencia/` | `1DkCg1LCCxTQunLF5JRTc0AyOGGxqADmz` |
+| `Procesal/Doctrina/` | `1oHHZRGfOo87rac0mGFzWVTnurWGLab8F` |
+| `Electoral/Jurisprudencia/` | `1mku-1E5xEtj0I8TFWLYu8ngFCAK1V8NW` |
+| `Electoral/Doctrina/` | `1pxObIzl-A97tP82uNkwr0Oqk_ldKn-NW` |
+| `Derecho_Probatorio/Jurisprudencia/` | `1Xr1BqTyIhiONPWX0oKu501iT0UZyX9eQ` |
 
 Ver estructura completa en: `DET_EL_JURISTA.md` → Sección 3.
+
+---
+
+## 🤖 Protocolo de Alimentación de Sub-Agentes
+
+Cada sub-agente tiene su base de conocimiento en dos subcarpetas de Drive (`Jurisprudencia/` y `Doctrina/`) bajo su materia. La alimentación puede hacerse de dos formas:
+
+### Vía Claude Cowork (recomendada)
+
+1. Arrastra el PDF, .txt o .docx a la carpeta correcta en Drive:
+   - Sentencias → `[Materia]/Jurisprudencia/`
+   - Libros/artículos → `[Materia]/Doctrina/`
+2. Dile a Claude: *"procesa los nuevos documentos en [Materia]"*
+3. Claude lee los archivos nuevos, extrae metadatos, genera resumen y los agrega al `jurista_index.json`
+4. El índice se sincroniza automáticamente a GitHub (Capa 2)
+
+### Vía Web App (futuro)
+
+- Usar el endpoint `POST [GAS_URL_BASE]/subir` con el archivo y los metadatos
+- La Web App tendrá interfaz de upload por materia
+
+### Convención de nombres para documentos nuevos
+
+```
+[MATERIA]_[TIPO]_[AUTOR-o-TRIBUNAL]_[AÑO]_[SLUG].pdf
+```
+Donde `[TIPO]` puede ser:
+- `SENT` — sentencia
+- `DOC` — doctrina/libro
+- `ART` — artículo académico
+- `LEY` — legislación no cubierta por LEXIUS
+
+### Stubs de sub-agentes (pendiente alimentar)
+
+| Sub-Agente | Prompt | Estado |
+|---|---|---|
+| Laboral | `prompts/sub_agentes/laboral.md` | ⏳ vacío |
+| Probatorio | `prompts/sub_agentes/probatorio.md` | ⏳ vacío |
+| Constitucional | `prompts/sub_agentes/constitucional.md` | ⏳ vacío |
+| Civil | `prompts/sub_agentes/civil.md` | ⏳ vacío |
+| Mercantil | `prompts/sub_agentes/mercantil.md` | ⏳ vacío |
+| Penal | `prompts/sub_agentes/penal.md` | ⏳ vacío |
+| Administrativo | `prompts/sub_agentes/administrativo.md` | ⏳ vacío |
+| Procesal | `prompts/sub_agentes/procesal.md` | ⏳ vacío |
+| Electoral | `prompts/sub_agentes/electoral.md` | ⏳ vacío |
 
 ---
 
