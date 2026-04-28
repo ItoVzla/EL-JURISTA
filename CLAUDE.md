@@ -211,7 +211,7 @@ Ver tabla completa en: `DET_EL_JURISTA.md` → Sección 11.
 
 ## 🔐 Acceso y Credenciales
 
-- **Clave Web App:** `ElJurista#2026`
+- **Clave Web App:** `ElJurista2026`
 - **GitHub repo:** Privado — `irvinleandro` (usuario a confirmar al crear el repo)
 - **Token GitHub:** `[GITHUB_TOKEN — ver Credenciales.rtf en Drive]`
   - ⚠️ Vive SOLO aquí y en GAS. Nunca en el HTML público.
