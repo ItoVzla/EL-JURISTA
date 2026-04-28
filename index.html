@@ -408,7 +408,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.4.0</span>
+    <span class="version-badge" id="versionBadge">v1.4.1</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -642,6 +642,7 @@
       <div class="drawer-badges" id="drawerBadges"></div>
       <div class="drawer-tabs" id="drawerTabBar">
         <button class="dtab active" id="dtab-view" onclick="switchDrawerTab('view')">👁 Vista</button>
+        <button class="dtab" id="dtab-content" onclick="switchDrawerTab('content')">📖 Contenido</button>
         <button class="dtab" id="dtab-edit" onclick="switchDrawerTab('edit')">✏️ Editar</button>
       </div>
     </div>
@@ -877,7 +878,7 @@ function renderDashboard() {
     <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs · v1.1</div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am)</div>
-    <div>🟢 <strong>Web App</strong> — v1.3.1 · GitHub Pages activo</div>
+    <div>🟢 <strong>Web App</strong> — v1.4.1 · GitHub Pages activo</div>
     <div>🔵 <strong>Sub-Agentes</strong> — 9 stubs · pendiente alimentar</div>`;
 }
 
@@ -983,7 +984,7 @@ async function clasificar(id, driveId) {
   const materia = document.getElementById('sel-'+id)?.value;
   if (!materia) { toast('Selecciona una materia','err'); return; }
   try {
-    const r = await fetch(GAS+'?path=clasificar', { method:'POST', body: JSON.stringify({id, drive_id:driveId, materia}) });
+    const r = await fetch(GAS+'?path=clasificar', { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({id, drive_id:driveId, materia}) });
     const d = await r.json();
     toast(d.success ? '✅ Documento clasificado' : '❌ '+d.error, d.success?'ok':'err');
     if (d.success) loadPendientes();
@@ -1233,8 +1234,77 @@ function renderEditMode(d) {
 
 function switchDrawerTab(tab) {
   if (!currentDocFull) return;
-  if (tab === 'view') renderViewMode(currentDocFull);
+  ['view','content','edit'].forEach(t => {
+    const el = document.getElementById('dtab-'+t);
+    if (el) el.classList.toggle('active', t === tab);
+  });
+  if (tab === 'view')    renderViewMode(currentDocFull);
+  else if (tab === 'content') renderContentMode(currentDocFull);
   else renderEditMode(currentDocFull);
+}
+
+function renderContentMode(d) {
+  drawerTab = 'content';
+  document.getElementById('drawerFooter').style.display = 'none';
+
+  // Si tiene drive_id → iframe de Drive
+  if (d.drive_id) {
+    document.getElementById('drawerBody').innerHTML = `
+      <div style="height:calc(100vh - 180px);display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <a href="https://drive.google.com/file/d/${d.drive_id}/view" target="_blank"
+             class="action-btn" style="text-decoration:none;padding:7px 14px;font-size:12px">
+             📂 Abrir en Drive
+          </a>
+        </div>
+        <iframe
+          src="https://drive.google.com/file/d/${d.drive_id}/preview"
+          style="flex:1;border:none;border-radius:8px;background:var(--surface2)"
+          allow="autoplay">
+        </iframe>
+      </div>`;
+    return;
+  }
+
+  // Sin Drive — mostrar texto extraído (resumen como vista previa)
+  const textoDisp = d.resumen && d.resumen.length > 100;
+  const frags = d.fragmentos_clave && d.fragmentos_clave.length > 0;
+
+  document.getElementById('drawerBody').innerHTML = `
+    <div style="margin-bottom:16px;padding:12px 14px;background:rgba(201,162,39,.08);
+                border:1px solid rgba(201,162,39,.25);border-radius:8px;font-size:12px;
+                color:var(--gold)">
+      ℹ️ Este documento aún no tiene un archivo PDF cargado en Drive.
+      Para ver el texto completo, carga el PDF desde <strong>Ingesta</strong>
+      o arrástralo a la carpeta correcta en Drive.
+    </div>
+
+    ${textoDisp ? `
+    <div class="field-block">
+      <div class="field-label">Vista previa del contenido</div>
+      <div class="field-value" style="white-space:pre-wrap;max-height:none;
+           font-size:13px;line-height:1.75;font-family:'Georgia',serif;color:var(--text)">
+        ${esc(d.resumen)}
+      </div>
+    </div>` : ''}
+
+    ${frags ? `
+    <div class="separator"></div>
+    <div class="field-block">
+      <div class="field-label">Fragmentos relevantes</div>
+      ${d.fragmentos_clave.map(f => `
+        <div style="background:var(--surface2);border-left:3px solid var(--gold);
+                    border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:8px;
+                    font-size:13px;font-style:italic;line-height:1.6;color:var(--text)">
+          "${esc(f)}"
+        </div>`).join('')}
+    </div>` : ''}
+
+    ${!textoDisp && !frags ? `
+    <div style="text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px">
+      <div style="font-size:40px;margin-bottom:12px">📄</div>
+      No hay contenido de texto disponible para este documento.
+    </div>` : ''}`;
 }
 
 async function saveDoc() {
@@ -1268,9 +1338,11 @@ async function saveDoc() {
   document.getElementById('btnSave').textContent = '⏳ Guardando…';
 
   try {
+    // Nota: Content-Type text/plain evita el preflight CORS que bloquea Safari/Firefox
+    // GAS recibe el JSON correctamente vía e.postData.contents
     const r = await fetch(GAS + '?path=indice/update', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
     const res = await r.json();
