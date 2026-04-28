@@ -6,6 +6,22 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.2.0 — 2026-04-28 *(versión en pantalla: v1.2.0)*
+
+### Añadido — FASE 2: Carga masiva LEXIUS Venezuela
+
+- **`jurista_index.json` poblado con 2,979 documentos de LEXIUS Venezuela.**
+  - *Motivo*: Completar el paso crítico de Fase 2 — dotar al sistema de su base de conocimiento legal venezolana.
+  - *Fuente*: Carpeta `LEXIUS_DB/` en Drive (cuenta irvinleandro@gmail.com), generada por el scraper del usuario desde `appvenezuela.lexius.io`.
+  - *Contenido*: Constitución (1,109 docs), Administrativo (558), Mercantil (428), Penal (232), Laboral (216), Procesal (166), Civil (157), Probatorio (67), Electoral (46).
+  - *Proceso*: Script Python de clasificación por materia (keyword scoring), generación de `resumen` (80 palabras) y `fragmentos_clave` (3 párrafos) por documento.
+  - *Formato*: `jurista_index_v1.1.json` (5.8 MB completo en Drive · 1.6 MB resumen en GitHub).
+
+- **Réplica GitHub actualizada** (`data/jurista_index.json`, SHA: `519744d72c51729ccf15f6e280b28faaa3b80647`).
+  - *Motivo*: Capa 2 de backup y acceso multi-dispositivo.
+
+---
+
 ## v1.1.0 — 2026-04-28 *(versión en pantalla: v1.1.0)*
 
 ### Añadido — FASE 1: Infraestructura base
@@ -32,11 +48,19 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 - **CLAUDE.md actualizado con todos los IDs de Drive y estado de Fase 1.**
   - *Motivo*: Registrar los IDs reales de todas las carpetas y archivos creados, y actualizar el estado de la fase con el checklist de acciones manuales pendientes.
 
-### Pendiente de acción manual del usuario para completar Fase 1
+### Acciones adicionales completadas en esta sesión
 
-- Desplegar `gas/Code.gs` en Google Apps Script (script.google.com) y actualizar `GAS_URL_BASE` en CLAUDE.md.
-- Crear repo GitHub privado `irvinleandro/EL-JURISTA` con carpeta `data/`.
-- Ejecutar `configurarTriggerBackup()` en el editor GAS (una sola vez).
+- **GAS desplegado manualmente por el usuario.**
+  - `GAS_URL_BASE` registrado en CLAUDE.md y en `gas/Code.gs` (CONFIG actualizado).
+  - URL: `https://script.google.com/macros/s/AKfycbwMPuY32Y84n3kQM6mAXR6xJgBaybHAW6MYtOPsS0oyVYoCwkXZ689zvbVNN269jZBU/exec`
+
+- **Repositorio GitHub privado creado: `ItoVzla/EL-JURISTA`.**
+  - Carpeta `data/` con `jurista_index.json` inicial (réplica Capa 2).
+  - Archivos subidos: `CHANGELOG.md`, `DB_CHANGELOG.md`, `CLAUDE.md`, `gas/Code.gs`, `prompts/orquestador.md`.
+
+### Pendiente de acción manual del usuario
+
+- Ejecutar `configurarTriggerBackup()` en el editor GAS (una sola vez) para activar el backup dominical.
 
 ---
 
