@@ -67,7 +67,7 @@
 ```
 GAS_URL_BASE:        https://script.google.com/macros/s/AKfycbwMPuY32Y84n3kQM6mAXR6xJgBaybHAW6MYtOPsS0oyVYoCwkXZ689zvbVNN269jZBU/exec
 GITHUB_REPO:         ItoVzla/EL-JURISTA  ✅ creado
-GITHUB_PAGES_URL:    [pendiente — completar al publicar rama pages]
+GITHUB_PAGES_URL:    https://itovzla.github.io/EL-JURISTA/  ✅ publicado
 DRIVE_ROOT_ID:       1bsMMHEzxsx5YbpCKaF1aATorTYquvclg  ← carpeta "EL JURISTA" en Drive
 DRIVE_JURISTA_DB_ID: 1oHWWIrpHcwJGrnzj1shIgA6Ud2AaKnGR  ← EL_JURISTA_DB/ ✅ creada
 ```
@@ -213,7 +213,7 @@ Ver tabla completa en: `DET_EL_JURISTA.md` → Sección 11.
 
 - **Clave Web App:** `ElJurista#2026`
 - **GitHub repo:** Privado — `irvinleandro` (usuario a confirmar al crear el repo)
-- **Token GitHub:** `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`
+- **Token GitHub:** `[GITHUB_TOKEN — ver Credenciales.rtf en Drive]`
   - ⚠️ Vive SOLO aquí y en GAS. Nunca en el HTML público.
   - ⚠️ Si se revoca, actualizar este archivo y la variable en GAS.
 - **Drive:** `irvinleandro@gmail.com` — ID carpeta raíz EL JURISTA: `1bsMMHEzxsx5YbpCKaF1aATorTYquvclg`
