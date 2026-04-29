@@ -6,6 +6,19 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v2.0.3 — 2026-04-29 *(versión en pantalla: v2.0.3)*
+
+### Corregido — Nuevo redespliegue GAS + URL actualizada
+
+- **Nueva implementación GAS desplegada con todos los fixes de v2.0.2.**
+  - *URL anterior*: `AKfycbyOqjK7__KX5jFaDjkPWfniXZmmynhEZldWy3-7JSeJOSj7s7WYpWAn0dAp4iy-6hD0`
+  - *URL nueva*: `AKfycbyshdDbG8QbxLbXoSrX8Dw0Ege5u1nb7bcVOF5WfRPCsGJKFGmkWk91SwC5CpuDU-7g`
+  - *Fixes activos en producción*: mimetype map, `total_documentos` filter, `estado` filter para LEXIUS, `corregirClasificacionTipos()` fix.
+
+- **URL actualizada en 15 archivos**: `CLAUDE.md`, `index.html`, `CHANGELOG.md`, `buscador/gas_uploader.py`, `prompts/orquestador.md`, 9 prompts de sub-agentes, plan de implementación.
+
+---
+
 ## v2.0.2 — 2026-04-29 *(versión en pantalla: v2.0.2)*
 
 ### Corregido — MarkItDown + mimetype + total_documentos
@@ -43,7 +56,7 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 - **Nueva implementación GAS desplegada.**
   - *URL anterior*: `AKfycbwqBKBEBPXLLt1HN8kf3l7HPr_pp0rdI8MNogAWjqDfLeUGwV2q99kEUbNNnYUkjuL_`
-  - *URL nueva*: `AKfycbyOqjK7__KX5jFaDjkPWfniXZmmynhEZldWy3-7JSeJOSj7s7WYpWAn0dAp4iy-6hD0`
+  - *URL nueva*: `AKfycbyshdDbG8QbxLbXoSrX8Dw0Ege5u1nb7bcVOF5WfRPCsGJKFGmkWk91SwC5CpuDU-7g`
   - *Motivo*: Redespliegue necesario para activar los fixes de v2.0.0 en producción (filtro `estado`, bug `pushToGitHub`, URL real en prompts).
 
 - **URL actualizada en 14 archivos** (bulk replace automático): `CLAUDE.md`, `prompts/orquestador.md`, 9 prompts de sub-agentes, `buscador/gas_uploader.py`, `index.html`, plan de implementación.
