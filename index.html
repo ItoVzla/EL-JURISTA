@@ -398,6 +398,16 @@
     font-family: 'Segoe UI', system-ui, sans-serif;
     font-size: 13px;
   }
+  .legal-viewer .lv-epigrafe {
+    display: block;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--gold-dim);
+    font-size: 12.5px;
+    margin: 3px 0 6px;
+    letter-spacing: 0.2px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
   .legal-viewer .lv-p {
     margin: 0 0 14px;
     text-align: justify;
@@ -524,7 +534,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.6.0</span>
+    <span class="version-badge" id="versionBadge">v1.6.1</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -1278,7 +1288,7 @@ function renderDashboard() {
     <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs · v1.1</div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am)</div>
-    <div>🟢 <strong>Web App</strong> — v1.6.0 · GitHub Pages activo</div>
+    <div>🟢 <strong>Web App</strong> — v1.6.1 · GitHub Pages activo</div>
     <div>🔵 <strong>Sub-Agentes</strong> — 9 stubs · pendiente alimentar</div>`;
 }
 
@@ -1787,19 +1797,77 @@ function formatLegalText(rawText) {
       html += `<h3 class="lv-h3">${esc(trim)}</h3>`;
     } else if (hType === 'article') {
       flushP();
-      // Capturar número + contenido del artículo (puede continuar en líneas siguientes)
+
+      // ── Detección de epígrafe ──────────────────────────────
+      // El epígrafe es una línea corta tipo "Título de sección" que aparece:
+      //   a) En la misma línea del artículo: "Artículo 5. Libertad Personal"
+      //   b) En la línea inmediata siguiente al número del artículo
+      //
+      // Heurística: frase corta (≤ 80 chars, ≤ 10 palabras), sin punto final,
+      // con palabras en Title Case (mayúscula inicial), que NO sea una oración
+      // (no empieza con artículo seguido de verbo, no contiene comas largas, etc.)
+      const PREPS = new Set(['de','del','la','el','las','los','en','con','por','para',
+                             'a','y','o','e','u','al','su','sus','sobre','sin','ante']);
+      const isEpigrafe = s => {
+        if (!s || s.length > 80) return false;
+        const words = s.trim().split(/\s+/);
+        if (words.length > 10 || words.length < 1) return false;
+        if (s.endsWith(',') || s.endsWith(';')) return false;
+        // No debe terminar en punto (a menos que sea una sola palabra con punto abreviación)
+        if (s.endsWith('.') && words.length > 1) return false;
+        // Primera palabra debe empezar con mayúscula
+        if (!/^[A-ZÁÉÍÓÚÑ]/.test(s)) return false;
+        // Todas las palabras deben empezar con mayúscula O ser preposiciones/artículos cortos
+        const titleCase = words.every(w =>
+          /^[A-ZÁÉÍÓÚÑ]/.test(w) || PREPS.has(w.toLowerCase())
+        );
+        if (!titleCase) return false;
+        // No debe parecer inicio de oración jurídica (verbo conjugado tras artículo)
+        // Ej: "El Estado garantizará..." → NO epígrafe
+        // Ej: "Libertad Personal" → SÍ epígrafe
+        const secondWord = words[1] || '';
+        const looksLikeSentence = /^(El|La|Los|Las|Se|Es|Son|Cuando|Todo|Toda|Queda|Quedan)$/i.test(words[0])
+          && secondWord && /[a-záéíóú]/.test(secondWord[0]);
+        if (looksLikeSentence) return false;
+        return true;
+      };
+
       const m = trim.match(/^((?:Art[ií]culo|ARTÍCULO|Art\.)\s+\d+[\w°º\.]*\.?)\s*([\s\S]*)/i);
-      let artNum  = m ? m[1] : trim;
-      let artBody = m ? m[2].trim() : '';
-      // Absorber líneas de continuación del artículo (no vacías, no otro encabezado)
+      let artNum    = m ? m[1] : trim;
+      let artInline = m ? m[2].trim() : '';  // texto en la misma línea del número
+      let artEpi    = '';
+      let artBody   = '';
+
+      // Caso A: epígrafe en la misma línea del número ("Artículo 5. Libertad Personal")
+      if (artInline && isEpigrafe(artInline)) {
+        artEpi    = artInline;
+        artInline = '';
+      } else {
+        artBody = artInline;
+      }
+
+      // Caso B: epígrafe en la línea siguiente (solo si artBody está vacío hasta aquí)
+      if (!artBody && i + 1 < lines.length) {
+        const nextLine = lines[i + 1].trim();
+        if (nextLine && isEpigrafe(nextLine) && !isHeading(nextLine)) {
+          artEpi = nextLine;
+          i++;
+        }
+      }
+
+      // Absorber el cuerpo del artículo (líneas de continuación)
       while (i + 1 < lines.length) {
         const next = lines[i + 1].trim();
-        if (!next) break;                     // línea vacía = fin del artículo
-        if (isHeading(next)) break;           // nuevo encabezado = fin del artículo
+        if (!next) break;
+        if (isHeading(next)) break;
         artBody += (artBody ? ' ' : '') + next;
         i++;
       }
-      html += `<div class="lv-article"><span class="lv-art-num">${esc(artNum)}.</span> ${esc(artBody)}</div>`;
+
+      const epiHtml = artEpi
+        ? `<span class="lv-epigrafe">${esc(artEpi)}</span>`
+        : '';
+      html += `<div class="lv-article"><span class="lv-art-num">${esc(artNum)}.</span>${epiHtml} ${esc(artBody)}</div>`;
     } else {
       // Párrafo normal: acumular líneas
       pendingLines.push(trim);
