@@ -6,6 +6,18 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.7.2 — 2026-04-29 *(versión en pantalla: v1.7.2)*
+
+### Añadido — Editor de bloques estructurados en el visor
+
+- **Editor de bloques** reemplaza al `<textarea>` plano del modo edición.
+  - *Motivo*: Al editar texto legal en un textarea raw, se perdían los colores y la jerarquía visual (títulos dorados, artículos con borde, epígrafes en itálica). El usuario necesitaba poder controlar el tipo de cada línea para mantener la estructura.
+  - *Comportamiento*: Al pulsar `✏️ Editar`, el texto se parsea automáticamente en bloques tipados usando la misma lógica que `formatLegalText()`. Cada bloque muestra un selector de tipo (`TÍTULO / CAPÍTULO`, `SECCIÓN`, `ARTÍCULO`, `EPÍGRAFE`, `PÁRRAFO`) y un `contenteditable` con los colores reales del visor en tiempo real. El usuario puede cambiar el tipo con el desplegable, reordenar bloques con ↑↓, insertar bloques con `+` o Enter, y eliminar con `✕`. Al guardar, los bloques se serializan a texto plano y se envían al GAS como antes.
+  - *CSS añadido*: `.edit-block`, `.edit-block-ctrl`, `.edit-block-content`, `.block-type-sel`, `.block-mini-btn`, `.block-add-row`.
+  - *Funciones JS nuevas*: `textToBlocks()`, `blocksToText()`, `renderBlockEditor()`, `createBlockEl()` (inline), `updateBlockType()`, `moveBlock()`, `insertBlock()`, `deleteBlock()`, `placeCaretAtStart()`, `placeCaretAtEnd()`.
+
+---
+
 ## v1.7.1 — 2026-04-28 *(versión en pantalla: v1.7.1)*
 
 ### Corregido — URL del GAS actualizada
