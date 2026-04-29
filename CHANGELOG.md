@@ -6,6 +6,41 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.6.2 — 2026-04-28 *(versión en pantalla: v1.6.2)*
+
+### Corregido — Epígrafes en el visor de texto completo
+
+- **`formatLegalText` reescrito con mecanismo `pendingEpi` para reconocer epígrafes existentes en el texto.**
+  - *Motivo*: Los textos legales venezolanos (scrapeados de LEXIUS) contienen epígrafes (títulos cortos que preceden cada artículo, p. ej. "Objeto", "Finalidad", "Principios") que no estaban siendo reconocidos como tales, sino absorbidos como parte del cuerpo del artículo anterior.
+  - *Comportamiento*: La función detecta líneas cortas (≤100 chars, ≤12 palabras, Title Case, sin punto/coma final) que preceden a un artículo y las guarda como `pendingEpi`, aplicándolas al artículo siguiente con la clase CSS `lv-epigrafe` (itálica dorada).
+  - *Regla fundamental respetada*: Solo se reconocen y muestran epígrafes que YA existen en el texto de la norma. No se añade ni inventa nada.
+  - *Fix del bucle de absorción*: El bucle que construye el cuerpo del artículo ahora detecta cuándo la siguiente línea es un epígrafe del artículo siguiente y detiene la absorción a tiempo.
+  - *CSS añadido*: `.legal-viewer .lv-epigrafe` — bloque itálico en `--gold-dim`, 12.5px, separado 6px del artículo.
+
+---
+
+## v1.6.1 — 2026-04-28 *(versión en pantalla: v1.6.1)*
+
+### Añadido — Búsqueda interna en el visor de texto (🔍)
+
+- **Botón 🔍 en la barra superior del visor abre un campo de búsqueda interna.**
+  - *Motivo*: Los documentos legales son largos; el usuario necesita localizar artículos o términos específicos sin leer todo el texto.
+  - *Comportamiento*: Usa `TreeWalker` para recorrer solo nodos de texto sin romper el HTML estructurado. Envuelve coincidencias en `<mark class="hl-search">` (dorado semitransparente) y la coincidencia activa en `hl-current` (dorado sólido, texto negro). Botones ← → para navegar entre resultados. Muestra contador "X de N".
+  - *Atajos*: Ctrl+F / Cmd+F activa la búsqueda; Escape la cierra y limpia highlights.
+
+---
+
+## v1.6.0 — 2026-04-28 *(versión en pantalla: v1.6.0)*
+
+### Añadido / Corregido — Limpieza LEXIUS + búsqueda interna + mejoras de parser
+
+- **Eliminación de fragmentos de UI de LEXIUS** en todos los textos del visor.
+  - *Motivo*: Los .txt scrapeados de `appvenezuela.lexius.io` incluían botones y textos de la interfaz ("Sintetizar texto legal con el Asistente Virtual", "Generar Video Podcast Legal", etc.) que aparecían en el visor como contenido legal.
+  - *Fix GAS*: `limpiarTextoLexius(texto)` en `buscarYLeerArchivo()` — limpia el texto antes de retornarlo.
+  - *Fix cliente*: `formatLegalText` también filtra estos patrones como red de seguridad.
+
+---
+
 ## v1.5.1 — 2026-04-28 *(versión en pantalla: v1.5.1)*
 
 ### Añadido — Visor de texto completo desde Drive (LEXIUS + Drive)
