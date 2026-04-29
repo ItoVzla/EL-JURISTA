@@ -178,17 +178,25 @@ function getDocumento(driveId) {
   const mimeType = file.getMimeType();
   let texto = '';
 
-  if (mimeType === 'application/pdf') {
+  if (mimeType === 'text/plain' || mimeType === 'application/octet-stream') {
+    // Archivo de texto plano (.txt) — leer directamente
+    texto = file.getBlob().getDataAsString('UTF-8');
+    texto = limpiarTextoLexius(texto);
+  } else if (mimeType === 'application/pdf') {
     // Convertir PDF a Google Doc temporalmente para extraer texto
     const resource = { title: '_tmp_extract_' + driveId, mimeType: 'application/vnd.google-apps.document' };
     const blob = file.getBlob();
     const tmpDoc = Drive.Files.insert(resource, blob, { convert: true });
     const doc = DocumentApp.openById(tmpDoc.id);
     texto = doc.getBody().getText();
-    // Limpiar el temporal
     DriveApp.getFileById(tmpDoc.id).setTrashed(true);
   } else if (mimeType === 'application/vnd.google-apps.document') {
     texto = DocumentApp.openById(driveId).getBody().getText();
+  } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    const resource = { title: '_tmp_docx_' + driveId, mimeType: 'application/vnd.google-apps.document' };
+    const tmpDoc   = Drive.Files.insert(resource, file.getBlob(), { convert: true });
+    texto          = DocumentApp.openById(tmpDoc.id).getBody().getText();
+    DriveApp.getFileById(tmpDoc.id).setTrashed(true);
   } else {
     texto = '[Formato no soportado para extracción de texto: ' + mimeType + ']';
   }
