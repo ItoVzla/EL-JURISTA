@@ -415,6 +415,19 @@
     font-size: 13.5px;
   }
 
+  /* ── BÚSQUEDA INTERNA ───────────────────────── */
+  mark.hl-search {
+    background: rgba(201,162,39,.35);
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+  mark.hl-search.hl-current {
+    background: var(--gold);
+    color: #000;
+    border-radius: 2px;
+  }
+
   /* ── VIEWER PAGE (nueva pestaña) ──────────────── */
   #viewerPage {
     display: none;
@@ -511,7 +524,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.5.1</span>
+    <span class="version-badge" id="versionBadge">v1.6.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -785,13 +798,29 @@
       &#8592; Volver
     </button>
     <div id="vpBadges" style="display:flex;gap:6px;flex-wrap:wrap;margin-left:6px"></div>
-    <div style="margin-left:auto;display:flex;gap:8px">
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
       <a id="vpDriveLink" href="#" target="_blank"
          class="action-btn" style="display:none;text-decoration:none;padding:6px 12px;font-size:12px">
         📂 Drive
       </a>
+      <button onclick="toggleSearch()" class="nav-btn" id="btnSearch" title="Buscar en documento (Ctrl+F)"
+        style="padding:6px 12px;font-size:13px">🔍</button>
     </div>
   </div>
+
+  <!-- Barra de búsqueda interna -->
+  <div id="vpSearchBar" style="display:none;background:var(--surface);border-bottom:1px solid var(--border);
+       padding:8px 20px;display:none;align-items:center;gap:8px;flex-wrap:wrap">
+    <input id="vpSearchInput" type="text" placeholder="Buscar en el documento…"
+      style="flex:1;min-width:200px;max-width:400px;padding:7px 12px;border-radius:6px;
+             background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;outline:none"
+      oninput="buscarEnDoc()" onkeydown="searchKey(event)">
+    <span id="vpSearchCount" style="font-size:12px;color:var(--text-muted);white-space:nowrap;min-width:60px"></span>
+    <button onclick="navSearch(-1)" class="nav-btn" style="padding:5px 10px;font-size:13px" title="Anterior">▲</button>
+    <button onclick="navSearch(1)"  class="nav-btn" style="padding:5px 10px;font-size:13px" title="Siguiente">▼</button>
+    <button onclick="cerrarSearch()" class="nav-btn" style="padding:5px 10px;font-size:13px;color:var(--text-muted)">✕</button>
+  </div>
+
   <div class="viewer-content">
     <div id="vpLoading" class="drawer-spinner" style="height:200px">⏳ Cargando…</div>
     <div id="vpBody" style="display:none">
@@ -942,7 +971,116 @@ async function openDocView(id) {
   }
 }
 
+// ── BUSCADOR INTERNO ─────────────────────────────────────────
+let searchMatches = [];
+let searchIdx     = -1;
+let searchActive  = false;
+
+function toggleSearch() {
+  const bar = document.getElementById('vpSearchBar');
+  if (!searchActive) {
+    bar.style.display = 'flex';
+    searchActive = true;
+    document.getElementById('vpSearchInput').focus();
+    document.getElementById('vpSearchInput').select();
+  } else {
+    cerrarSearch();
+  }
+}
+
+function cerrarSearch() {
+  document.getElementById('vpSearchBar').style.display = 'none';
+  searchActive = false;
+  limpiarHighlights();
+  searchMatches = [];
+  searchIdx = -1;
+  document.getElementById('vpSearchCount').textContent = '';
+}
+
+function searchKey(e) {
+  if (e.key === 'Escape') { cerrarSearch(); return; }
+  if (e.key === 'Enter')  { navSearch(e.shiftKey ? -1 : 1); return; }
+}
+
+function buscarEnDoc() {
+  limpiarHighlights();
+  searchMatches = [];
+  searchIdx = -1;
+  const q = document.getElementById('vpSearchInput').value.trim();
+  if (q.length < 2) { document.getElementById('vpSearchCount').textContent = ''; return; }
+
+  const content = document.getElementById('vpContent');
+  const regex   = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+
+  // Resaltar con mark usando TreeWalker (no rompe el DOM)
+  const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+  const nodes  = [];
+  let node;
+  while (node = walker.nextNode()) nodes.push(node);
+
+  nodes.forEach(textNode => {
+    const text = textNode.textContent;
+    if (!regex.test(text)) return;
+    regex.lastIndex = 0;
+
+    const frag = document.createDocumentFragment();
+    let last = 0, m;
+    while ((m = regex.exec(text)) !== null) {
+      if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+      const mark = document.createElement('mark');
+      mark.className = 'hl-search';
+      mark.textContent = m[0];
+      frag.appendChild(mark);
+      searchMatches.push(mark);
+      last = regex.lastIndex;
+    }
+    if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    textNode.parentNode.replaceChild(frag, textNode);
+  });
+
+  const count = searchMatches.length;
+  if (count > 0) {
+    searchIdx = 0;
+    irAMatch(0);
+  }
+  document.getElementById('vpSearchCount').textContent = count > 0 ? `1 / ${count}` : 'Sin resultados';
+}
+
+function navSearch(dir) {
+  if (!searchMatches.length) return;
+  searchMatches[searchIdx].classList.remove('hl-current');
+  searchIdx = (searchIdx + dir + searchMatches.length) % searchMatches.length;
+  irAMatch(searchIdx);
+  document.getElementById('vpSearchCount').textContent = `${searchIdx + 1} / ${searchMatches.length}`;
+}
+
+function irAMatch(idx) {
+  const el = searchMatches[idx];
+  el.classList.add('hl-current');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function limpiarHighlights() {
+  document.querySelectorAll('#vpContent mark.hl-search').forEach(m => {
+    m.parentNode.replaceChild(document.createTextNode(m.textContent), m);
+  });
+  // Normalizar nodos de texto adyacentes
+  document.getElementById('vpContent').normalize();
+  searchMatches = [];
+}
+
+// Ctrl+F / Cmd+F → abrir buscador interno cuando el visor está activo
+document.addEventListener('keydown', e => {
+  const vp = document.getElementById('viewerPage');
+  if (vp && vp.style.display !== 'none' && (e.ctrlKey || e.metaKey) && e.key === 'f') {
+    e.preventDefault();
+    toggleSearch();
+  }
+  if (e.key === 'Escape' && searchActive) cerrarSearch();
+});
+
 function closeDocView() {
+  cerrarSearch();
   document.getElementById('viewerPage').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   document.getElementById('app').style.flexDirection = 'column';
@@ -1140,7 +1278,7 @@ function renderDashboard() {
     <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs · v1.1</div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am)</div>
-    <div>🟢 <strong>Web App</strong> — v1.5.1 · GitHub Pages activo</div>
+    <div>🟢 <strong>Web App</strong> — v1.6.0 · GitHub Pages activo</div>
     <div>🔵 <strong>Sub-Agentes</strong> — 9 stubs · pendiente alimentar</div>`;
 }
 
@@ -1571,23 +1709,53 @@ function switchDrawerTab(tab) {
 // ── VISOR DE TEXTO LEGAL ─────────────────────────────────────
 function formatLegalText(rawText) {
   if (!rawText) return '';
+
+  // 1. Limpiar artefactos de LEXIUS que lleguen por si acaso desde el cliente
+  const lexiusUI = [
+    /Sintetizar texto legal con el Asistente Virtual\s*/gi,
+    /Generar Video Podcast Legal usando este texto legal como contexto\s*/gi,
+    /Generar Canci[oó]n usando este texto legal como contexto\s*/gi,
+    /Crear P[aá]gina Interactiva usando este texto legal como contexto\s*/gi,
+    /Generar Presentaci[oó]n de PowerPoint usando este texto legal como contexto\s*/gi,
+    /Iniciar llamada con .{0,80} acerca de este texto legal\s*/gi,
+    /[¿?]?Tienes dudas acerca de c[oó]mo usar la aplicaci[oó]n\?.*?escribenos[\s\S]{0,200}/gi,
+    /^.*[Ll]exius.*$/gim,
+  ];
+  lexiusUI.forEach(p => { rawText = rawText.replace(p, ''); });
+
+  // 2. Normalizar saltos de línea y espacios
   let text = rawText
     .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-    .replace(/\t/g, ' ')
-    .replace(/ {3,}/g, '  ')
-    .replace(/\n{4,}/g, '\n\n\n');
+    .replace(/\t/g, '  ')
+    .replace(/[ \xA0]{3,}/g, '  ')   // espacios múltiples → 2
+    .replace(/\n{4,}/g, '\n\n\n');   // máx 3 líneas en blanco
 
   const lines = text.split('\n');
   let html = '';
   let inBlock = false;
+  let pendingLines = [];  // acumula líneas de párrafo
+
+  const flushP = () => {
+    if (pendingLines.length) {
+      html += `<p class="lv-p">${pendingLines.map(l => esc(l)).join(' ')}</p>`;
+      pendingLines = [];
+    }
+    inBlock = false;
+  };
 
   const isHeading = s => {
     const t = s.trim();
     if (!t) return false;
-    if (/^(TÍTULO|CAPÍTULO|SECCIÓN|DISPOSICION|PARTE|LIBRO)\b/i.test(t)) return 'h2';
-    if (/^(Artículo|ARTÍCULO|Art\.)\s+\d+/i.test(t)) return 'article';
-    if (/^(CONSIDERANDO|VISTO|RESUELVE|DECIDE|DECLARA|OBSERVA|SALA\s)/i.test(t) && t.length < 80) return 'h3';
-    if (t === t.toUpperCase() && t.length > 4 && t.length < 100 && /[A-ZÁÉÍÓÚ]/.test(t)) return 'h2';
+    // Encabezados estructurales
+    if (/^(TÍTULO|CAPÍTULO|SECCIÓN|DISPOSICI[OÓ]N|PARTE|LIBRO|ENMIENDA)\s*[IVXLCDM\d]/i.test(t)) return 'h2';
+    if (/^(TÍTULO|CAPÍTULO|SECCIÓN|DISPOSICI[OÓ]N TRANSITORIA|PARTE|LIBRO|ENMIENDA)\b/i.test(t) && t.length < 80) return 'h2';
+    // Artículos
+    if (/^(Art[ií]culo|ARTÍCULO|Art\.)\s+\d+/i.test(t)) return 'article';
+    // Sub-encabezados de sentencias y resoluciones
+    if (/^(CONSIDERANDO|VISTO\s+QUE|RESUELVE|DECIDE[^\w]|DECLARA[^\w]|OBSERVA[^\w]|MOTIVA|DISPOSITIVO)/i.test(t) && t.length < 100) return 'h3';
+    // Línea TODA EN MAYÚSCULAS corta = título de sección
+    if (t === t.toUpperCase() && /[A-ZÁÉÍÓÚÑ]{3,}/.test(t) && t.length > 3 && t.length < 90
+        && !/^\d+[\.\-\)]\s/.test(t) && !/^[IVX]+\b/.test(t)) return 'h2';
     return false;
   };
 
@@ -1597,31 +1765,50 @@ function formatLegalText(rawText) {
     const hType = isHeading(trim);
 
     if (!trim) {
-      if (inBlock) { html += '</p>'; inBlock = false; }
+      // Línea en blanco: si había párrafo acumulado con contenido, cerrarlo
+      if (pendingLines.length > 0) flushP();
       continue;
     }
 
     if (hType === 'h2') {
-      if (inBlock) { html += '</p>'; inBlock = false; }
-      html += `<h2 class="lv-h2">${esc(trim)}</h2>`;
+      flushP();
+      // Agrupar título + posible subtítulo inmediato
+      let titleText = trim;
+      if (i + 1 < lines.length) {
+        const next = lines[i + 1].trim();
+        if (next && isHeading(next) === false && next.length < 120 && next === next.toUpperCase()) {
+          titleText += ' — ' + next;
+          i++;
+        }
+      }
+      html += `<h2 class="lv-h2">${esc(titleText)}</h2>`;
     } else if (hType === 'h3') {
-      if (inBlock) { html += '</p>'; inBlock = false; }
+      flushP();
       html += `<h3 class="lv-h3">${esc(trim)}</h3>`;
     } else if (hType === 'article') {
-      if (inBlock) { html += '</p>'; inBlock = false; }
-      const m = trim.match(/^((?:Artículo|ARTÍCULO|Art\.)\s+\d+[\w°\.]*\.?)\s*(.*)/is);
-      if (m) {
-        html += `<div class="lv-article"><span class="lv-art-num">${esc(m[1])}</span> ${esc(m[2])}</div>`;
-      } else {
-        html += `<div class="lv-article">${esc(trim)}</div>`;
+      flushP();
+      // Capturar número + contenido del artículo (puede continuar en líneas siguientes)
+      const m = trim.match(/^((?:Art[ií]culo|ARTÍCULO|Art\.)\s+\d+[\w°º\.]*\.?)\s*([\s\S]*)/i);
+      let artNum  = m ? m[1] : trim;
+      let artBody = m ? m[2].trim() : '';
+      // Absorber líneas de continuación del artículo (no vacías, no otro encabezado)
+      while (i + 1 < lines.length) {
+        const next = lines[i + 1].trim();
+        if (!next) break;                     // línea vacía = fin del artículo
+        if (isHeading(next)) break;           // nuevo encabezado = fin del artículo
+        artBody += (artBody ? ' ' : '') + next;
+        i++;
       }
+      html += `<div class="lv-article"><span class="lv-art-num">${esc(artNum)}.</span> ${esc(artBody)}</div>`;
     } else {
-      if (!inBlock) { html += '<p class="lv-p">'; inBlock = true; }
-      else html += ' ';
-      html += esc(trim);
+      // Párrafo normal: acumular líneas
+      pendingLines.push(trim);
+      // Si la siguiente línea es vacía o un encabezado, cerrar el párrafo
+      const nextTrim = (lines[i + 1] || '').trim();
+      if (!nextTrim || isHeading(nextTrim)) flushP();
     }
   }
-  if (inBlock) html += '</p>';
+  flushP();
   return html;
 }
 
