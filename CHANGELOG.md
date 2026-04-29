@@ -6,6 +6,138 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v2.0.3 — 2026-04-29 *(versión en pantalla: v2.0.3)*
+
+### Corregido — Nuevo redespliegue GAS + URL actualizada
+
+- **Nueva implementación GAS desplegada con todos los fixes de v2.0.2.**
+  - *URL anterior*: `AKfycbyOqjK7__KX5jFaDjkPWfniXZmmynhEZldWy3-7JSeJOSj7s7WYpWAn0dAp4iy-6hD0`
+  - *URL nueva*: `AKfycbyshdDbG8QbxLbXoSrX8Dw0Ege5u1nb7bcVOF5WfRPCsGJKFGmkWk91SwC5CpuDU-7g`
+  - *Fixes activos en producción*: mimetype map, `total_documentos` filter, `estado` filter para LEXIUS, `corregirClasificacionTipos()` fix.
+
+- **URL actualizada en 15 archivos**: `CLAUDE.md`, `index.html`, `CHANGELOG.md`, `buscador/gas_uploader.py`, `prompts/orquestador.md`, 9 prompts de sub-agentes, plan de implementación.
+
+- **Descubierto: GitHub Pages sirve desde rama `pages`, no `main`.**
+  - *Fix*: `index.html` subido a la rama `pages` (commit `e9bcc53`) para que el sitio refleje los cambios.
+  - *Regla nueva*: Cambios a `index.html` deben pushearse a **ambas** ramas: `main` (fuente de verdad) y `pages` (sitio live).
+  - *Verificado*: `https://itovzla.github.io/EL-JURISTA/` muestra v2.0.3 y URL GAS correcta.
+
+---
+
+## v2.0.2 — 2026-04-29 *(versión en pantalla: v2.0.2)*
+
+### Corregido — MarkItDown + mimetype + total_documentos
+
+- **MarkItDown integrado** en el pipeline de ingesta (`buscador/base.py`).
+  - `extraer_texto()` usa MarkItDown para PDF/DOCX; decode directo para TXT/MD.
+  - `DocumentoDescargado.__post_init__` auto-extrae texto si no fue provisto.
+  - *Motivo*: Eliminar dependencia de NotebookLM (sin API pública). MarkItDown convierte localmente sin costo de tokens.
+
+- **Script `ingestar_pdf.py`** — ingesta masiva de PDFs/DOCX/TXT a EL JURISTA.
+  - Infiere metadatos del nombre de archivo (convención `MATERIA_TIPO_AUTOR_AÑO_SLUG`).
+  - Soporta `--dry-run`, `--materia`, `--tipo`, `--autor`, `--año`, `--sub-materia`, `--delay`.
+  - Usa MarkItDown para extracción + `GASUploader.subir_lote()`.
+
+- **`gas/Code.gs` — mimetype corregido** en `subirDocumento()`.
+  - *Fix*: `application/pdf` hardcodeado → `mimeMap` con pdf/txt/md/html/docx/doc.
+  - *Motivo*: Archivos `.txt` y `.md` se guardaban en Drive con tipo PDF incorrecto.
+
+- **`gas/Code.gs` — `total_documentos` corregido** en `subirDocumento()` y `eliminarDocumento()`.
+  - *Fix*: `filter(d => d.estado === 'activo')` → `filter(d => !d.estado || d.estado === 'activo')`.
+  - *Motivo*: El contador excluía los 3,104 docs LEXIUS (sin campo `estado`), mostrando 0 docs activos.
+
+- **`buscador/base.py` — fixes menores en `DocumentoDescargado`**:
+  - `if val:` → `if val is not None:` en `to_gas_payload()` (campos vacíos ahora se incluyen correctamente).
+  - Off-by-one en `_generar_resumen()`: `len(palabras) == 80` ya no agrega `"..."` innecesario.
+  - `except ValueError: raise` antes del except general en `GASUploader` (errores GAS no se reintentan).
+
+> ⚠️ **Acción requerida**: Redeplegar el GAS en Apps Script para activar los fixes de mimetype y `total_documentos` en producción.
+
+---
+
+## v2.0.1 — 2026-04-29 *(versión en pantalla: v2.0.0)*
+
+### Corregido — Redespliegue GAS + URL actualizada en todo el sistema
+
+- **Nueva implementación GAS desplegada.**
+  - *URL anterior*: `AKfycbwqBKBEBPXLLt1HN8kf3l7HPr_pp0rdI8MNogAWjqDfLeUGwV2q99kEUbNNnYUkjuL_`
+  - *URL nueva*: `AKfycbyshdDbG8QbxLbXoSrX8Dw0Ege5u1nb7bcVOF5WfRPCsGJKFGmkWk91SwC5CpuDU-7g`
+  - *Motivo*: Redespliegue necesario para activar los fixes de v2.0.0 en producción (filtro `estado`, bug `pushToGitHub`, URL real en prompts).
+
+- **URL actualizada en 14 archivos** (bulk replace automático): `CLAUDE.md`, `prompts/orquestador.md`, 9 prompts de sub-agentes, `buscador/gas_uploader.py`, `index.html`, plan de implementación.
+
+- **`orquestador.md`**: URL del GAS inline en instrucción de arranque y protocolos de profundidad corregida. Línea duplicada eliminada.
+
+---
+
+## v2.0.0 — 2026-04-29 *(versión en pantalla: v2.0.0)*
+
+### Añadido — Sub-Agente Buscador multi-fuente
+
+- **Módulo `buscador/`** con clase base `BaseScraper` y 3 scrapers: TSJ, Asamblea Nacional, LEXIUS.
+  - *Motivo*: Cerrar el loop de alimentación de la BD — el sistema puede buscar y descargar documentos directamente desde fuentes oficiales sin depender solo de carga manual.
+  - *Fuentes*: `historico.tsj.gob.ve` (sentencias), `asambleanacional.gob.ve` (leyes), `appvenezuela.lexius.io` (legislación completa con autenticación Chrome).
+  - *Integración*: `GASUploader` llama a `POST /subir` del GAS — los documentos quedan en Drive + jurista_index.json + GitHub automáticamente.
+
+- **CLI `buscador_cli.py`** — interfaz de línea de comandos unificada.
+  - `python buscador_cli.py tsj --sala social --año 2025 --q "accidente laboral" --max 10`
+  - `python buscador_cli.py an --q "trabajo" --max 5`
+  - `--dry-run` para previsualizar sin subir al GAS.
+
+- **System prompt `prompts/sub_agentes/buscador.md`** — agente transversal que el Orquestador invoca cuando el índice no tiene suficientes fuentes para una consulta.
+
+---
+
+## v1.9.0 — 2026-04-29 *(versión en pantalla: v1.9.0)*
+
+### Añadido — 125 sentencias reales SCS/TSJ 2026 ingresadas al índice
+
+- **Ingestión completa de la jurisprudencia SCS 2026 desde LEXIUS_DB.**
+  - *Fuente*: 125 archivos HTML en `LEXIUS_DB/Jurisprudencia/Sala Social/2026/`, descargados de LEXIUS Venezuela.
+  - *Contenido*: Sentencias reales del Tribunal Supremo de Justicia, Sala de Casación Social, año 2026. Expedientes de 2019-2026. Magistrados ponentes: Edgar Gavidia Rodríguez, Carlos Alexis Castillo Ascanio, Elías Rubén Bittar Escalona.
+  - *Procedimientos cubiertos*: Recurso de Casación, Recurso de Control de la Legalidad, Apelación, Nulidad, entre otros.
+  - *Total nuevo en índice*: **3,104 documentos** (era 2,979).
+  - *Commit GitHub*: `8eadaf221667` — "feat: +125 sentencias SCS/TSJ 2026 (total: 3104 docs) v1.9.0".
+
+- **125 archivos .txt exportados a `EL_JURISTA_DB/Laboral_Venezuela/Jurisprudencia/`.**
+  - *Formato*: Header con metadatos (expediente, fecha, ponente, partes, dispositivo) + texto completo del fallo en párrafos limpios.
+  - *Convención de nombres*: `LABORAL_SENT_SCS_{AÑO}_exp{EXP}_nro{NRO}.txt`.
+  - *Corrección de encoding*: Extracción por `<p>` tags para preservar párrafos y caracteres especiales (tildes, Ñ) sin fragmentación.
+
+- **Campos nuevos en cada entrada de sentencia SCS:**
+  - `sala`: `"Sala de Casación Social"`
+  - `nro_sentencia`: número de la sentencia TSJ
+  - `expediente`: código del expediente (e.g. `25-352`)
+  - `ponente`: magistrado ponente
+  - `procedimiento`: tipo de recurso
+  - `partes`: descripción de las partes procesales
+  - `resultado`: `con_lugar` / `sin_lugar` / `inadmisible` / `nulidad` / `sustanciacion_concluida` / `ver_texto`
+
+---
+
+## v1.8.2 — 2026-04-29 *(versión en pantalla: v1.8.2)*
+
+### Corregido — 181 documentos mal clasificados como tipo="sentencia"
+
+- **Reclasificación masiva de 181 docs en el índice GitHub Pages.**
+  - *Causa*: El scraper LEXIUS procesó la carpeta `Jurisprudencia/` y etiquetó todos los documentos como `tipo: "sentencia"`. Dicha carpeta contenía documentos mixtos (actas constitutivas, actos legislativos, resoluciones ministeriales, contratos, autos decisorios, carteles de emplazamiento, etc.) que no son sentencias judiciales reales.
+  - *Detección*: Test integral del Sub-Agente Constitucional — al revisar las 111 "sentencias constitucionales" se encontraron actas de constitución de salas, actos legislativos de la AN y balances del BCV.
+  - *Fix*: Script Python de reclasificación por patrones de título aplicado sobre el índice GitHub. 181 docs corregidos. Sentencias reales: 115 (de 296 originales).
+  - *Distribución de tipos nuevos*: `legislacion` +120 · `auto_procesal` +19 · `resolucion` +14 · `acta` +13 · `contrato` +11 · `acto_legislativo` +4.
+  - *Commit GitHub*: `61e844451853...` — "v1.8.2: Corrección de 181 documentos mal clasificados como sentencia".
+
+- **Función `corregirClasificacionTipos()` añadida a `gas/Code.gs`.**
+  - *Propósito*: Aplicar las mismas 181 correcciones sobre la versión canónica en Drive (que tiene `resumen` y `fragmentos_clave`). Ejecutar UNA VEZ desde el editor GAS.
+
+- **Nuevos valores de `tipo` en el esquema del índice:**
+  - `resolucion` — resoluciones ministeriales y autos decisorios administrativos
+  - `acta` — actas constitutivas, estatutos sociales
+  - `contrato` — contratos, addenda de encomienda
+  - `auto_procesal` — carteles de citación/emplazamiento, exhortos
+  - `acto_legislativo` — actos legislativos de la AN, convocatorias
+
+---
+
 ## v1.8.1 — 2026-04-29 *(versión en pantalla: v1.8.1)*
 
 ### Corregido — Base de datos vacía al cargar desde CDN
