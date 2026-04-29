@@ -6,6 +6,25 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.8.0 — 2026-04-29 *(versión en pantalla: v1.8.0)*
+
+### Añadido — Optimización de rendimiento: caché multi-capa + CDN
+
+- **Caché del índice en `localStorage` (stale-while-revalidate, TTL 30 min).**
+  - *Motivo*: La carga inicial requería una llamada GAS que tarda 2-5s por cold start + lectura de 5.8MB desde Drive. En cada visita se recargaba completamente.
+  - *Fix*: Al abrir la app, si el caché es válido (<30 min), los 2,979 docs se renderizan **instantáneamente** desde `localStorage`. Luego se refresca silenciosamente en background.
+- **Índice servido desde GitHub Pages CDN (Fastly) en lugar de GAS.**
+  - *Motivo*: GAS tiene cold start inherente de 1-3s. El mismo `jurista_index.json` ya está replicado en GitHub Pages donde es servido por CDN sin cold start.
+  - *Fix*: `fetchIndex()` usa `https://itovzla.github.io/EL-JURISTA/data/jurista_index.json` como fuente primaria, con GAS como fallback automático si falla.
+- **Textos de documentos persistidos en `sessionStorage`.**
+  - *Motivo*: `textCache` era un `Map` en memoria que se perdía al recargar la página. Cualquier refresh obligaba a re-fetch del texto desde GAS.
+  - *Fix*: `saveTextCache(id, text)` guarda en memoria **y** en `sessionStorage`. `loadTextCache(id)` consulta ambas capas. Documentos ya leídos en la sesión se abren instantáneamente incluso después de un refresh.
+- **Skeleton animado para el visor de PDFs.**
+  - *Motivo*: Al abrir un PDF con iframe de Drive, la pantalla aparecía en blanco sin indicador de carga.
+  - *Fix*: Se muestra un skeleton pulsante mientras carga el iframe. Al dispararse `onload`, el skeleton desaparece con transición y el PDF aparece con fade-in.
+
+---
+
 ## v1.7.5 — 2026-04-29 *(versión en pantalla: v1.7.5)*
 
 ### Corregido — Regresión en openDocView() al abrir documentos
