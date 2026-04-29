@@ -232,6 +232,7 @@
     z-index: 200; display: none;
   }
   @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  @keyframes skelPulse { 0%,100%{background-position:200% 0} 50%{background-position:-200% 0} }
   .loading-bar.show { display: block; }
 
   .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
@@ -615,7 +616,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.7.5</span>
+    <span class="version-badge" id="versionBadge">v1.8.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -1039,16 +1040,31 @@ function openDocView(id) {
   const isBinary = d.drive_id && (ext === 'pdf' || ext === 'docx' || ext === 'doc');
   if (isBinary) {
     document.getElementById('vpContent').innerHTML =
-      `<iframe src="https://drive.google.com/file/d/${d.drive_id}/preview"
-         style="width:100%;height:82vh;border:none;border-radius:8px"></iframe>`;
+      `<div id="pdfSkeleton" style="
+           width:100%;height:82vh;border-radius:8px;
+           background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);
+           background-size:200% 100%;animation:skelPulse 1.5s ease infinite;
+           display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+         <div style="font-size:28px">📄</div>
+         <div style="font-size:13px;color:var(--text-muted)">Cargando documento…</div>
+       </div>
+       <iframe src="https://drive.google.com/file/d/${d.drive_id}/preview"
+         onload="var s=document.getElementById('pdfSkeleton');if(s)s.remove();this.style.opacity='1'"
+         style="width:100%;height:82vh;border:none;border-radius:8px;
+                position:absolute;top:0;left:0;opacity:0;transition:opacity .4s"
+       ></iframe>`;
+    // Wrap en posición relativa para que el iframe superponga el skeleton
+    document.getElementById('vpContent').style.cssText += ';position:relative;';
     return;
   }
 
   // ── TXT / LEXIUS / drive_id desconocido: intentar texto siempre ──
   // GAS tiene la info completa del índice aunque allDocs no la tenga aún.
   // Caché cliente primero.
-  if (textCache.has(id)) {
-    _renderDocText(id, textCache.get(id));
+  // Intentar caché antes de ir a la red (memoria → sessionStorage)
+  const cachedText = loadTextCache(id);
+  if (cachedText !== null) {
+    _renderDocText(id, cachedText);
     return;
   }
 
@@ -1063,7 +1079,7 @@ function openDocView(id) {
     .then(r => r.json())
     .then(td => {
       if (td.error) throw new Error(td.error);
-      textCache.set(id, td.texto || ''); // guardar para reaperturas instantáneas
+      saveTextCache(id, td.texto || ''); // guardar en memoria + sessionStorage
       _renderDocText(id, td.texto || '');
     })
     .catch(err => {
@@ -1089,16 +1105,89 @@ function _renderDocText(id, texto) {
 }
 
 // ── CACHÉ CLIENTE ─────────────────────────────────────────────
-// Evita re-llamar al GAS si el doc ya fue abierto en esta sesión
-const textCache = new Map(); // id → texto plano
+// textCache: Map en memoria (rápido, descartado al recargar)
+// sessionStorage: persiste durante la sesión del navegador
+// localStorage: persiste entre sesiones (solo para el índice)
+
+const textCache = new Map(); // id → texto plano (sesión actual)
+
+const IDX_CACHE_KEY = 'elj_idx_v2';
+const IDX_CACHE_TS  = 'elj_idx_ts_v2';
+const IDX_CACHE_TTL = 30 * 60 * 1000;   // 30 minutos
+const TEXT_SS_PFX   = 'elj_txt_';        // prefijo sessionStorage
+// URL CDN de GitHub Pages (mucho más rápido que GAS al no tener cold start)
+const GITHUB_INDEX  = 'https://itovzla.github.io/EL-JURISTA/data/jurista_index.json';
+
+// ── Index cache (localStorage, 30 min TTL) ──────────────────
+function loadIndexCache() {
+  try {
+    const ts = parseInt(localStorage.getItem(IDX_CACHE_TS) || '0');
+    if (Date.now() - ts > IDX_CACHE_TTL) return null;
+    const raw = localStorage.getItem(IDX_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+function saveIndexCache(docs) {
+  try {
+    localStorage.setItem(IDX_CACHE_KEY, JSON.stringify(docs));
+    localStorage.setItem(IDX_CACHE_TS, String(Date.now()));
+  } catch(e) { /* storage lleno, no bloqueante */ }
+}
+
+// ── Text cache (memoria + sessionStorage) ───────────────────
+function loadTextCache(id) {
+  if (textCache.has(id)) return textCache.get(id);
+  try {
+    const ss = sessionStorage.getItem(TEXT_SS_PFX + id);
+    if (ss) { textCache.set(id, ss); return ss; }
+  } catch(e) {}
+  return null;
+}
+function saveTextCache(id, text) {
+  textCache.set(id, text);
+  try { sessionStorage.setItem(TEXT_SS_PFX + id, text); } catch(e) { /* silent */ }
+}
+
+// ── fetchIndex: CDN (GitHub Pages) → GAS fallback ───────────
+async function fetchIndex() {
+  // 1. Intentar GitHub Pages CDN (sin cold start, servido por Fastly CDN)
+  try {
+    const r = await fetch(GITHUB_INDEX);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    return (data.documentos || [])
+      .filter(d => d.estado === 'activo')
+      .map(d => ({
+        id:             d.id,
+        drive_id:       d.drive_id       || '',
+        nombre_archivo: d.nombre_archivo || '',
+        lexius_file:    d.lexius_file    || '',
+        titulo:         d.titulo,
+        materia:        d.materia,
+        sub_materia:    d.sub_materia    || '',
+        tipo:           d.tipo,
+        autor:          d.autor,
+        año:            d.año,
+        tags:           d.tags,
+        vigencia:       d.vigencia,
+        cita_formal:    d.cita_formal    || '',
+        fecha_ingesta:  d.fecha_ingesta  || '',
+      }));
+  } catch(e) {
+    // 2. Fallback: GAS (más lento, pero siempre disponible)
+    const r   = await fetch(GAS + '?path=indice/resumen');
+    const raw = await r.json();
+    return Array.isArray(raw) ? raw : (raw.documentos || []);
+  }
+}
 
 // Prefetch al hacer hover 400ms sobre un título
 let _prefetchTimer = null;
 function prefetchDoc(id) {
-  if (textCache.has(id)) return;
+  if (loadTextCache(id)) return;
   clearTimeout(_prefetchTimer);
   _prefetchTimer = setTimeout(() => {
-    if (textCache.has(id)) return;
+    if (loadTextCache(id)) return;
     const d = allDocs.find(x => x.id === id);
     if (!d) return;
     const ext = (d.nombre_archivo || '').split('.').pop().toLowerCase();
@@ -1106,7 +1195,7 @@ function prefetchDoc(id) {
     if (!d.drive_id && !d.nombre_archivo && !d.lexius_file) return;
     fetch(GAS + '?path=documento/texto&id=' + encodeURIComponent(id))
       .then(r => r.json())
-      .then(td => { if (!td.error && td.texto) textCache.set(id, td.texto); })
+      .then(td => { if (!td.error && td.texto) saveTextCache(id, td.texto); })
       .catch(() => {});
   }, 400);
 }
@@ -1649,15 +1738,52 @@ if (localStorage.getItem('jurista_auth') === CLAVE) {
   window.addEventListener('load', init);
 }
 
-// ── INIT ─────────────────────────────────────────────────────
+// ── INIT (stale-while-revalidate) ────────────────────────────
+// Estrategia:
+//   1. Si hay caché localStorage válida (<30 min) → render inmediato
+//      + refresca en background silenciosamente
+//   2. Sin caché → fetchIndex() (CDN → GAS fallback) con loading bar
 async function init() {
+  const cached = loadIndexCache();
+
+  if (cached && cached.length) {
+    // ── Render inmediato desde caché ──────────────────────────
+    allDocs  = cached;
+    filtered = [...allDocs];
+    document.getElementById('totalDocs').textContent = allDocs.length.toLocaleString('es');
+    renderTable();
+    renderDashboard();
+    loading(false);
+    toast('📚 ' + allDocs.length.toLocaleString('es') + ' docs cargados (caché)', 'ok');
+
+    // Refresco silencioso en background
+    fetchIndex()
+      .then(fresh => {
+        if (!fresh || !fresh.length) return;
+        saveIndexCache(fresh);
+        // Solo re-renderizar si el contenido cambió
+        if (fresh.length !== allDocs.length ||
+            (fresh[0] && allDocs[0] && fresh[0].id !== allDocs[0].id)) {
+          allDocs  = fresh;
+          filtered = [...allDocs];
+          document.getElementById('totalDocs').textContent = allDocs.length.toLocaleString('es');
+          renderTable();
+          renderDashboard();
+          toast('🔄 Índice actualizado: ' + fresh.length.toLocaleString('es') + ' docs', 'ok');
+        }
+      })
+      .catch(() => { /* silent — usamos caché */ });
+    return;
+  }
+
+  // ── Sin caché: carga inicial ───────────────────────────────
   loading(true);
   try {
-    const r = await fetch(GAS + '?path=indice/resumen');
-    const data = await r.json();
-    allDocs = Array.isArray(data) ? data : (data.documentos || []);
-    document.getElementById('totalDocs').textContent = allDocs.length.toLocaleString('es');
+    const docs = await fetchIndex();
+    allDocs  = docs;
+    saveIndexCache(docs);
     filtered = [...allDocs];
+    document.getElementById('totalDocs').textContent = allDocs.length.toLocaleString('es');
     renderTable();
     renderDashboard();
     loading(false);
@@ -1671,7 +1797,7 @@ async function init() {
         <p style="font-size:12px;margin-top:8px;color:#666">Verifica que el GAS esté desplegado y el índice tenga documentos.</p>
         <button class="btn-secondary" style="margin-top:16px" onclick="init()">Reintentar</button>
       </div>`;
-    toast('⚠️ Error al conectar con GAS', 'err');
+    toast('⚠️ Error al cargar el índice', 'err');
   }
 }
 
@@ -1827,7 +1953,7 @@ function renderDashboard() {
     </div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA (rama main)</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am Venezuela)</div>
-    <div>🟢 <strong>Web App</strong> — v1.7.5 · GitHub Pages activo</div>
+    <div>🟢 <strong>Web App</strong> — v1.8.0 · GitHub Pages activo · caché CDN activo</div>
     <div>🟡 <strong>Sub-Agentes</strong> — 9 prompts completados · pendiente alimentar con jurisprudencia/doctrina</div>
     <div>🟢 <strong>Ingesta</strong> — Subida manual + scraper URL activos</div>`;
 }
