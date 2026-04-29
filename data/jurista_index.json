@@ -1,12 +1,12 @@
 {
   "version": "1.1",
-  "ultima_actualizacion": "2026-04-29T01:25:58.207Z",
+  "ultima_actualizacion": "2026-04-29T14:29:17.427Z",
   "total_documentos": 2979,
   "fuente": "LEXIUS Venezuela - Base de datos completa",
   "documentos": [
     {
       "id": "0230856f-19fa-4e26-8fba-71b87f4dfeea",
-      "drive_id": null,
+      "drive_id": "1GpjUkai9Y9UaNxBv_LY35p2TbM0v95L-",
       "titulo": "Constitución de Venezuela 1999",
       "materia": "Constitucional",
       "sub_materia": "Legislacion",
@@ -25,8 +25,12 @@
         "constitución",
         "constitucional"
       ],
-      "resumen": "Constitución Venezuela 1999 ASAMBLEA NACIONAL CONSTITUYENTE nombre representación del pueblo soberano Venezuela, ejercicio del poder constituyente originario otorgado por éste mediante referendo aprobado democráticamente veinticinco abril mil novecientos noventa nueve, para transformar Estado crear nuevo ordenamiento jurídico que permita funcionamiento efectivo una democracia social participativa, concordancia con Artículo del Estatuto Funcionamiento",
-      "fragmentos_clave": [],
+      "resumen": "Constitución de la República Bolivariana de Venezuela 1999 ASAMBLEA NACIONAL CONSTITUYENTE En nombre y representación del pueblo soberano de Venezuela, en ejercicio del poder constituyente originario otorgado por éste mediante referendo aprobado democráticamente el veinticinco de abril de mil novecientos noventa y nueve, para transformar el Estado y crear un nuevo ordenamiento jurídico que permita el funcionamiento efectivo de una democracia social y participativa, y en concordancia con el Artículo 1 del Estatuto de Funcionamiento de la ASAMBLEA NACIONAL CONSTITUYENTE; CONSIDERANDO Que el día quince de diciembre de mil novecientos noventa y nueve el pueblo de Venezuela, mediante referendo constituyente,...",
+      "fragmentos_clave": [
+        "En nombre y representación del pueblo soberano de Venezuela, en ejercicio del poder constituyente originario otorgado por éste mediante referendo aprobado democráticamente el veinticinco de abril de mil novecientos noventa y nueve, para transformar el Estado y crear un nuevo ordenamiento jurídico qu",
+        "Que el día quince de diciembre de mil novecientos noventa y nueve el pueblo de Venezuela, mediante referendo constituyente, aprobó la Constitución de la República Bolivariana de Venezuela, la cual fue proclamada por la Asamblea Nacional Constituyente el día veinte de diciembre de mil novecientos nov",
+        "EXPOSICIÓN DE MOTIVOS DE LA CONSTITUCIÓN DE LA REPÚBLICA BOLIVARIANA DE VENEZUELA"
+      ],
       "cita_formal": "Constitución de Venezuela 1999.",
       "nombre_archivo": "CONSTITUCIONAL_LEY_-_1999_constitucion-de-venezuela-1999.txt",
       "lexius_file": "Legislación/Constitución/Constitución de Venezuela 1999.txt",
@@ -35,7 +39,7 @@
     },
     {
       "id": "f6aa623e-1e91-4fb4-b354-3d6d0ae91202",
-      "drive_id": null,
+      "drive_id": "1WSl6TGY9wLZGEAyr6vyo0z0uf8cSoDA8",
       "titulo": "Código Civil",
       "materia": "Civil",
       "sub_materia": "Legislacion",
@@ -54,8 +58,12 @@
         "códigos",
         "civil"
       ],
-      "resumen": "Código Civil1982 Gaceta Oficial 2.990 fecha julio 1982) CÓDIGO CIVIL Título Preliminar las leyes sus efectos las reglas generales para Aplicación Artículo Ley obligatoria desde publicación Gaceta Oficial desde fecha posterior que ella misma indique. Artículo ignorancia Ley excusa cumplimiento. Artículo Ley tiene efecto retroactivo. Artículo Ley debe atribuírsele sentido que aparece evidente del significado propio las palabras, según conexión ellas entre intención del legislador. Cuando hubiere d",
-      "fragmentos_clave": [],
+      "resumen": "Código Civil1982 CÓDIGO CIVIL TÍTULO PRELIMINAR De las leyes y sus efectos y de las reglas generales para su Aplicación Artículo 1. La Ley es obligatoria desde su publicación en la Gaceta Oficial o desde la fecha posterior que ella misma indique. Artículo 2. La ignorancia de la Ley no excusa de su cumplimiento. Artículo 3. La Ley no tiene efecto retroactivo. Artículo 4. A la Ley debe atribuírsele el sentido que aparece evidente del significado propio de las palabras, según la conexión de ellas entre sí y la intención del legislador. Cuando no hubiere disposición precisa de la Ley,...",
+      "fragmentos_clave": [
+        "Artículo 1. La Ley es obligatoria desde su publicación en la Gaceta Oficial o desde la fecha posterior que ella misma indique.",
+        "Artículo 4. A la Ley debe atribuírsele el sentido que aparece evidente del significado propio de las palabras, según la conexión de ellas entre sí y la intención del legislador. Cuando no hubiere disposición precisa de la Ley, se tendrán en consideración las disposiciones que regulan casos semejante",
+        "Artículo 6. No pueden renunciarse ni relajarse por convenios particulares las leyes en cuya observancia están interesados el orden público o las buenas costumbres."
+      ],
       "cita_formal": "Código Civil1982.",
       "nombre_archivo": "CIVIL_LEY_-_1982_codigo-civil1982.txt",
       "lexius_file": "Legislación/Códigos/Código Civil1982.txt",
@@ -67,12 +75,12 @@
     {
       "id": "859fcfae-0469-4918-a826-ad6a0dda1547",
       "drive_id": null,
-      "titulo": "Código Orgánico Penitenciario2021",
+      "titulo": "Código Orgánico Penitenciario",
       "materia": "Penal",
       "sub_materia": "Legislacion",
       "tipo": "legislacion",
       "autor": "-",
-      "año": null,
+      "año": 2021,
       "editorial": null,
       "isbn": null,
       "sala": null,
@@ -91,7 +99,9 @@
       "nombre_archivo": "PENAL_LEY_-_-_codigo-organico-penitenciario2021.txt",
       "lexius_file": "Legislación/Códigos/Código Orgánico Penitenciario2021.txt",
       "fecha_ingesta": "2026-04-28",
-      "estado": "activo"
+      "estado": "activo",
+      "gaceta_oficial": "",
+      "fecha_gaceta": ""
     },
     {
       "id": "5857ebf1-afc7-4357-91b6-7d93726405bc",
