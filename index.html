@@ -616,7 +616,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.8.0</span>
+    <span class="version-badge" id="versionBadge">v1.8.1</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -1156,7 +1156,7 @@ async function fetchIndex() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     return (data.documentos || [])
-      .filter(d => d.estado === 'activo')
+      .filter(d => !d.estado || d.estado === 'activo')  // incluir docs sin campo estado (LEXIUS)
       .map(d => ({
         id:             d.id,
         drive_id:       d.drive_id       || '',
@@ -1746,6 +1746,11 @@ if (localStorage.getItem('jurista_auth') === CLAVE) {
 async function init() {
   const cached = loadIndexCache();
 
+  // Caché vacío o corrupto → ignorar y recargar
+  if (cached !== null && !cached.length) {
+    try { localStorage.removeItem(IDX_CACHE_KEY); localStorage.removeItem(IDX_CACHE_TS); } catch(e) {}
+  }
+
   if (cached && cached.length) {
     // ── Render inmediato desde caché ──────────────────────────
     allDocs  = cached;
@@ -1953,7 +1958,7 @@ function renderDashboard() {
     </div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA (rama main)</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am Venezuela)</div>
-    <div>🟢 <strong>Web App</strong> — v1.8.0 · GitHub Pages activo · caché CDN activo</div>
+    <div>🟢 <strong>Web App</strong> — v1.8.1 · GitHub Pages activo · caché CDN activo</div>
     <div>🟡 <strong>Sub-Agentes</strong> — 9 prompts completados · pendiente alimentar con jurisprudencia/doctrina</div>
     <div>🟢 <strong>Ingesta</strong> — Subida manual + scraper URL activos</div>`;
 }
