@@ -19,7 +19,7 @@ const CONFIG = {
   INDEX_FILE_NAME:  'jurista_index.json',
   BACKUPS_ID:       '1BVUD0NZgE5hKYNoPJxY57ZjO6YX2fqIS', // carpeta "_BACKUPS"
   MAX_BACKUPS:      4,
-  GITHUB_TOKEN:     '[GITHUB_TOKEN - ver Credenciales.rtf en Drive]',
+  GITHUB_TOKEN:     '[GITHUB_TOKEN — ver CLAUDE.md en Drive]',
   GITHUB_REPO:      'ItoVzla/EL-JURISTA',
   GITHUB_BRANCH:    'main',
   GITHUB_INDEX_PATH:'data/jurista_index.json',
@@ -68,11 +68,12 @@ function doPost(e) {
   try {
     const body = e.postData ? JSON.parse(e.postData.contents) : {};
 
-    if (path === 'subir')          return jsonResponse(subirDocumento(body));
-    if (path === 'clasificar')     return jsonResponse(clasificarDocumento(body));
-    if (path === 'eliminar')       return jsonResponse(eliminarDocumento(body));
-    if (path === 'scrape')         return jsonResponse(scrapeUrl(body));
-    if (path === 'indice/update')  return jsonResponse(actualizarDocMeta(body));
+    if (path === 'subir')                   return jsonResponse(subirDocumento(body));
+    if (path === 'clasificar')              return jsonResponse(clasificarDocumento(body));
+    if (path === 'eliminar')                return jsonResponse(eliminarDocumento(body));
+    if (path === 'scrape')                  return jsonResponse(scrapeUrl(body));
+    if (path === 'indice/update')           return jsonResponse(actualizarDocMeta(body));
+    if (path === 'documento/texto/update')  return jsonResponse(actualizarTextoDocumento(body));
     return jsonResponse({ error: 'Endpoint no encontrado', path: path }, 404);
   } catch (err) {
     return jsonResponse({ error: err.message }, 500);
@@ -677,6 +678,91 @@ function actualizarDocMeta(body) {
     index.documentos[i].materia);
 
   return { success: true, doc: index.documentos[i] };
+}
+
+
+// ─────────────────────────────────────────────
+// POST /documento/texto/update
+// Sobreescribe el archivo .txt en Drive con el
+// texto editado por el usuario.
+// Body: { id: UUID, texto: string }
+// ─────────────────────────────────────────────
+function actualizarTextoDocumento(body) {
+  if (!body.id) throw new Error('Campo id requerido');
+  if (body.texto === undefined || body.texto === null) throw new Error('Campo texto requerido');
+
+  const texto = String(body.texto);
+  const index = leerIndex();
+  const doc   = index.documentos.find(d => d.id === body.id);
+  if (!doc) throw new Error('Documento no encontrado en índice: ' + body.id);
+
+  let file = null;
+
+  // 1. Si tiene drive_id, intentar directamente
+  if (doc.drive_id) {
+    try {
+      const f    = DriveApp.getFileById(doc.drive_id);
+      const mime = f.getMimeType();
+      if (mime === 'text/plain' || mime === 'application/octet-stream') {
+        file = f;
+      } else {
+        throw new Error(
+          'Este documento es un ' + mime + '. Solo se pueden editar archivos de texto (.txt) directamente. ' +
+          'Los PDFs deben reemplazarse en Drive.'
+        );
+      }
+    } catch (e) {
+      if (e.message.startsWith('Este documento es')) throw e;
+      // drive_id inválido — fallback a búsqueda por nombre
+    }
+  }
+
+  // 2. Si no hay drive_id válido, buscar el archivo por nombre
+  if (!file) {
+    let searchName = '';
+    if (doc.lexius_file) {
+      const parts = doc.lexius_file.split('/');
+      searchName  = parts[parts.length - 1];
+    }
+    if (!searchName && doc.nombre_archivo) searchName = doc.nombre_archivo;
+    if (!searchName) throw new Error('El documento no tiene archivo .txt asociado — agrega el archivo a Drive primero.');
+
+    let files = DriveApp.getFilesByName(searchName);
+    if (!files.hasNext()) {
+      const sinExt    = searchName.replace(/\.[^.]+$/, '');
+      const fragmento = sinExt.substring(0, 60).replace(/"/g, '');
+      files = DriveApp.searchFiles('title contains "' + fragmento + '" and mimeType = "text/plain"');
+    }
+    if (!files.hasNext()) {
+      throw new Error('Archivo no encontrado en Drive: ' + searchName + '. Cárgalo primero en su carpeta de materia.');
+    }
+    file = files.next();
+  }
+
+  // Escribir el texto nuevo
+  file.setContent(texto);
+
+  // Actualizar drive_id en el índice si no lo tenía
+  if (!doc.drive_id) doc.drive_id = file.getId();
+
+  // Actualizar resumen y fragmentos_clave en el índice con el texto nuevo
+  doc.resumen          = generarResumen(texto);
+  doc.fragmentos_clave = extraerFragmentos(texto);
+  index.ultima_actualizacion = new Date().toISOString();
+
+  guardarIndex(index);
+  // No sincronizar a GitHub en cada edición de texto (demasiado lento)
+  // — se sincronizará en la próxima operación de índice normal
+
+  registrarDBChangelog('TEXTO_EDITADO', doc.nombre_archivo || doc.titulo, doc.materia);
+
+  return {
+    success:    true,
+    drive_id:   file.getId(),
+    titulo:     doc.titulo,
+    caracteres: texto.length,
+    message:    'Texto guardado correctamente en Drive.',
+  };
 }
 
 
