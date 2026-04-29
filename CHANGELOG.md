@@ -6,6 +6,37 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.7.0 — 2026-04-28 *(versión en pantalla: v1.7.0)*
+
+### Añadido — Editor de texto en el visor + Ingesta funcional + Sub-agentes completos
+
+- **Editor de texto en el visor de documento completo.**
+  - *Motivo*: Los textos scrapeados de LEXIUS pueden tener errores de estructura (epígrafes mal ubicados, líneas desordenadas, capítulos sin sentido). El usuario necesita corregirlos directamente sin ir a Drive.
+  - *Comportamiento*: Botón `✏️ Editar` aparece en la barra del visor cuando el contenido es texto (.txt / LEXIUS). Abre un modo de edición con `<textarea>` en fuente monoespaciada. Botón `💾 Guardar en Drive` envía el texto editado al nuevo endpoint GAS `POST /documento/texto/update`, que sobreescribe el archivo .txt en Drive y actualiza resumen y fragmentos_clave en el índice. Botón `👁 Vista` regresa sin guardar.
+
+- **Nuevo endpoint GAS `POST /documento/texto/update`** — función `actualizarTextoDocumento()`.
+  - Busca el archivo .txt en Drive por UUID del índice (usando drive_id o lexius_file como fallback).
+  - Solo permite editar archivos `.txt` (no PDFs — estos deben reemplazarse en Drive).
+  - Actualiza resumen y fragmentos_clave en el índice tras guardar.
+  - Registra la acción en DB_CHANGELOG con tipo `TEXTO_EDITADO`.
+
+- **Subida de archivos realmente funcional** (`submitUpload()`).
+  - *Motivo*: La función anterior solo mostraba un toast informativo sin enviar el archivo.
+  - *Fix*: Lee el archivo con `FileReader` → convierte a base64 → POST al GAS `/subir` con todos los metadatos del formulario. Refresca la tabla automáticamente al terminar.
+
+- **Importación por URL funcional** (`submitScrape()`).
+  - *Motivo*: La función enviaba un GET pero el GAS procesa el scrape en `doPost`.
+  - *Fix*: Cambiado a POST. Muestra extracto del texto, materia detectada y nombre de archivo guardado en Drive si aplica.
+
+- **System prompts completos para los 9 sub-agentes.**
+  - *Motivo*: Los stubs anteriores (~70 líneas) no eran operativos como system prompts de Claude.
+  - *Ahora*: Cada sub-agente tiene ~200-300 líneas con: rol detallado, instrucción de arranque con llamada al GAS, tabla de fuentes por jerarquía, reglas absolutas de citación, lógica de enrutamiento con tabla de temas, formato de respuesta con plantilla, tabla de normas/plazos/instituciones clave, protocolo de alimentación con lista de docs prioritarios, y limitaciones.
+  - *Sub-agentes completados*: Laboral · Probatorio · Constitucional · Civil · Mercantil · Penal · Procesal · Administrativo · Electoral
+
+- **Dashboard actualizado** con desglose por tipo de documento (legislación, sentencias, doctrina, convenios) y estado real del sistema v1.7.0.
+
+---
+
 ## v1.6.3 — 2026-04-28 *(versión en pantalla: v1.6.3)*
 
 ### Corregido — URL del GAS actualizada
