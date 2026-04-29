@@ -355,6 +355,109 @@
     .drawer { width: 100vw; }
   }
 
+  /* ── VISOR LEGAL (TXT) ──────────────────────── */
+  .legal-viewer {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 14.5px;
+    line-height: 1.85;
+    color: #dde2ee;
+    max-width: 100%;
+    padding-bottom: 32px;
+  }
+  .legal-viewer .lv-h2 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(201,162,39,.25);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  .legal-viewer .lv-h3 {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 20px 0 8px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  .legal-viewer .lv-article {
+    margin: 14px 0;
+    padding: 10px 14px;
+    background: rgba(255,255,255,.03);
+    border-left: 3px solid rgba(201,162,39,.4);
+    border-radius: 0 4px 4px 0;
+    line-height: 1.8;
+  }
+  .legal-viewer .lv-art-num {
+    font-weight: 700;
+    color: var(--gold);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+  }
+  .legal-viewer .lv-p {
+    margin: 0 0 14px;
+    text-align: justify;
+    hyphens: auto;
+    color: #ccd2e3;
+  }
+  .legal-viewer .lv-quote {
+    margin: 12px 0;
+    padding: 10px 16px;
+    border-left: 3px solid var(--accent);
+    background: rgba(74,127,165,.08);
+    border-radius: 0 4px 4px 0;
+    font-style: italic;
+    color: #b8c4d8;
+    font-size: 13.5px;
+  }
+
+  /* ── VIEWER PAGE (nueva pestaña) ──────────────── */
+  #viewerPage {
+    display: none;
+    min-height: 100vh;
+    background: var(--bg);
+  }
+  .viewer-topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .viewer-content {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 28px 80px;
+  }
+  .viewer-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.3;
+    font-family: 'Georgia', serif;
+  }
+  .viewer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .viewer-body {
+    /* hereda .legal-viewer */
+  }
+
   /* ── PENDING CLASSIFIER ──────────────────────────── */
   .pending-item {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -408,7 +511,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.4.1</span>
+    <span class="version-badge" id="versionBadge">v1.4.2</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -675,6 +778,28 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<!-- ─── VIEWER PAGE (nueva pestaña / ?doc=UUID) ───────────── -->
+<div id="viewerPage">
+  <div class="viewer-topbar">
+    <div style="display:flex;align-items:center;gap:10px;font-weight:700;
+                font-size:16px;color:var(--gold)">
+      <span>⚖️</span> EL JURISTA
+    </div>
+    <div id="vpBadges" style="display:flex;gap:6px;flex-wrap:wrap;margin-left:8px"></div>
+    <div style="margin-left:auto">
+      <button onclick="window.close()" class="logout-btn" style="font-size:12px">✕ Cerrar</button>
+    </div>
+  </div>
+  <div class="viewer-content">
+    <div id="vpLoading" class="drawer-spinner" style="height:200px">⏳ Cargando documento…</div>
+    <div id="vpBody" style="display:none">
+      <h1 class="viewer-title" id="vpTitle"></h1>
+      <div class="viewer-meta" id="vpMeta"></div>
+      <div class="legal-viewer viewer-body" id="vpContent"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 const GAS = 'https://script.google.com/macros/s/AKfycbzY1vIb6f_ZTU9Sa5NRTwov_03sbaaJod9McaaJTTS6OP8NeEGn-q4v6YUA1Zw-nHAc/exec';
 const CLAVE = 'ElJurista2026';
@@ -689,7 +814,7 @@ let selectedFile = null;
 function login() {
   const val = document.getElementById('keyInput').value;
   if (val === CLAVE) {
-    sessionStorage.setItem('jurista_auth', CLAVE);
+    localStorage.setItem('jurista_auth', CLAVE);
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     document.getElementById('app').style.flexDirection = 'column';
@@ -701,14 +826,90 @@ function login() {
   }
 }
 function logout() {
-  sessionStorage.removeItem('jurista_auth');
+  localStorage.removeItem('jurista_auth');
   location.reload();
 }
 document.getElementById('keyInput').addEventListener('keypress', e => { if(e.key==='Enter') login(); });
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeDrawer(); });
 
+// ── VIEWER EN NUEVA PESTAÑA ─────────────────────────────────
+function openDocNewTab(id) {
+  const url = location.origin + location.pathname + '?doc=' + encodeURIComponent(id);
+  window.open(url, '_blank');
+}
+
+// Handler: si la URL tiene ?doc=UUID, mostrar viewer de página completa
+(async function checkViewerMode() {
+  const params = new URLSearchParams(location.search);
+  const docId = params.get('doc');
+  if (!docId) return;
+
+  // Ocultar app principal, mostrar viewer
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('viewerPage').style.display = 'block';
+
+  try {
+    const r = await fetch(GAS + '?path=indice/doc&id=' + encodeURIComponent(docId));
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+
+    // Título
+    document.title = d.titulo + ' — El Jurista';
+    document.getElementById('vpTitle').textContent = d.titulo || '—';
+
+    // Badges
+    const MATERIA_MAP = {Constitucional:'Constitucional',Laboral_Venezuela:'Laboral',
+      Civil:'Civil',Mercantil:'Mercantil',Penal:'Penal',Administrativo:'Administrativo',
+      Procesal:'Procesal',Electoral:'Electoral',Derecho_Probatorio:'Probatorio'};
+    const badges = [
+      d.materia ? `<span class="badge badge-materia">${MATERIA_MAP[d.materia]||d.materia}</span>` : '',
+      d.tipo    ? `<span class="badge badge-tipo">${d.tipo}</span>` : '',
+      d.año     ? `<span class="badge" style="background:rgba(255,255,255,.06);color:var(--text-muted)">${d.año}</span>` : '',
+      d.vigencia? `<span class="badge" style="background:rgba(46,204,113,.12);color:var(--green)">${d.vigencia}</span>` : ''
+    ].filter(Boolean).join('');
+    document.getElementById('vpBadges').innerHTML = badges;
+
+    // Meta info
+    const tags = (d.tags||[]).map(t=>`<span class="tag-pill">${esc(t)}</span>`).join('');
+    document.getElementById('vpMeta').innerHTML = `
+      ${(d.autor && d.autor!=='-') ? `<span style="font-size:13px;color:var(--text-muted)">${esc(d.autor)}</span>` : ''}
+      ${tags}
+      ${d.cita_formal ? `<span style="font-size:11px;color:var(--text-muted);font-style:italic;flex-basis:100%">${esc(d.cita_formal)}</span>` : ''}`;
+
+    // Contenido
+    let contenido = '';
+    if (d.drive_id) {
+      const ext = (d.nombre_archivo||'').split('.').pop().toLowerCase();
+      if (ext === 'txt') {
+        const tr = await fetch(GAS + '?path=documento&id=' + encodeURIComponent(d.drive_id));
+        const td = await tr.json();
+        contenido = formatLegalText(td.texto || '');
+      } else {
+        contenido = `<iframe src="https://drive.google.com/file/d/${d.drive_id}/preview"
+          style="width:100%;height:80vh;border:none;border-radius:8px"></iframe>`;
+      }
+    } else {
+      contenido = formatLegalText(d.resumen || '');
+      if (d.fragmentos_clave && d.fragmentos_clave.length) {
+        contenido += `<h3 class="lv-h3" style="margin-top:32px">Fragmentos destacados</h3>`;
+        contenido += d.fragmentos_clave.map(f=>`<blockquote class="lv-quote">${esc(f)}</blockquote>`).join('');
+      }
+    }
+    document.getElementById('vpContent').innerHTML = contenido ||
+      '<p style="color:var(--text-muted);font-style:italic">Sin contenido disponible.</p>';
+
+    document.getElementById('vpLoading').style.display = 'none';
+    document.getElementById('vpBody').style.display = 'block';
+
+  } catch(err) {
+    document.getElementById('vpLoading').innerHTML =
+      `<div style="color:var(--red)">❌ Error al cargar: ${esc(err.message)}</div>`;
+  }
+})();
+
 // Auto-login si ya tiene sesión
-if (sessionStorage.getItem('jurista_auth') === CLAVE) {
+if (localStorage.getItem('jurista_auth') === CLAVE) {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   document.getElementById('app').style.flexDirection = 'column';
@@ -759,8 +960,17 @@ function renderTable() {
   const rows = page.map(d => `
     <tr>
       <td style="max-width:320px">
-        <div style="font-weight:500;color:var(--text)">${esc(d.titulo || '—')}</div>
-        ${d.autor ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${esc(d.autor)}</div>` : ''}
+        <div style="font-weight:500">
+          <span onclick="openDocNewTab('${esc(d.id)}')"
+                style="color:var(--gold);cursor:pointer;text-decoration:none;
+                       border-bottom:1px dashed rgba(201,162,39,.35);transition:border .15s"
+                onmouseover="this.style.borderBottomStyle='solid'"
+                onmouseout="this.style.borderBottomStyle='dashed'"
+                title="Abrir en nueva pestaña">
+            ${esc(d.titulo || '—')}
+          </span>
+        </div>
+        ${d.autor && d.autor !== '-' ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${esc(d.autor)}</div>` : ''}
       </td>
       <td><span class="badge badge-materia">${fmtMateria(d.materia)}</span></td>
       <td><span class="badge badge-tipo">${d.tipo || '—'}</span></td>
@@ -1067,82 +1277,76 @@ function renderDrawerBadges(d) {
 }
 
 function renderViewMode(d) {
-  const fv = (val, empty='—') => val ? `<div class="field-value">${esc(String(val))}</div>`
+  const fv = (val, empty='—') => (val && val !== '-')
+    ? `<div class="field-value">${esc(String(val))}</div>`
     : `<div class="field-value empty">${empty}</div>`;
 
   const tagsHtml = (d.tags && d.tags.length)
-    ? `<div class="field-value"><div class="tags-wrap">${d.tags.map(t=>`<span class="tag-pill">${esc(t)}</span>`).join('')}</div></div>`
-    : `<div class="field-value empty">Sin etiquetas</div>`;
+    ? `<div class="tags-wrap" style="margin-top:6px">${d.tags.map(t=>`<span class="tag-pill">${esc(t)}</span>`).join('')}</div>`
+    : `<span style="color:var(--text-muted);font-size:12px;font-style:italic">Sin etiquetas</span>`;
 
   let sentenciaFields = '';
   if (d.tipo === 'sentencia') {
+    const sf = (lbl, val) => val ? `<div class="field-block"><div class="field-label">${lbl}</div>${fv(val)}</div>` : '';
     sentenciaFields = `
-      <div class="edit-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="field-block">
-          <div class="field-label">Sala</div>${fv(d.sala)}</div>
-        <div class="field-block">
-          <div class="field-label">Expediente</div>${fv(d.expediente)}</div>
-        <div class="field-block">
-          <div class="field-label">Ponente</div>${fv(d.ponente)}</div>
-        <div class="field-block">
-          <div class="field-label">Fecha sentencia</div>${fv(d.fecha_sentencia)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        ${sf('Sala', d.sala)}${sf('Expediente', d.expediente)}
+        ${sf('Ponente', d.ponente)}${sf('Fecha', d.fecha_sentencia)}
       </div>
-      <div class="field-block">
-        <div class="field-label">Partes</div>${fv(d.partes)}</div>
+      ${d.partes ? `<div class="field-block"><div class="field-label">Partes</div>${fv(d.partes)}</div>` : ''}
       <div class="separator"></div>`;
   }
 
   const driveBtn = d.drive_id
-    ? `<a href="https://drive.google.com/file/d/${d.drive_id}/view" target="_blank"
-         style="display:inline-flex;align-items:center;gap:6px;background:var(--surface2);
-                border:1px solid var(--border);color:var(--text);border-radius:6px;
-                padding:8px 14px;font-size:13px;text-decoration:none;transition:border .2s"
-         onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
-         📂 Abrir en Drive</a>` : '';
-  const lexiusBtn = d.lexius_file
-    ? `<span style="font-size:12px;color:var(--text-muted)">📎 ${esc(d.lexius_file)}</span>` : '';
+    ? `<button onclick="openDrawer('${d.id}');switchDrawerTab('content')" class="action-btn"
+         style="padding:8px 14px;font-size:12px">📖 Ver contenido</button>
+       <a href="https://drive.google.com/file/d/${d.drive_id}/view" target="_blank"
+         class="action-btn" style="text-decoration:none;padding:8px 14px;font-size:12px">
+         📂 Abrir en Drive</a>` : `
+       <button onclick="switchDrawerTab('content')" class="action-btn"
+         style="padding:8px 14px;font-size:12px">📖 Ver contenido disponible</button>`;
 
   document.getElementById('drawerBody').innerHTML = `
     ${sentenciaFields}
-    <div class="field-block">
-      <div class="field-label">Autor / Institución</div>${fv(d.autor)}</div>
 
-    <div class="field-block">
-      <div class="field-label">Cita formal</div>${fv(d.cita_formal)}</div>
-
-    <div class="field-block">
-      <div class="field-label">Etiquetas</div>${tagsHtml}</div>
-
-    ${d.sub_materia ? `<div class="field-block"><div class="field-label">Sub-materia</div>${fv(d.sub_materia)}</div>` : ''}
-
-    <div class="separator"></div>
-
-    <div class="field-block">
-      <div class="field-label">Resumen</div>
-      <div class="field-value" style="white-space:pre-wrap;max-height:200px;overflow-y:auto">${d.resumen ? esc(d.resumen) : '<span style="color:var(--text-muted);font-style:italic">Sin resumen disponible</span>'}</div>
+    <!-- Palabras clave — prominentes -->
+    <div style="margin-bottom:20px">
+      <div class="field-label" style="margin-bottom:8px">Palabras clave</div>
+      ${tagsHtml}
     </div>
 
-    ${d.fragmentos_clave && d.fragmentos_clave.length ? `
-    <div class="field-block">
-      <div class="field-label">Fragmentos clave</div>
-      ${d.fragmentos_clave.map(f => `<div class="field-value" style="margin-bottom:6px;font-style:italic">"${esc(f)}"</div>`).join('')}
+    <div class="separator"></div>
+
+    <!-- Metadatos en grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      ${(d.autor && d.autor !== '-') ? `<div class="field-block"><div class="field-label">Autor</div>${fv(d.autor)}</div>` : ''}
+      ${d.sub_materia ? `<div class="field-block"><div class="field-label">Sub-materia</div>${fv(d.sub_materia)}</div>` : ''}
+    </div>
+
+    ${d.cita_formal ? `
+    <div class="field-block" style="margin-bottom:16px">
+      <div class="field-label">Cita formal</div>
+      <div class="field-value" style="font-size:12px;font-style:italic">${esc(d.cita_formal)}</div>
     </div>` : ''}
 
-    ${driveBtn || lexiusBtn ? `
     <div class="separator"></div>
-    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
-      ${driveBtn}${lexiusBtn}
-    </div>` : ''}
 
-    <div class="separator"></div>
+    <!-- Acciones rápidas -->
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+      ${driveBtn}
+      <button onclick="openDocNewTab('${esc(d.id)}')" class="action-btn"
+        style="padding:8px 14px;font-size:12px">↗ Nueva pestaña</button>
+    </div>
+
     <div style="font-size:11px;color:var(--text-muted)">
       ID: ${esc(d.id||'—')} · Ingesta: ${esc(d.fecha_ingesta||'—')} · Estado: ${esc(d.estado||'activo')}
     </div>`;
 
-  // Forzar tab view
   drawerTab = 'view';
-  document.getElementById('dtab-view').classList.add('active');
-  document.getElementById('dtab-edit').classList.remove('active');
+  ['view','content','edit'].forEach(t => {
+    const el = document.getElementById('dtab-'+t);
+    if (el) el.classList.toggle('active', t === 'view');
+  });
   document.getElementById('drawerFooter').style.display = 'none';
 }
 
@@ -1243,68 +1447,126 @@ function switchDrawerTab(tab) {
   else renderEditMode(currentDocFull);
 }
 
+// ── VISOR DE TEXTO LEGAL ─────────────────────────────────────
+function formatLegalText(rawText) {
+  if (!rawText) return '';
+  let text = rawText
+    .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+    .replace(/\t/g, ' ')
+    .replace(/ {3,}/g, '  ')
+    .replace(/\n{4,}/g, '\n\n\n');
+
+  const lines = text.split('\n');
+  let html = '';
+  let inBlock = false;
+
+  const isHeading = s => {
+    const t = s.trim();
+    if (!t) return false;
+    if (/^(TÍTULO|CAPÍTULO|SECCIÓN|DISPOSICION|PARTE|LIBRO)\b/i.test(t)) return 'h2';
+    if (/^(Artículo|ARTÍCULO|Art\.)\s+\d+/i.test(t)) return 'article';
+    if (/^(CONSIDERANDO|VISTO|RESUELVE|DECIDE|DECLARA|OBSERVA|SALA\s)/i.test(t) && t.length < 80) return 'h3';
+    if (t === t.toUpperCase() && t.length > 4 && t.length < 100 && /[A-ZÁÉÍÓÚ]/.test(t)) return 'h2';
+    return false;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trim = line.trim();
+    const hType = isHeading(trim);
+
+    if (!trim) {
+      if (inBlock) { html += '</p>'; inBlock = false; }
+      continue;
+    }
+
+    if (hType === 'h2') {
+      if (inBlock) { html += '</p>'; inBlock = false; }
+      html += `<h2 class="lv-h2">${esc(trim)}</h2>`;
+    } else if (hType === 'h3') {
+      if (inBlock) { html += '</p>'; inBlock = false; }
+      html += `<h3 class="lv-h3">${esc(trim)}</h3>`;
+    } else if (hType === 'article') {
+      if (inBlock) { html += '</p>'; inBlock = false; }
+      const m = trim.match(/^((?:Artículo|ARTÍCULO|Art\.)\s+\d+[\w°\.]*\.?)\s*(.*)/is);
+      if (m) {
+        html += `<div class="lv-article"><span class="lv-art-num">${esc(m[1])}</span> ${esc(m[2])}</div>`;
+      } else {
+        html += `<div class="lv-article">${esc(trim)}</div>`;
+      }
+    } else {
+      if (!inBlock) { html += '<p class="lv-p">'; inBlock = true; }
+      else html += ' ';
+      html += esc(trim);
+    }
+  }
+  if (inBlock) html += '</p>';
+  return html;
+}
+
 function renderContentMode(d) {
   drawerTab = 'content';
   document.getElementById('drawerFooter').style.display = 'none';
 
-  // Si tiene drive_id → iframe de Drive
   if (d.drive_id) {
+    const ext = (d.nombre_archivo || '').split('.').pop().toLowerCase();
+    let viewerHtml = '';
+    if (ext === 'txt') {
+      viewerHtml = `<div id="txtLoading" class="drawer-spinner">⏳ Cargando texto…</div>`;
+      // fetch texto desde GAS
+      fetch(GAS + '?path=documento&id=' + encodeURIComponent(d.drive_id))
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('txtLoading')?.remove();
+          const container = document.getElementById('lv-container');
+          if (container) container.innerHTML = formatLegalText(data.texto || '');
+        }).catch(() => {});
+    } else {
+      viewerHtml = `<iframe
+        src="https://drive.google.com/file/d/${d.drive_id}/preview"
+        style="flex:1;width:100%;border:none;border-radius:8px;min-height:calc(100vh - 220px)"
+        allow="autoplay"></iframe>`;
+    }
     document.getElementById('drawerBody').innerHTML = `
-      <div style="height:calc(100vh - 180px);display:flex;flex-direction:column;gap:10px">
-        <div style="display:flex;gap:8px;flex-shrink:0">
+      <div style="display:flex;flex-direction:column;gap:10px;height:100%">
+        <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap">
           <a href="https://drive.google.com/file/d/${d.drive_id}/view" target="_blank"
              class="action-btn" style="text-decoration:none;padding:7px 14px;font-size:12px">
-             📂 Abrir en Drive
-          </a>
+             📂 Abrir en Drive</a>
         </div>
-        <iframe
-          src="https://drive.google.com/file/d/${d.drive_id}/preview"
-          style="flex:1;border:none;border-radius:8px;background:var(--surface2)"
-          allow="autoplay">
-        </iframe>
+        ${ext === 'txt' ? `<div id="lv-container" class="legal-viewer"></div>` : viewerHtml}
+        ${ext === 'txt' ? viewerHtml : ''}
       </div>`;
     return;
   }
 
-  // Sin Drive — mostrar texto extraído (resumen como vista previa)
-  const textoDisp = d.resumen && d.resumen.length > 100;
-  const frags = d.fragmentos_clave && d.fragmentos_clave.length > 0;
+  // ── Sin Drive: mostrar contenido disponible del índice ──
+  const texto = d.resumen || '';
+  const frags = d.fragmentos_clave && d.fragmentos_clave.length;
+  const hasContent = texto.length > 50 || frags;
 
   document.getElementById('drawerBody').innerHTML = `
-    <div style="margin-bottom:16px;padding:12px 14px;background:rgba(201,162,39,.08);
-                border:1px solid rgba(201,162,39,.25);border-radius:8px;font-size:12px;
-                color:var(--gold)">
-      ℹ️ Este documento aún no tiene un archivo PDF cargado en Drive.
-      Para ver el texto completo, carga el PDF desde <strong>Ingesta</strong>
-      o arrástralo a la carpeta correcta en Drive.
+    <div style="padding:10px 14px;background:rgba(201,162,39,.07);border:1px solid
+                rgba(201,162,39,.2);border-radius:8px;font-size:12px;color:var(--gold);
+                margin-bottom:18px;display:flex;align-items:flex-start;gap:8px">
+      <span style="flex-shrink:0">📄</span>
+      <span>Texto extraído del documento original. Para la versión completa
+      con formato, carga el archivo a Drive desde <strong>Ingesta</strong>.</span>
     </div>
 
-    ${textoDisp ? `
-    <div class="field-block">
-      <div class="field-label">Vista previa del contenido</div>
-      <div class="field-value" style="white-space:pre-wrap;max-height:none;
-           font-size:13px;line-height:1.75;font-family:'Georgia',serif;color:var(--text)">
-        ${esc(d.resumen)}
-      </div>
-    </div>` : ''}
-
-    ${frags ? `
-    <div class="separator"></div>
-    <div class="field-block">
-      <div class="field-label">Fragmentos relevantes</div>
-      ${d.fragmentos_clave.map(f => `
-        <div style="background:var(--surface2);border-left:3px solid var(--gold);
-                    border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:8px;
-                    font-size:13px;font-style:italic;line-height:1.6;color:var(--text)">
-          "${esc(f)}"
-        </div>`).join('')}
-    </div>` : ''}
-
-    ${!textoDisp && !frags ? `
-    <div style="text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px">
-      <div style="font-size:40px;margin-bottom:12px">📄</div>
-      No hay contenido de texto disponible para este documento.
-    </div>` : ''}`;
+    ${hasContent ? `
+    <div class="legal-viewer">
+      ${texto ? formatLegalText(texto) : ''}
+      ${frags ? `<h3 class="lv-h3" style="margin-top:28px">Fragmentos destacados</h3>
+        ${d.fragmentos_clave.map(f =>
+          `<blockquote class="lv-quote">${esc(f)}</blockquote>`
+        ).join('')}` : ''}
+    </div>` : `
+    <div style="text-align:center;padding:50px 0;color:var(--text-muted)">
+      <div style="font-size:48px;margin-bottom:16px">📄</div>
+      <p style="font-size:14px">Contenido de texto no disponible.</p>
+      <p style="font-size:12px;margin-top:8px">Carga el documento original desde Ingesta.</p>
+    </div>`}`;
 }
 
 async function saveDoc() {
