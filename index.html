@@ -511,7 +511,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.5.0</span>
+    <span class="version-badge" id="versionBadge">v1.5.1</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -893,33 +893,45 @@ async function openDocView(id) {
       dl.style.display = 'inline-flex';
     }
 
-    // Contenido
-    let html = '';
-    if (d.drive_id) {
-      const ext = (d.nombre_archivo||'').split('.').pop().toLowerCase();
-      if (ext === 'txt') {
-        html = '<div class="drawer-spinner">⏳ Cargando texto…</div>';
-        // fetch async
-        fetch(GAS + '?path=documento&id=' + encodeURIComponent(d.drive_id))
-          .then(r2 => r2.json())
-          .then(td => {
-            document.getElementById('vpContent').innerHTML =
-              formatLegalText(td.texto || '') ||
-              '<p style="color:var(--text-muted)">Sin contenido de texto.</p>';
-          });
-      } else {
-        html = `<iframe src="https://drive.google.com/file/d/${d.drive_id}/preview"
-          style="width:100%;height:80vh;border:none;border-radius:8px"></iframe>`;
-      }
+    // Contenido — siempre intentar texto completo via GAS
+    const ext = (d.nombre_archivo||'').split('.').pop().toLowerCase();
+    const hasFile = d.drive_id || d.nombre_archivo;
+
+    if (d.drive_id && ext !== 'txt') {
+      // PDF / DOCX con drive_id: iframe embebido de Drive
+      document.getElementById('vpContent').innerHTML =
+        `<iframe src="https://drive.google.com/file/d/${d.drive_id}/preview"
+           style="width:100%;height:82vh;border:none;border-radius:8px"></iframe>`;
+    } else if (hasFile) {
+      // TXT (con o sin drive_id) o cualquier doc LEXIUS: pedir texto completo al GAS
+      document.getElementById('vpContent').innerHTML =
+        `<div style="text-align:center;padding:60px 20px;color:var(--text-muted)">
+           <div style="font-size:36px;margin-bottom:16px">⏳</div>
+           <div style="font-size:14px">Cargando texto completo…</div>
+           <div style="font-size:12px;margin-top:8px;opacity:.6">Esto puede tardar unos segundos.</div>
+         </div>`;
+      fetch(GAS + '?path=documento/texto&id=' + encodeURIComponent(d.id))
+        .then(r2 => r2.json())
+        .then(td => {
+          if (td.error) throw new Error(td.error);
+          const rendered = formatLegalText(td.texto || '');
+          document.getElementById('vpContent').innerHTML = rendered ||
+            '<p style="color:var(--text-muted);font-style:italic">El documento no tiene contenido de texto.</p>';
+        })
+        .catch(err => {
+          document.getElementById('vpContent').innerHTML =
+            `<div style="padding:24px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25);
+                         border-radius:8px;color:var(--text-muted)">
+               <p style="color:var(--red);font-weight:600;margin-bottom:12px">❌ No se pudo cargar el texto completo</p>
+               <p style="font-size:13px;margin-bottom:8px">${esc(err.message)}</p>
+               <p style="font-size:12px">Para leer este documento, asegúrate de que el archivo
+               <strong>${esc(d.nombre_archivo||'')}</strong> esté en Drive.</p>
+             </div>`;
+        });
     } else {
-      html = formatLegalText(d.resumen || '');
-      if (d.fragmentos_clave && d.fragmentos_clave.length) {
-        html += `<h3 class="lv-h3" style="margin-top:32px">Fragmentos destacados</h3>`;
-        html += d.fragmentos_clave.map(f=>`<blockquote class="lv-quote">${esc(f)}</blockquote>`).join('');
-      }
-      if (!html) html = '<p style="color:var(--text-muted);font-style:italic">Sin contenido disponible.</p>';
+      document.getElementById('vpContent').innerHTML =
+        '<p style="color:var(--text-muted);font-style:italic;padding:40px 0;text-align:center">Sin archivo asociado.</p>';
     }
-    document.getElementById('vpContent').innerHTML = html;
 
     document.getElementById('vpLoading').style.display = 'none';
     document.getElementById('vpBody').style.display = 'block';
@@ -1128,7 +1140,7 @@ function renderDashboard() {
     <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs · v1.1</div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am)</div>
-    <div>🟢 <strong>Web App</strong> — v1.5.0 · GitHub Pages activo</div>
+    <div>🟢 <strong>Web App</strong> — v1.5.1 · GitHub Pages activo</div>
     <div>🔵 <strong>Sub-Agentes</strong> — 9 stubs · pendiente alimentar</div>`;
 }
 
