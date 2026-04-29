@@ -284,6 +284,9 @@ function buscarYLeerArchivo(nombre, titulo) {
     throw new Error('Formato no soportado para lectura: ' + mimeType);
   }
 
+  // Limpiar artefactos de UI de LEXIUS antes de devolver
+  texto = limpiarTextoLexius(texto);
+
   return {
     nombre:     nombre,
     titulo:     titulo || file.getName(),
@@ -291,6 +294,42 @@ function buscarYLeerArchivo(nombre, titulo) {
     texto:      texto,
     caracteres: texto.length,
   };
+}
+
+// ─────────────────────────────────────────────
+// Limpia artefactos de la plataforma LEXIUS
+// que quedaron incrustados en el texto scrapeado
+// ─────────────────────────────────────────────
+function limpiarTextoLexius(texto) {
+  if (!texto) return texto;
+
+  // Bloques de UI de LEXIUS (orden importa: del más específico al más general)
+  const patrones = [
+    // Botones de acción de LEXIUS
+    /Sintetizar texto legal con el Asistente Virtual\s*/gi,
+    /Generar Video Podcast Legal usando este texto legal como contexto\s*/gi,
+    /Generar Canci[oó]n usando este texto legal como contexto\s*/gi,
+    /Crear P[aá]gina Interactiva usando este texto legal como contexto\s*/gi,
+    /Generar Presentaci[oó]n de PowerPoint usando este texto legal como contexto\s*/gi,
+    /Iniciar llamada con .{0,80} acerca de este texto legal\s*/gi,
+    // Pie de página / ayuda LEXIUS
+    /[¿?]?Tienes dudas acerca de c[oó]mo usar la aplicaci[oó]n\?.*?escribenos[\s\S]{0,200}/gi,
+    // Encabezados de LEXIUS con nombre de la ley repetido al inicio
+    /^.{0,200}appvenezuela\.lexius\.io.{0,200}\n?/gim,
+    // "Volver" y botones de navegación
+    /^\s*Volver\s*$/gim,
+    // Líneas sueltas que solo contienen "LEXIUS" o "Lexius Venezuela"
+    /^.*[Ll]exius.*$/gim,
+    // Metadata de LEXIUS al inicio del archivo (antes del título real)
+    /^Gaceta Oficial.*?\n(?=Gaceta Oficial|\d|[A-ZÁÉÍÓÚ])/gm,
+  ];
+
+  patrones.forEach(p => { texto = texto.replace(p, ''); });
+
+  // Normalizar espacios en blanco excesivos (máx 2 líneas en blanco seguidas)
+  texto = texto.replace(/\n{4,}/g, '\n\n\n');
+
+  return texto.trim();
 }
 
 
