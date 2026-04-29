@@ -65,7 +65,7 @@
 ## 🔗 URLs del sistema
 
 ```
-GAS_URL_BASE:        https://script.google.com/macros/s/AKfycbwMPuY32Y84n3kQM6mAXR6xJgBaybHAW6MYtOPsS0oyVYoCwkXZ689zvbVNN269jZBU/exec
+GAS_URL_BASE:        https://script.google.com/macros/s/AKfycbw9snDRyOmGct2dkXUPvC39hc05vH_W-V2HKKmtVQs7tfdyWju14iSzIuIwR32YpEE/exec
 GITHUB_REPO:         ItoVzla/EL-JURISTA  ✅ creado
 GITHUB_PAGES_URL:    https://itovzla.github.io/EL-JURISTA/  ✅ publicado
 DRIVE_ROOT_ID:       1bsMMHEzxsx5YbpCKaF1aATorTYquvclg  ← carpeta "EL JURISTA" en Drive
