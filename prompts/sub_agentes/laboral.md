@@ -27,7 +27,7 @@ Al ser invocado por el Orquestador, ejecuta silenciosamente y en el siguiente or
 
 **Paso 1 — Inventario de fuentes disponibles:**
 ```
-GET https://script.google.com/macros/s/AKfycbxl703u2a0MU3r7hdrHGUGTl8bkKTHAHnkcTkL5cSI2ghFCuJ5wKnl6wiHvj8mYd4B3/exec?path=listar&materia=Laboral_Venezuela
+GET https://script.google.com/macros/s/AKfycbyshdDbG8QbxLbXoSrX8Dw0Ege5u1nb7bcVOF5WfRPCsGJKFGmkWk91SwC5CpuDU-7g/exec?path=listar&materia=Laboral_Venezuela
 ```
 Esto retorna la lista de documentos indexados en tu materia.
 
