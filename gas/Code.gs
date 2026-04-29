@@ -224,9 +224,19 @@ function getTextoCompleto(params) {
     // Tiene drive_id: delegar al extractor de Drive
     if (doc.drive_id) return getDocumento(doc.drive_id);
 
-    // No tiene drive_id: buscar por nombre de archivo
-    if (!doc.nombre_archivo) throw new Error('El documento no tiene archivo asociado');
-    return buscarYLeerArchivo(doc.nombre_archivo, doc.titulo);
+    // Derivar el nombre real del archivo:
+    // 1. Usar el basename del campo lexius_file (nombre original de LEXIUS)
+    // 2. Fallback al nombre_archivo (nombre normalizado, menos fiable)
+    let searchName = '';
+    if (doc.lexius_file) {
+      // lexius_file = "Legislación/Constitución/Constitución de Venezuela 1999.txt"
+      const parts = doc.lexius_file.split('/');
+      searchName = parts[parts.length - 1]; // → "Constitución de Venezuela 1999.txt"
+    }
+    if (!searchName && doc.nombre_archivo) searchName = doc.nombre_archivo;
+    if (!searchName) throw new Error('El documento no tiene archivo asociado');
+
+    return buscarYLeerArchivo(searchName, doc.titulo);
   }
 
   // Se pasó nombre directamente
@@ -235,18 +245,19 @@ function getTextoCompleto(params) {
 
 // Busca un archivo en todo el Drive por nombre y devuelve su texto
 function buscarYLeerArchivo(nombre, titulo) {
-  // Intentar primero con el nombre exacto
+  // 1. Búsqueda exacta por nombre
   let files = DriveApp.getFilesByName(nombre);
-
   if (!files.hasNext()) {
-    // Fallback: buscar sin extensión (puede que esté guardado diferente)
+    // 2. Fallback: el nombre puede estar truncado en Drive (LEXIUS trunca a ~100 chars)
+    //    Buscar por los primeros 60 caracteres del nombre sin extensión
     const sinExt = nombre.replace(/\.[^.]+$/, '');
-    files = DriveApp.searchFiles('title contains "' + sinExt.replace(/"/g, '') + '"');
+    const fragmento = sinExt.substring(0, 60).replace(/"/g, '');
+    files = DriveApp.searchFiles('title contains "' + fragmento + '" and mimeType = "text/plain"');
   }
 
   if (!files.hasNext()) {
     throw new Error('Archivo no encontrado en Drive: ' + nombre +
-      '. Carga el archivo en la carpeta de la materia correspondiente.');
+      '. Carga el archivo .txt en la carpeta de su materia en Drive.');
   }
 
   const file     = files.next();
