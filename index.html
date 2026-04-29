@@ -511,7 +511,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.4.3</span>
+    <span class="version-badge" id="versionBadge">v1.5.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -744,8 +744,7 @@
       </div>
       <div class="drawer-badges" id="drawerBadges"></div>
       <div class="drawer-tabs" id="drawerTabBar">
-        <button class="dtab active" id="dtab-view" onclick="switchDrawerTab('view')">👁 Vista</button>
-        <button class="dtab" id="dtab-content" onclick="switchDrawerTab('content')">📖 Contenido</button>
+        <button class="dtab active" id="dtab-view" onclick="switchDrawerTab('view')">📋 Información</button>
         <button class="dtab" id="dtab-edit" onclick="switchDrawerTab('edit')">✏️ Editar</button>
       </div>
     </div>
@@ -1129,7 +1128,7 @@ function renderDashboard() {
     <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs · v1.1</div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am)</div>
-    <div>🟢 <strong>Web App</strong> — v1.4.1 · GitHub Pages activo</div>
+    <div>🟢 <strong>Web App</strong> — v1.5.0 · GitHub Pages activo</div>
     <div>🔵 <strong>Sub-Agentes</strong> — 9 stubs · pendiente alimentar</div>`;
 }
 
@@ -1318,65 +1317,86 @@ function renderDrawerBadges(d) {
 }
 
 function renderViewMode(d) {
-  const fv = (val, empty='—') => (val && val !== '-')
-    ? `<div class="field-value">${esc(String(val))}</div>`
-    : `<div class="field-value empty">${empty}</div>`;
+  const fv = v => (v && String(v).trim() && v !== '-')
+    ? `<div class="field-value">${esc(String(v))}</div>`
+    : `<div class="field-value empty" style="color:var(--text-muted);font-style:italic">—</div>`;
+  const frow = (lbl, v) => {
+    if (!v || v === '-' || String(v).trim() === '') return '';
+    return `<div class="field-block"><div class="field-label">${lbl}</div>${fv(v)}</div>`;
+  };
 
+  const tipo = (d.tipo || '').toLowerCase();
+  const isLeg  = tipo === 'legislacion' || tipo === 'convenio';
+  const isSent = tipo === 'sentencia';
+  const isDoc  = tipo === 'doctrina' || tipo === 'articulo';
+
+  // Tags block
   const tagsHtml = (d.tags && d.tags.length)
-    ? `<div class="tags-wrap" style="margin-top:6px">${d.tags.map(t=>`<span class="tag-pill">${esc(t)}</span>`).join('')}</div>`
+    ? d.tags.map(t=>`<span class="tag-pill">${esc(t)}</span>`).join('')
     : `<span style="color:var(--text-muted);font-size:12px;font-style:italic">Sin etiquetas</span>`;
 
-  let sentenciaFields = '';
-  if (d.tipo === 'sentencia') {
-    const sf = (lbl, val) => val ? `<div class="field-block"><div class="field-label">${lbl}</div>${fv(val)}</div>` : '';
-    sentenciaFields = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-        ${sf('Sala', d.sala)}${sf('Expediente', d.expediente)}
-        ${sf('Ponente', d.ponente)}${sf('Fecha', d.fecha_sentencia)}
+  // Context-aware metadata
+  let metaHtml = '';
+  if (isLeg) {
+    metaHtml = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${frow('Tipo de normativa', d.tipo)}
+        ${frow('Año de publicación', d.año)}
+        ${frow('Gaceta Oficial', d.gaceta_oficial)}
+        ${frow('Fecha en Gaceta', d.fecha_gaceta)}
+        ${frow('Materia', d.materia)}
+        ${frow('Vigencia', d.vigencia)}
+      </div>`;
+  } else if (isSent) {
+    metaHtml = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${frow('Sala', d.sala)}
+        ${frow('Expediente', d.expediente)}
+        ${frow('Ponente', d.ponente)}
+        ${frow('Fecha de sentencia', d.fecha_sentencia)}
+        ${frow('Materia', d.materia)}
       </div>
-      ${d.partes ? `<div class="field-block"><div class="field-label">Partes</div>${fv(d.partes)}</div>` : ''}
-      <div class="separator"></div>`;
+      ${d.partes ? `<div class="field-block" style="margin-top:10px"><div class="field-label">Partes</div>${fv(d.partes)}</div>` : ''}`;
+  } else if (isDoc) {
+    const autores = [d.autor, d.coautores].filter(x => x && x !== '-').join(', ');
+    metaHtml = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${autores ? `<div class="field-block" style="grid-column:1/-1"><div class="field-label">Autor(es)</div>${fv(autores)}</div>` : ''}
+        ${frow('Editorial', d.editorial)}
+        ${frow('ISBN', d.isbn)}
+        ${frow('Año', d.año)}
+        ${frow('Materia', d.materia)}
+      </div>`;
+  } else {
+    // fallback: show what we have
+    metaHtml = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${frow('Tipo', d.tipo)}
+        ${frow('Autor', d.autor)}
+        ${frow('Año', d.año)}
+        ${frow('Materia', d.materia)}
+        ${frow('Vigencia', d.vigencia)}
+      </div>`;
   }
 
-  const driveBtn = d.drive_id
-    ? `<button onclick="openDrawer('${d.id}');switchDrawerTab('content')" class="action-btn"
-         style="padding:8px 14px;font-size:12px">📖 Ver contenido</button>
-       <a href="https://drive.google.com/file/d/${d.drive_id}/view" target="_blank"
-         class="action-btn" style="text-decoration:none;padding:8px 14px;font-size:12px">
-         📂 Abrir en Drive</a>` : `
-       <button onclick="switchDrawerTab('content')" class="action-btn"
-         style="padding:8px 14px;font-size:12px">📖 Ver contenido disponible</button>`;
+  // Read button
+  const readBtn = `<button onclick="openDocView('${esc(d.id)}')"
+    style="width:100%;padding:11px;background:var(--gold);color:#000;border:none;border-radius:var(--radius);
+           font-weight:700;font-size:14px;cursor:pointer;margin-bottom:16px;letter-spacing:.3px">
+    📖 Leer documento completo</button>`;
 
   document.getElementById('drawerBody').innerHTML = `
-    ${sentenciaFields}
+    ${readBtn}
 
-    <!-- Palabras clave — prominentes -->
-    <div style="margin-bottom:20px">
+    <!-- Metadatos contextuales -->
+    <div style="margin-bottom:20px">${metaHtml}</div>
+
+    <div class="separator"></div>
+
+    <!-- Tags -->
+    <div style="margin-bottom:16px">
       <div class="field-label" style="margin-bottom:8px">Palabras clave</div>
-      ${tagsHtml}
-    </div>
-
-    <div class="separator"></div>
-
-    <!-- Metadatos en grid -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-      ${(d.autor && d.autor !== '-') ? `<div class="field-block"><div class="field-label">Autor</div>${fv(d.autor)}</div>` : ''}
-      ${d.sub_materia ? `<div class="field-block"><div class="field-label">Sub-materia</div>${fv(d.sub_materia)}</div>` : ''}
-    </div>
-
-    ${d.cita_formal ? `
-    <div class="field-block" style="margin-bottom:16px">
-      <div class="field-label">Cita formal</div>
-      <div class="field-value" style="font-size:12px;font-style:italic">${esc(d.cita_formal)}</div>
-    </div>` : ''}
-
-    <div class="separator"></div>
-
-    <!-- Acciones rápidas -->
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-      ${driveBtn}
-      <button onclick="openDocView('${esc(d.id)}')" class="action-btn"
-        style="padding:8px 14px;font-size:12px">↗ Nueva pestaña</button>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${tagsHtml}</div>
     </div>
 
     <div style="font-size:11px;color:var(--text-muted)">
@@ -1384,7 +1404,7 @@ function renderViewMode(d) {
     </div>`;
 
   drawerTab = 'view';
-  ['view','content','edit'].forEach(t => {
+  ['view','edit'].forEach(t => {
     const el = document.getElementById('dtab-'+t);
     if (el) el.classList.toggle('active', t === 'view');
   });
@@ -1401,71 +1421,120 @@ function renderEditMode(d) {
     `<select class="edit-select" id="e-${name}">${
       opts.map(o=>`<option value="${o}"${val===o?' selected':''}>${o}</option>`).join('')
     }</select>`;
+  const inp = (id, val, type='text', placeholder='') =>
+    `<input class="edit-input" id="e-${id}" type="${type}" value="${esc(String(val||''))}" placeholder="${placeholder}">`;
 
-  const isSentencia = d.tipo === 'sentencia';
+  const tipo = (d.tipo || '').toLowerCase();
+  const isLeg  = tipo === 'legislacion' || tipo === 'convenio';
+  const isSent = tipo === 'sentencia';
+  const isDoc  = tipo === 'doctrina' || tipo === 'articulo';
 
-  document.getElementById('drawerBody').innerHTML = `
-    <div class="edit-grid">
-      <div class="edit-field edit-full">
-        <label class="edit-label">Título</label>
-        <input class="edit-input" id="e-titulo" value="${esc(d.titulo||'')}">
+  // Common: Título + Materia + Tipo at top
+  let typeFields = '';
+  if (isLeg) {
+    typeFields = `
+      <div class="edit-field">
+        <label class="edit-label">Tipo de normativa</label>
+        ${sel('tipo', TIPOS, d.tipo)}
       </div>
       <div class="edit-field">
-        <label class="edit-label">Materia</label>
-        ${sel('materia', MATERIAS, d.materia)}
+        <label class="edit-label">Año de publicación</label>
+        ${inp('año', d.año, 'number')}
       </div>
+      <div class="edit-field">
+        <label class="edit-label">Gaceta Oficial N°</label>
+        ${inp('gaceta_oficial', d.gaceta_oficial, 'text', 'Ej: 6.013 Extraordinario')}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Fecha en Gaceta</label>
+        ${inp('fecha_gaceta', d.fecha_gaceta, 'text', 'YYYY-MM-DD')}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Vigencia</label>
+        ${sel('vigencia', VIGENCIAS, d.vigencia)}
+      </div>`;
+  } else if (isSent) {
+    typeFields = `
+      <div class="edit-field">
+        <label class="edit-label">Sala</label>
+        ${inp('sala', d.sala, 'text', 'Ej: Sala de Casación Social')}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Expediente N°</label>
+        ${inp('expediente', d.expediente)}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Ponente</label>
+        ${inp('ponente', d.ponente)}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Fecha de sentencia</label>
+        ${inp('fecha_sentencia', d.fecha_sentencia, 'text', 'YYYY-MM-DD')}
+      </div>
+      <div class="edit-field edit-full">
+        <label class="edit-label">Partes</label>
+        ${inp('partes', d.partes, 'text', 'Ej: Juan Pérez vs Empresa XYZ')}
+      </div>`;
+  } else if (isDoc) {
+    typeFields = `
       <div class="edit-field">
         <label class="edit-label">Tipo</label>
         ${sel('tipo', TIPOS, d.tipo)}
       </div>
       <div class="edit-field">
-        <label class="edit-label">Autor</label>
-        <input class="edit-input" id="e-autor" value="${esc(d.autor||'')}">
+        <label class="edit-label">Año</label>
+        ${inp('año', d.año, 'number')}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Autor principal</label>
+        ${inp('autor', d.autor)}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Coautores</label>
+        ${inp('coautores', d.coautores, 'text', 'Separados por comas')}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Editorial</label>
+        ${inp('editorial', d.editorial)}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">ISBN</label>
+        ${inp('isbn', d.isbn)}
+      </div>`;
+  } else {
+    typeFields = `
+      <div class="edit-field">
+        <label class="edit-label">Tipo</label>
+        ${sel('tipo', TIPOS, d.tipo)}
       </div>
       <div class="edit-field">
         <label class="edit-label">Año</label>
-        <input class="edit-input" type="number" id="e-año" value="${d.año||''}">
+        ${inp('año', d.año, 'number')}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Autor</label>
+        ${inp('autor', d.autor)}
       </div>
       <div class="edit-field">
         <label class="edit-label">Vigencia</label>
         ${sel('vigencia', VIGENCIAS, d.vigencia)}
-      </div>
-      <div class="edit-field">
-        <label class="edit-label">Sub-materia</label>
-        <input class="edit-input" id="e-sub_materia" value="${esc(d.sub_materia||'')}">
-      </div>
-      ${isSentencia ? `
-      <div class="edit-field">
-        <label class="edit-label">Sala</label>
-        <input class="edit-input" id="e-sala" value="${esc(d.sala||'')}">
-      </div>
-      <div class="edit-field">
-        <label class="edit-label">Expediente</label>
-        <input class="edit-input" id="e-expediente" value="${esc(d.expediente||'')}">
-      </div>
-      <div class="edit-field">
-        <label class="edit-label">Ponente</label>
-        <input class="edit-input" id="e-ponente" value="${esc(d.ponente||'')}">
-      </div>
-      <div class="edit-field">
-        <label class="edit-label">Fecha sentencia</label>
-        <input class="edit-input" id="e-fecha_sentencia" value="${esc(d.fecha_sentencia||'')}">
-      </div>
+      </div>`;
+  }
+
+  document.getElementById('drawerBody').innerHTML = `
+    <div class="edit-grid">
       <div class="edit-field edit-full">
-        <label class="edit-label">Partes</label>
-        <input class="edit-input" id="e-partes" value="${esc(d.partes||'')}">
-      </div>` : ''}
-      <div class="edit-field edit-full">
-        <label class="edit-label">Cita formal</label>
-        <input class="edit-input" id="e-cita_formal" value="${esc(d.cita_formal||'')}">
+        <label class="edit-label">Título</label>
+        ${inp('titulo', d.titulo)}
       </div>
+      <div class="edit-field">
+        <label class="edit-label">Materia</label>
+        ${sel('materia', MATERIAS, d.materia)}
+      </div>
+      ${typeFields}
       <div class="edit-field edit-full">
         <label class="edit-label">Tags (separados por comas)</label>
-        <input class="edit-input" id="e-tags" value="${esc((d.tags||[]).join(', '))}">
-      </div>
-      <div class="edit-field edit-full">
-        <label class="edit-label">Resumen</label>
-        <textarea class="edit-textarea" id="e-resumen" rows="5">${esc(d.resumen||'')}</textarea>
+        ${inp('tags', (d.tags||[]).join(', '), 'text', 'Ej: constitución, derechos, 1999')}
       </div>
     </div>`;
 
@@ -1479,12 +1548,11 @@ function renderEditMode(d) {
 
 function switchDrawerTab(tab) {
   if (!currentDocFull) return;
-  ['view','content','edit'].forEach(t => {
+  ['view','edit'].forEach(t => {
     const el = document.getElementById('dtab-'+t);
     if (el) el.classList.toggle('active', t === tab);
   });
-  if (tab === 'view')    renderViewMode(currentDocFull);
-  else if (tab === 'content') renderContentMode(currentDocFull);
+  if (tab === 'view') renderViewMode(currentDocFull);
   else renderEditMode(currentDocFull);
 }
 
@@ -1614,27 +1682,43 @@ async function saveDoc() {
   if (!currentDocId || !currentDocFull) return;
 
   const d = currentDocFull;
-  const isSentencia = (document.getElementById('e-tipo')?.value || d.tipo) === 'sentencia';
+  const g = id => document.getElementById('e-'+id)?.value.trim() || '';
+  const gs = id => document.getElementById('e-'+id)?.value || '';
+  const tipo = gs('tipo') || d.tipo || '';
+  const tipoLow = tipo.toLowerCase();
+  const isLeg  = tipoLow === 'legislacion' || tipoLow === 'convenio';
+  const isSent = tipoLow === 'sentencia';
+  const isDoc  = tipoLow === 'doctrina' || tipoLow === 'articulo';
 
   const payload = {
-    id:          currentDocId,
-    titulo:      document.getElementById('e-titulo')?.value.trim() || d.titulo,
-    materia:     document.getElementById('e-materia')?.value || d.materia,
-    tipo:        document.getElementById('e-tipo')?.value || d.tipo,
-    autor:       document.getElementById('e-autor')?.value.trim() || '',
-    año:         parseInt(document.getElementById('e-año')?.value) || d.año,
-    vigencia:    document.getElementById('e-vigencia')?.value || d.vigencia,
-    sub_materia: document.getElementById('e-sub_materia')?.value.trim() || '',
-    cita_formal: document.getElementById('e-cita_formal')?.value.trim() || '',
-    tags:        (document.getElementById('e-tags')?.value || '').split(',').map(t=>t.trim()).filter(Boolean),
-    resumen:     document.getElementById('e-resumen')?.value.trim() || '',
+    id:      currentDocId,
+    titulo:  g('titulo') || d.titulo,
+    materia: gs('materia') || d.materia,
+    tipo:    tipo,
+    tags:    (g('tags') || (d.tags||[]).join(', ')).split(',').map(t=>t.trim()).filter(Boolean),
   };
-  if (isSentencia) {
-    payload.sala           = document.getElementById('e-sala')?.value.trim() || '';
-    payload.expediente     = document.getElementById('e-expediente')?.value.trim() || '';
-    payload.ponente        = document.getElementById('e-ponente')?.value.trim() || '';
-    payload.fecha_sentencia= document.getElementById('e-fecha_sentencia')?.value.trim() || '';
-    payload.partes         = document.getElementById('e-partes')?.value.trim() || '';
+
+  if (isLeg) {
+    payload.año           = parseInt(g('año')) || d.año;
+    payload.vigencia      = gs('vigencia') || d.vigencia;
+    payload.gaceta_oficial= g('gaceta_oficial');
+    payload.fecha_gaceta  = g('fecha_gaceta');
+  } else if (isSent) {
+    payload.sala            = g('sala');
+    payload.expediente      = g('expediente');
+    payload.ponente         = g('ponente');
+    payload.fecha_sentencia = g('fecha_sentencia');
+    payload.partes          = g('partes');
+  } else if (isDoc) {
+    payload.autor     = g('autor');
+    payload.coautores = g('coautores');
+    payload.editorial = g('editorial');
+    payload.isbn      = g('isbn');
+    payload.año       = parseInt(g('año')) || d.año;
+  } else {
+    payload.autor    = g('autor');
+    payload.año      = parseInt(g('año')) || d.año;
+    payload.vigencia = gs('vigencia') || d.vigencia;
   }
 
   document.getElementById('btnSave').disabled = true;
