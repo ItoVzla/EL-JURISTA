@@ -615,7 +615,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.7.4</span>
+    <span class="version-badge" id="versionBadge">v1.7.5</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -1032,24 +1032,21 @@ function openDocView(id) {
   document.getElementById('vpContent').innerHTML = '';
 
   // ── Decidir cómo mostrar el contenido ──
-  const ext     = (d.nombre_archivo || '').split('.').pop().toLowerCase();
-  const hasFile = d.drive_id || d.nombre_archivo || d.lexius_file;
+  // ext: solo disponible si allDocs ya tiene nombre_archivo (GAS v1.7.5+)
+  const ext = (d.nombre_archivo || '').split('.').pop().toLowerCase();
 
-  if (d.drive_id && ext !== 'txt') {
-    // PDF / DOCX — iframe embebido de Drive
+  // Usar iframe SOLO si el formato binario está confirmado explícitamente
+  const isBinary = d.drive_id && (ext === 'pdf' || ext === 'docx' || ext === 'doc');
+  if (isBinary) {
     document.getElementById('vpContent').innerHTML =
       `<iframe src="https://drive.google.com/file/d/${d.drive_id}/preview"
          style="width:100%;height:82vh;border:none;border-radius:8px"></iframe>`;
     return;
   }
 
-  if (!hasFile) {
-    document.getElementById('vpContent').innerHTML =
-      '<p style="color:var(--text-muted);font-style:italic;padding:40px 0;text-align:center">Sin archivo asociado.</p>';
-    return;
-  }
-
-  // ── TXT / LEXIUS: caché cliente primero, luego GAS ──
+  // ── TXT / LEXIUS / drive_id desconocido: intentar texto siempre ──
+  // GAS tiene la info completa del índice aunque allDocs no la tenga aún.
+  // Caché cliente primero.
   if (textCache.has(id)) {
     _renderDocText(id, textCache.get(id));
     return;
@@ -1830,7 +1827,7 @@ function renderDashboard() {
     </div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA (rama main)</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am Venezuela)</div>
-    <div>🟢 <strong>Web App</strong> — v1.7.4 · GitHub Pages activo</div>
+    <div>🟢 <strong>Web App</strong> — v1.7.5 · GitHub Pages activo</div>
     <div>🟡 <strong>Sub-Agentes</strong> — 9 prompts completados · pendiente alimentar con jurisprudencia/doctrina</div>
     <div>🟢 <strong>Ingesta</strong> — Subida manual + scraper URL activos</div>`;
 }
