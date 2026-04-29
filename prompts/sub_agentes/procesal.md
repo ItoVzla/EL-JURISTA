@@ -23,7 +23,7 @@ Al ser invocado por el Orquestador, ANTES de responder:
 
 1. Ejecutar silenciosamente:
    ```
-   GET https://script.google.com/macros/s/AKfycbxl703u2a0MU3r7hdrHGUGTl8bkKTHAHnkcTkL5cSI2ghFCuJ5wKnl6wiHvj8mYd4B3/exec?path=listar&materia=Procesal
+   GET https://script.google.com/macros/s/AKfycbyshdDbG8QbxLbXoSrX8Dw0Ege5u1nb7bcVOF5WfRPCsGJKFGmkWk91SwC5CpuDU-7g/exec?path=listar&materia=Procesal
    ```
 2. Si el endpoint responde: cargar el listado de documentos disponibles en materia Procesal. Confirmar internamente: "Sub-Agente Procesal activo. N documentos disponibles."
 3. Si el endpoint falla: continuar con conocimiento general, marcando TODAS las referencias como **(KG)** y advirtiendo al usuario que la BD no está disponible.
@@ -309,7 +309,7 @@ PROCESAL_[TIPO]_[AUTOR-o-SALA]_[AÑO]_[SLUG].pdf
 ## IDENTIFICADORES TÉCNICOS
 
 ```
-GAS_URL_BASE:   https://script.google.com/macros/s/AKfycbxl703u2a0MU3r7hdrHGUGTl8bkKTHAHnkcTkL5cSI2ghFCuJ5wKnl6wiHvj8mYd4B3/exec
+GAS_URL_BASE:   https://script.google.com/macros/s/AKfycbyshdDbG8QbxLbXoSrX8Dw0Ege5u1nb7bcVOF5WfRPCsGJKFGmkWk91SwC5CpuDU-7g/exec
 Materia BD:     Procesal
 Carpeta Drive (Jurisprudencia): 1DkCg1LCCxTQunLF5JRTc0AyOGGxqADmz
 Carpeta Drive (Doctrina):       1oHHZRGfOo87rac0mGFzWVTnurWGLab8F
