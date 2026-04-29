@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "ultima_actualizacion": "2026-04-29T00:03:14.676Z",
+  "ultima_actualizacion": "2026-04-29T01:25:11.811Z",
   "total_documentos": 2979,
   "fuente": "LEXIUS Venezuela - Base de datos completa",
   "documentos": [
@@ -36,7 +36,7 @@
     {
       "id": "f6aa623e-1e91-4fb4-b354-3d6d0ae91202",
       "drive_id": null,
-      "titulo": "Código Civil1982",
+      "titulo": "Código Civil",
       "materia": "Civil",
       "sub_materia": "Legislacion",
       "tipo": "legislacion",
@@ -60,7 +60,9 @@
       "nombre_archivo": "CIVIL_LEY_-_1982_codigo-civil1982.txt",
       "lexius_file": "Legislación/Códigos/Código Civil1982.txt",
       "fecha_ingesta": "2026-04-28",
-      "estado": "activo"
+      "estado": "activo",
+      "gaceta_oficial": "",
+      "fecha_gaceta": ""
     },
     {
       "id": "859fcfae-0469-4918-a826-ad6a0dda1547",
