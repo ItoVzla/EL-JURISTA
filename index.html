@@ -1156,7 +1156,7 @@ async function fetchIndex() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     return (data.documentos || [])
-      .filter(d => d.estado === 'activo')
+      .filter(d => !d.estado || d.estado === 'activo')  // incluir docs sin campo estado (LEXIUS)
       .map(d => ({
         id:             d.id,
         drive_id:       d.drive_id       || '',
@@ -1745,6 +1745,11 @@ if (localStorage.getItem('jurista_auth') === CLAVE) {
 //   2. Sin caché → fetchIndex() (CDN → GAS fallback) con loading bar
 async function init() {
   const cached = loadIndexCache();
+
+  // Caché vacío o corrupto → ignorar y recargar
+  if (cached !== null && !cached.length) {
+    try { localStorage.removeItem(IDX_CACHE_KEY); localStorage.removeItem(IDX_CACHE_TS); } catch(e) {}
+  }
 
   if (cached && cached.length) {
     // ── Render inmediato desde caché ──────────────────────────
