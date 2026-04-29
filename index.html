@@ -438,6 +438,87 @@
     border-radius: 2px;
   }
 
+  /* ── EDITOR DE BLOQUES ─────────────────────────── */
+  #vpBlockEditor {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    background: var(--bg);
+  }
+  .edit-block {
+    border-radius: 6px;
+    margin-bottom: 7px;
+    transition: box-shadow .15s;
+  }
+  .edit-block:focus-within {
+    box-shadow: 0 0 0 2px rgba(201,162,39,.3);
+  }
+  .edit-block-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    flex-wrap: wrap;
+  }
+  .edit-block-content {
+    padding: 9px 14px 10px;
+    min-height: 32px;
+    outline: none;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 13.5px;
+    line-height: 1.75;
+  }
+  .edit-block-content:empty::before {
+    content: attr(data-placeholder);
+    color: rgba(255,255,255,.2);
+    pointer-events: none;
+  }
+  .block-type-sel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--gold);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    outline: none;
+  }
+  .block-mini-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.1);
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: 1.4;
+  }
+  .block-mini-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .block-mini-btn.del   { border-color: rgba(231,76,60,.3); color: rgba(231,76,60,.7); }
+  .block-mini-btn.del:hover { border-color: var(--red,#e74c3c); color: var(--red,#e74c3c); }
+  .block-add-row {
+    text-align: center;
+    padding: 4px 0;
+  }
+  .block-add-row button {
+    background: rgba(201,162,39,.08);
+    border: 1px dashed rgba(201,162,39,.3);
+    color: rgba(201,162,39,.6);
+    font-size: 11px;
+    padding: 3px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .block-add-row button:hover {
+    background: rgba(201,162,39,.15);
+    color: var(--gold);
+  }
+
   /* ── VIEWER PAGE (nueva pestaña) ──────────────── */
   #viewerPage {
     display: none;
@@ -534,7 +615,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.7.1</span>
+    <span class="version-badge" id="versionBadge">v1.7.2</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -833,25 +914,25 @@
     <button onclick="cerrarSearch()" class="nav-btn" style="padding:5px 10px;font-size:13px;color:var(--text-muted)">✕</button>
   </div>
 
-  <!-- Panel de edición de texto -->
-  <div id="vpEditPanel" style="display:none;flex-direction:column;flex:1;min-height:0">
+  <!-- Panel de edición de bloques -->
+  <div id="vpEditPanel" style="display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden">
     <div style="background:rgba(201,162,39,.08);border-bottom:1px solid rgba(201,162,39,.2);
-                padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span style="font-size:12px;color:var(--gold)">✏️ <strong>Modo edición</strong> — Corrige el texto directamente. Los cambios se guardan en el archivo .txt de Drive.</span>
-      <div style="margin-left:auto;display:flex;gap:8px">
+                padding:9px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
+      <span style="font-size:12px;color:var(--gold)">✏️ <strong>Editor de bloques</strong></span>
+      <span style="font-size:11px;color:var(--text-muted)">
+        Selecciona el tipo de cada bloque (Título, Artículo, Epígrafe…) y edita su contenido.
+        Enter crea un nuevo bloque. ↑↓ reordenan.
+      </span>
+      <div style="margin-left:auto;display:flex;gap:8px;flex-shrink:0">
         <button id="btnSaveText" onclick="saveEditedText()"
-          style="padding:7px 16px;background:var(--gold);color:#000;border:none;border-radius:6px;
+          style="padding:6px 16px;background:var(--gold);color:#000;border:none;border-radius:6px;
                  font-weight:700;font-size:13px;cursor:pointer">💾 Guardar en Drive</button>
         <button onclick="cancelEditMode()"
-          style="padding:7px 14px;background:var(--surface2);border:1px solid var(--border);
+          style="padding:6px 14px;background:var(--surface2);border:1px solid var(--border);
                  color:var(--text-muted);border-radius:6px;font-size:13px;cursor:pointer">✕ Cancelar</button>
       </div>
     </div>
-    <textarea id="vpEditText"
-      style="flex:1;width:100%;padding:20px;background:var(--surface);color:var(--text);
-             border:none;resize:none;font-family:'Courier New',monospace;font-size:13px;
-             line-height:1.7;outline:none;min-height:calc(100vh - 200px)">
-    </textarea>
+    <div id="vpBlockEditor"></div>
   </div>
 
   <div class="viewer-content" id="vpViewPanel">
@@ -1021,6 +1102,314 @@ let viewerDocId   = '';   // UUID del doc abierto en el visor
 let viewerRawText = '';   // Texto plano original (para edición)
 let viewerIsText  = false; // true cuando el contenido es texto editable (.txt / LEXIUS)
 
+// ── EDITOR DE BLOQUES ─────────────────────────────────────────
+let editBlocks = [];  // Array de {type, content}
+
+const BLOCK_TYPES = [
+  { value: 'titulo',   label: 'Título / Capítulo' },
+  { value: 'seccion',  label: 'Sección' },
+  { value: 'articulo', label: 'Artículo' },
+  { value: 'epigrafe', label: 'Epígrafe' },
+  { value: 'parrafo',  label: 'Párrafo' },
+];
+
+const BLOCK_META = {
+  titulo:   { bg:'rgba(201,162,39,.12)', border:'rgba(201,162,39,.45)', ctrlBg:'rgba(201,162,39,.08)' },
+  seccion:  { bg:'rgba(201,162,39,.07)', border:'rgba(201,162,39,.28)', ctrlBg:'rgba(201,162,39,.05)' },
+  articulo: { bg:'rgba(255,255,255,.025)', border:'rgba(201,162,39,.3)', ctrlBg:'rgba(201,162,39,.04)' },
+  epigrafe: { bg:'rgba(201,162,39,.04)', border:'rgba(201,162,39,.18)', ctrlBg:'rgba(201,162,39,.03)' },
+  parrafo:  { bg:'transparent', border:'rgba(255,255,255,.08)', ctrlBg:'rgba(255,255,255,.02)' },
+};
+
+function blockContentStyle(type) {
+  switch (type) {
+    case 'titulo':   return 'color:var(--gold);font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:.5px;font-family:"Segoe UI",system-ui,sans-serif';
+    case 'seccion':  return 'color:#c9a227;font-weight:600;font-size:13.5px;letter-spacing:.3px;font-family:"Segoe UI",system-ui,sans-serif';
+    case 'articulo': return 'color:var(--text);font-size:13.5px;line-height:1.75';
+    case 'epigrafe': return 'color:var(--gold-dim,#b8933a);font-style:italic;font-size:12.5px;font-weight:600';
+    case 'parrafo':  return 'color:#ccd2e3;font-size:13.5px;line-height:1.75';
+    default:         return 'color:var(--text)';
+  }
+}
+
+function blockPlaceholder(type) {
+  switch (type) {
+    case 'titulo':   return 'TÍTULO / CAPÍTULO…';
+    case 'seccion':  return 'Sección o subsección…';
+    case 'articulo': return 'Artículo 1. Texto del artículo…';
+    case 'epigrafe': return 'Epígrafe del artículo…';
+    case 'parrafo':  return 'Texto del párrafo…';
+    default:         return '…';
+  }
+}
+
+// ── textToBlocks: parse raw text into typed blocks ──
+function textToBlocks(rawText) {
+  if (!rawText) return [{ type: 'parrafo', content: '' }];
+
+  let text = rawText
+    .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+    .replace(/\t/g, '  ')
+    .replace(/[ \xA0]{3,}/g, '  ');
+
+  const lines = text.split('\n');
+
+  const isArt  = s => /^(Art[ií]culo|ARTÍCULO|Art\.)\s+\d+/i.test(s);
+  const isH2   = s => {
+    if (!s) return false;
+    if (/^(TÍTULO|CAPÍTULO|SECCIÓN|DISPOSICI[OÓ]N|PARTE|LIBRO|ENMIENDA)\s*[IVXLCDM\d]/i.test(s)) return true;
+    if (/^(TÍTULO|CAPÍTULO|SECCIÓN|DISPOSICI[OÓ]N TRANSITORIA|PARTE|LIBRO|ENMIENDA)\b/i.test(s) && s.length < 80) return true;
+    if (s === s.toUpperCase() && /[A-ZÁÉÍÓÚÑ]{3,}/.test(s) && s.length > 3 && s.length < 90 && !/^\d+[\.\-\)]/.test(s)) return true;
+    return false;
+  };
+  const isH3   = s => /^(CONSIDERANDO|VISTO\s+QUE|RESUELVE|DECIDE[^\w]|DECLARA[^\w]|OBSERVA[^\w]|MOTIVA|DISPOSITIVO)/i.test(s) && s.length < 100;
+  const PREPS  = new Set(['de','del','la','el','las','los','en','con','por','para','a','y','o','e','u','al','su','sus','sobre','sin','ante']);
+  const isEpi  = s => {
+    if (!s || s.length > 100) return false;
+    if (isH2(s) || isH3(s) || isArt(s)) return false;
+    const words = s.split(/\s+/);
+    if (words.length < 1 || words.length > 12) return false;
+    if (/[,;]$/.test(s)) return false;
+    if (s.endsWith('.') && words.length > 2) return false;
+    if (!/^[A-ZÁÉÍÓÚÑ]/.test(s)) return false;
+    if (!words.every(w => /^[A-ZÁÉÍÓÚÑ]/.test(w) || PREPS.has(w.toLowerCase()))) return false;
+    const looksLike = /^(El|La|Los|Las|Se|Es|Son|Cuando|Todo|Toda|Queda|Quedan|Este|Esta)$/i.test(words[0])
+                      && words.length > 1 && /^[a-záéíóú]/.test(words[1]?.[0] || '');
+    return !looksLike;
+  };
+
+  const blocks = [];
+  let pendingP = [];
+
+  const flushP = () => {
+    if (pendingP.length) {
+      blocks.push({ type: 'parrafo', content: pendingP.join(' ') });
+      pendingP = [];
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const trim = lines[i].trim();
+    if (!trim) { flushP(); continue; }
+
+    if (isH2(trim)) { flushP(); blocks.push({ type: 'titulo',  content: trim }); continue; }
+    if (isH3(trim)) { flushP(); blocks.push({ type: 'seccion', content: trim }); continue; }
+
+    if (isArt(trim)) {
+      flushP();
+      let content = trim;
+      // Absorb continuation lines (non-blank, non-structural, non-epígrafe-before-article)
+      while (i + 1 < lines.length) {
+        const nxt = lines[i + 1].trim();
+        if (!nxt || isH2(nxt) || isH3(nxt) || isArt(nxt)) break;
+        // stop if next is an epígrafe that precedes another article
+        if (isEpi(nxt)) {
+          // look ahead
+          let j = i + 2;
+          while (j < lines.length && !lines[j].trim()) j++;
+          if (j < lines.length && isArt(lines[j].trim())) break;
+        }
+        content += ' ' + nxt;
+        i++;
+      }
+      blocks.push({ type: 'articulo', content });
+      continue;
+    }
+
+    if (isEpi(trim)) { flushP(); blocks.push({ type: 'epigrafe', content: trim }); continue; }
+
+    pendingP.push(trim);
+    const nextTrim = (lines[i + 1] || '').trim();
+    if (!nextTrim || isH2(nextTrim) || isH3(nextTrim) || isArt(nextTrim)) flushP();
+  }
+  flushP();
+
+  return blocks.length ? blocks : [{ type: 'parrafo', content: '' }];
+}
+
+// ── blocksToText: serialize blocks back to plain text ──
+function blocksToText(blocks) {
+  const parts = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    const c = (b.content || '').trim();
+    if (!c) continue;
+    const needsBlankBefore = parts.length > 0 && (b.type === 'titulo' || b.type === 'seccion' || b.type === 'articulo');
+    if (needsBlankBefore) parts.push('');
+    parts.push(c);
+    if (b.type === 'titulo' || b.type === 'seccion') parts.push('');
+  }
+  return parts.join('\n');
+}
+
+// ── renderBlockEditor: build DOM from editBlocks ──
+function renderBlockEditor() {
+  const container = document.getElementById('vpBlockEditor');
+  container.innerHTML = '';
+
+  editBlocks.forEach((b, idx) => {
+    // Block wrapper
+    const meta    = BLOCK_META[b.type] || BLOCK_META.parrafo;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'edit-block';
+    wrapper.style.cssText = `border:1px solid ${meta.border};background:${meta.bg}`;
+
+    // Controls bar
+    const ctrl = document.createElement('div');
+    ctrl.className = 'edit-block-ctrl';
+    ctrl.style.cssText = `background:${meta.ctrlBg};border-bottom:1px solid ${meta.border}`;
+
+    const sel = document.createElement('select');
+    sel.className = 'block-type-sel';
+    BLOCK_TYPES.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.value;
+      opt.textContent = t.label.toUpperCase();
+      if (t.value === b.type) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.onchange = () => updateBlockType(idx, sel.value);
+
+    const idxLbl = document.createElement('span');
+    idxLbl.style.cssText = 'font-size:10px;color:var(--text-muted);margin-left:2px;user-select:none';
+    idxLbl.textContent = '#' + (idx + 1);
+
+    const spacer = document.createElement('span');
+    spacer.style.flex = '1';
+
+    const mkBtn = (txt, title, fn, extra) => {
+      const btn = document.createElement('button');
+      btn.className = 'block-mini-btn' + (extra || '');
+      btn.textContent = txt;
+      btn.title = title;
+      btn.onclick = fn;
+      return btn;
+    };
+
+    ctrl.appendChild(sel);
+    ctrl.appendChild(idxLbl);
+    ctrl.appendChild(spacer);
+    ctrl.appendChild(mkBtn('↑', 'Subir bloque',  () => moveBlock(idx, -1)));
+    ctrl.appendChild(mkBtn('↓', 'Bajar bloque',  () => moveBlock(idx,  1)));
+    ctrl.appendChild(mkBtn('+', 'Añadir párrafo debajo', () => insertBlock(idx)));
+    ctrl.appendChild(mkBtn('✕', 'Eliminar bloque', () => deleteBlock(idx), ' del'));
+
+    // Content editable
+    const content = document.createElement('div');
+    content.className = 'edit-block-content';
+    content.contentEditable = 'true';
+    content.dataset.blockIdx = String(idx);
+    content.dataset.placeholder = blockPlaceholder(b.type);
+    content.style.cssText = 'padding:9px 14px 10px;min-height:32px;outline:none;white-space:pre-wrap;word-break:break-word;' + blockContentStyle(b.type);
+    content.textContent = b.content;
+
+    content.oninput = () => {
+      // Keep content in sync (flatten newlines → space for single-line types)
+      const raw = content.innerText;
+      editBlocks[idx].content = (['titulo','seccion','epigrafe'].includes(editBlocks[idx].type))
+        ? raw.replace(/\n+/g, ' ').trim()
+        : raw;
+    };
+
+    content.onkeydown = e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        insertBlock(idx);
+        setTimeout(() => {
+          const next = document.querySelector(`[data-block-idx="${idx + 1}"]`);
+          if (next) { next.focus(); placeCaretAtStart(next); }
+        }, 40);
+      }
+    };
+
+    wrapper.appendChild(ctrl);
+    wrapper.appendChild(content);
+    container.appendChild(wrapper);
+
+    // Add-block row after each block
+    const addRow = document.createElement('div');
+    addRow.className = 'block-add-row';
+    const addBtn = document.createElement('button');
+    addBtn.textContent = '+ párrafo';
+    addBtn.title = 'Insertar párrafo aquí';
+    addBtn.onclick = () => insertBlock(idx);
+    addRow.appendChild(addBtn);
+    container.appendChild(addRow);
+  });
+}
+
+function placeCaretAtStart(el) {
+  try {
+    const range = document.createRange();
+    const sel   = window.getSelection();
+    range.setStart(el, 0);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } catch(_) {}
+}
+
+function updateBlockType(idx, type) {
+  // Sync content first
+  const el = document.querySelector(`[data-block-idx="${idx}"]`);
+  if (el) editBlocks[idx].content = el.innerText;
+  editBlocks[idx].type = type;
+  renderBlockEditor();
+  setTimeout(() => {
+    const next = document.querySelector(`[data-block-idx="${idx}"]`);
+    if (next) { next.focus(); placeCaretAtEnd(next); }
+  }, 30);
+}
+
+function placeCaretAtEnd(el) {
+  try {
+    const range = document.createRange();
+    const sel   = window.getSelection();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  } catch(_) {}
+}
+
+function moveBlock(idx, dir) {
+  const to = idx + dir;
+  if (to < 0 || to >= editBlocks.length) return;
+  // Sync current content before moving
+  const el = document.querySelector(`[data-block-idx="${idx}"]`);
+  if (el) editBlocks[idx].content = el.innerText;
+  [editBlocks[idx], editBlocks[to]] = [editBlocks[to], editBlocks[idx]];
+  renderBlockEditor();
+  setTimeout(() => {
+    const next = document.querySelector(`[data-block-idx="${to}"]`);
+    if (next) next.focus();
+  }, 30);
+}
+
+function insertBlock(afterIdx) {
+  editBlocks.splice(afterIdx + 1, 0, { type: 'parrafo', content: '' });
+  renderBlockEditor();
+  setTimeout(() => {
+    const next = document.querySelector(`[data-block-idx="${afterIdx + 1}"]`);
+    if (next) { next.focus(); placeCaretAtStart(next); }
+  }, 40);
+}
+
+function deleteBlock(idx) {
+  if (editBlocks.length <= 1) {
+    editBlocks[0].content = '';
+    renderBlockEditor();
+    return;
+  }
+  editBlocks.splice(idx, 1);
+  renderBlockEditor();
+  const focusIdx = Math.min(idx, editBlocks.length - 1);
+  setTimeout(() => {
+    const next = document.querySelector(`[data-block-idx="${focusIdx}"]`);
+    if (next) next.focus();
+  }, 30);
+}
+
 // ── MODO EDICIÓN EN VISOR ────────────────────────────────────
 function toggleEditMode() {
   const btn = document.getElementById('btnEditText');
@@ -1032,7 +1421,6 @@ function enterEditMode() {
   if (!viewerRawText) {
     toast('⚠️ El texto completo aún no está cargado', 'err'); return;
   }
-  // Cerrar búsqueda si estaba abierta
   if (searchActive) cerrarSearch();
 
   const btn = document.getElementById('btnEditText');
@@ -1045,24 +1433,44 @@ function enterEditMode() {
   document.getElementById('vpSearchBar').style.display = 'none';
   document.getElementById('btnSearch').style.display = 'none';
   document.getElementById('vpEditPanel').style.display = 'flex';
-  document.getElementById('vpEditText').value = viewerRawText;
-  document.getElementById('vpEditText').focus();
+
+  // Parse raw text into typed blocks and render
+  editBlocks = textToBlocks(viewerRawText);
+  renderBlockEditor();
+
+  // Scroll to top of block editor and focus first block
+  const editor = document.getElementById('vpBlockEditor');
+  editor.scrollTop = 0;
+  setTimeout(() => {
+    const first = editor.querySelector('[data-block-idx="0"]');
+    if (first) first.focus();
+  }, 60);
 }
 
 function cancelEditMode() {
   const btn = document.getElementById('btnEditText');
-  btn.textContent = '✏️ Editar';
-  btn.dataset.mode = 'view';
-  btn.style.background = '';
-  btn.style.color = '';
-
+  if (btn) {
+    btn.textContent = '✏️ Editar';
+    btn.dataset.mode = 'view';
+    btn.style.background = '';
+    btn.style.color = '';
+  }
   document.getElementById('vpEditPanel').style.display = 'none';
   document.getElementById('vpViewPanel').style.display = '';
   document.getElementById('btnSearch').style.display = '';
+  editBlocks = [];
 }
 
 async function saveEditedText() {
-  const text = document.getElementById('vpEditText').value;
+  // Sync any in-flight edits from DOM to editBlocks
+  document.querySelectorAll('[data-block-idx]').forEach(el => {
+    const idx = parseInt(el.dataset.blockIdx, 10);
+    if (!isNaN(idx) && editBlocks[idx] !== undefined) {
+      editBlocks[idx].content = el.innerText;
+    }
+  });
+
+  const text = blocksToText(editBlocks);
   const btn  = document.getElementById('btnSaveText');
   btn.textContent = '⏳ Guardando…';
   btn.disabled = true;
@@ -1076,12 +1484,11 @@ async function saveEditedText() {
     const d = await r.json();
     if (d.error) throw new Error(d.error);
 
-    // Actualizar texto en memoria y refrescar vista formateada
     viewerRawText = text;
     document.getElementById('vpContent').innerHTML = formatLegalText(text);
 
     cancelEditMode();
-    toast('✅ ' + d.message || 'Texto guardado en Drive', 'ok');
+    toast('✅ ' + (d.message || 'Texto guardado en Drive'), 'ok');
   } catch(err) {
     toast('❌ Error al guardar: ' + err.message, 'err');
     btn.textContent = '💾 Guardar en Drive';
@@ -1406,7 +1813,7 @@ function renderDashboard() {
     </div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA (rama main)</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am Venezuela)</div>
-    <div>🟢 <strong>Web App</strong> — v1.7.1 · GitHub Pages activo</div>
+    <div>🟢 <strong>Web App</strong> — v1.7.2 · GitHub Pages activo</div>
     <div>🟡 <strong>Sub-Agentes</strong> — 9 prompts completados · pendiente alimentar con jurisprudencia/doctrina</div>
     <div>🟢 <strong>Ingesta</strong> — Subida manual + scraper URL activos</div>`;
 }
