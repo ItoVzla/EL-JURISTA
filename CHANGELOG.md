@@ -6,6 +6,16 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.6.3 — 2026-04-28 *(versión en pantalla: v1.6.3)*
+
+### Corregido — URL del GAS actualizada
+
+- **Nueva URL de despliegue GAS.**
+  - *Motivo*: El usuario realizó un nuevo redeploy del GAS en Apps Script, generando una nueva URL.
+  - *Fix*: URL actualizada en `index.html` (constante `GAS`) y en `CLAUDE.md` (campo `GAS_URL_BASE`).
+
+---
+
 ## v1.6.2 — 2026-04-28 *(versión en pantalla: v1.6.2)*
 
 ### Corregido — Epígrafes en el visor de texto completo
