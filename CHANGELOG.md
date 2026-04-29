@@ -6,6 +6,20 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.7.5 — 2026-04-29 *(versión en pantalla: v1.7.5)*
+
+### Corregido — Regresión en openDocView() al abrir documentos
+
+- **Docs con `drive_id` se mostraban como iframe en lugar de texto formateado.**
+  - *Causa*: La nueva lógica usaba `ext !== 'txt'` para decidir si mostrar iframe. Con el GAS anterior (sin redespliegue de v1.7.4), `nombre_archivo` no estaba en `allDocs`, por lo que `ext` era siempre `''`. `'' !== 'txt'` → `true` → iframe para todos los docs con drive_id. Resultado: la Constitución y otros docs de texto se mostraban como una hoja en blanco en lugar del visor formateado.
+  - *Fix*: Cambiado a `isBinary = ext === 'pdf' || ext === 'docx' || ext === 'doc'`. El iframe solo se activa si el formato binario está explícitamente confirmado. Si `nombre_archivo` falta del caché (GAS no redeployado), la carga de texto funciona igual que antes.
+- **Docs LEXIUS sin `drive_id` mostraban "Sin archivo asociado".**
+  - *Causa*: `hasFile = d.drive_id || d.nombre_archivo || d.lexius_file` era falsy cuando esos campos no estaban en allDocs.
+  - *Fix*: Eliminada la validación `hasFile`. Ahora siempre se intenta el fetch de texto al GAS. Si no existe el archivo, el GAS devuelve el error correspondiente.
+- **El visor formateado (colores, artículos, epígrafes), el botón Editar y el buscador interno vuelven a funcionar para todos los docs de texto.**
+
+---
+
 ## v1.7.4 — 2026-04-29 *(versión en pantalla: v1.7.4)*
 
 ### Optimizado — Apertura de documentos notablemente más rápida
