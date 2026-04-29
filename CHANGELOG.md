@@ -6,6 +6,27 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.5.1 — 2026-04-28 *(versión en pantalla: v1.5.1)*
+
+### Añadido — Visor de texto completo desde Drive (LEXIUS + Drive)
+
+- **Nuevo endpoint GAS `GET ?path=documento/texto&id=UUID`**
+  - *Motivo*: El visor mostraba solo el resumen de 80 palabras; el usuario necesita leer el texto legal completo (todos los artículos, capítulos, secciones).
+  - *Comportamiento*: Busca el documento en el índice por UUID. Si tiene `drive_id`, extrae el texto directamente (para PDF convierte a Google Doc temporalmente). Si no tiene `drive_id` (caso LEXIUS), busca el archivo `.txt` en Drive por `nombre_archivo` usando `DriveApp.getFilesByName()`.
+  - Soporta: `.txt` (lectura directa UTF-8), `.pdf` (conversión a Google Doc + extracción), `.docx` (conversión a Google Doc + extracción), Google Docs nativos.
+  - *Fix fallback*: si no encuentra el archivo por nombre exacto, intenta búsqueda parcial con `title contains`.
+
+- **Nuevo helper GAS `buscarYLeerArchivo(nombre, titulo)`** — encapsula la búsqueda en Drive y la extracción de texto para todos los formatos.
+
+- **Visor de pantalla completa actualizado** (`openDocView`):
+  - Antes: mostraba `resumen` (80 palabras) + `fragmentos_clave` cuando no había `drive_id`.
+  - Ahora: llama siempre a `?path=documento/texto&id=UUID` y muestra **el texto íntegro** formateado con `formatLegalText` (títulos, capítulos, artículos, todo).
+  - Si el archivo no está en Drive, muestra mensaje de error claro con el nombre del archivo a cargar.
+
+- **GAS `Code.gs` requiere re-despliegue** para activar el nuevo endpoint.
+
+---
+
 ## v1.5.0 — 2026-04-28 *(versión en pantalla: v1.5.0)*
 
 ### Cambiado — Drawer rediseñado con campos contextuales por tipo de documento
