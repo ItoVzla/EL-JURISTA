@@ -534,7 +534,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.6.3</span>
+    <span class="version-badge" id="versionBadge">v1.7.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -815,12 +815,14 @@
       </a>
       <button onclick="toggleSearch()" class="nav-btn" id="btnSearch" title="Buscar en documento (Ctrl+F)"
         style="padding:6px 12px;font-size:13px">🔍</button>
+      <button onclick="toggleEditMode()" class="nav-btn" id="btnEditText" title="Editar texto del documento"
+        style="padding:6px 12px;font-size:13px;display:none">✏️ Editar</button>
     </div>
   </div>
 
   <!-- Barra de búsqueda interna -->
   <div id="vpSearchBar" style="display:none;background:var(--surface);border-bottom:1px solid var(--border);
-       padding:8px 20px;display:none;align-items:center;gap:8px;flex-wrap:wrap">
+       padding:8px 20px;align-items:center;gap:8px;flex-wrap:wrap">
     <input id="vpSearchInput" type="text" placeholder="Buscar en el documento…"
       style="flex:1;min-width:200px;max-width:400px;padding:7px 12px;border-radius:6px;
              background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:13px;outline:none"
@@ -831,7 +833,28 @@
     <button onclick="cerrarSearch()" class="nav-btn" style="padding:5px 10px;font-size:13px;color:var(--text-muted)">✕</button>
   </div>
 
-  <div class="viewer-content">
+  <!-- Panel de edición de texto -->
+  <div id="vpEditPanel" style="display:none;flex-direction:column;flex:1;min-height:0">
+    <div style="background:rgba(201,162,39,.08);border-bottom:1px solid rgba(201,162,39,.2);
+                padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--gold)">✏️ <strong>Modo edición</strong> — Corrige el texto directamente. Los cambios se guardan en el archivo .txt de Drive.</span>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button id="btnSaveText" onclick="saveEditedText()"
+          style="padding:7px 16px;background:var(--gold);color:#000;border:none;border-radius:6px;
+                 font-weight:700;font-size:13px;cursor:pointer">💾 Guardar en Drive</button>
+        <button onclick="cancelEditMode()"
+          style="padding:7px 14px;background:var(--surface2);border:1px solid var(--border);
+                 color:var(--text-muted);border-radius:6px;font-size:13px;cursor:pointer">✕ Cancelar</button>
+      </div>
+    </div>
+    <textarea id="vpEditText"
+      style="flex:1;width:100%;padding:20px;background:var(--surface);color:var(--text);
+             border:none;resize:none;font-family:'Courier New',monospace;font-size:13px;
+             line-height:1.7;outline:none;min-height:calc(100vh - 200px)">
+    </textarea>
+  </div>
+
+  <div class="viewer-content" id="vpViewPanel">
     <div id="vpLoading" class="drawer-spinner" style="height:200px">⏳ Cargando…</div>
     <div id="vpBody" style="display:none">
       <h1 class="viewer-title" id="vpTitle"></h1>
@@ -889,7 +912,15 @@ async function openDocView(id) {
   document.getElementById('viewerPage').style.display = 'block';
   window.scrollTo(0, 0);
 
-  // Reset estado
+  // Reset estado visor + edición
+  viewerDocId   = id;
+  viewerRawText = '';
+  viewerIsText  = false;
+  cancelEditMode();
+  document.getElementById('btnEditText').style.display = 'none';
+  document.getElementById('btnEditText').dataset.mode = 'view';
+
+  // Reset UI
   document.getElementById('vpLoading').style.display = 'flex';
   document.getElementById('vpBody').style.display = 'none';
   document.getElementById('vpBadges').innerHTML = '';
@@ -953,7 +984,11 @@ async function openDocView(id) {
         .then(r2 => r2.json())
         .then(td => {
           if (td.error) throw new Error(td.error);
-          const rendered = formatLegalText(td.texto || '');
+          viewerRawText = td.texto || '';
+          viewerIsText  = true;
+          // Mostrar botón de edición solo para archivos de texto
+          document.getElementById('btnEditText').style.display = 'inline-flex';
+          const rendered = formatLegalText(viewerRawText);
           document.getElementById('vpContent').innerHTML = rendered ||
             '<p style="color:var(--text-muted);font-style:italic">El documento no tiene contenido de texto.</p>';
         })
@@ -978,6 +1013,79 @@ async function openDocView(id) {
   } catch(err) {
     document.getElementById('vpLoading').innerHTML =
       `<div style="color:var(--red);padding:20px">❌ Error: ${esc(err.message)}</div>`;
+  }
+}
+
+// ── ESTADO DEL VISOR ─────────────────────────────────────────
+let viewerDocId   = '';   // UUID del doc abierto en el visor
+let viewerRawText = '';   // Texto plano original (para edición)
+let viewerIsText  = false; // true cuando el contenido es texto editable (.txt / LEXIUS)
+
+// ── MODO EDICIÓN EN VISOR ────────────────────────────────────
+function toggleEditMode() {
+  const btn = document.getElementById('btnEditText');
+  if (btn.dataset.mode === 'edit') cancelEditMode();
+  else enterEditMode();
+}
+
+function enterEditMode() {
+  if (!viewerRawText) {
+    toast('⚠️ El texto completo aún no está cargado', 'err'); return;
+  }
+  // Cerrar búsqueda si estaba abierta
+  if (searchActive) cerrarSearch();
+
+  const btn = document.getElementById('btnEditText');
+  btn.textContent = '👁 Vista';
+  btn.dataset.mode = 'edit';
+  btn.style.background = 'rgba(201,162,39,.15)';
+  btn.style.color = 'var(--gold)';
+
+  document.getElementById('vpViewPanel').style.display = 'none';
+  document.getElementById('vpSearchBar').style.display = 'none';
+  document.getElementById('btnSearch').style.display = 'none';
+  document.getElementById('vpEditPanel').style.display = 'flex';
+  document.getElementById('vpEditText').value = viewerRawText;
+  document.getElementById('vpEditText').focus();
+}
+
+function cancelEditMode() {
+  const btn = document.getElementById('btnEditText');
+  btn.textContent = '✏️ Editar';
+  btn.dataset.mode = 'view';
+  btn.style.background = '';
+  btn.style.color = '';
+
+  document.getElementById('vpEditPanel').style.display = 'none';
+  document.getElementById('vpViewPanel').style.display = '';
+  document.getElementById('btnSearch').style.display = '';
+}
+
+async function saveEditedText() {
+  const text = document.getElementById('vpEditText').value;
+  const btn  = document.getElementById('btnSaveText');
+  btn.textContent = '⏳ Guardando…';
+  btn.disabled = true;
+
+  try {
+    const r = await fetch(GAS + '?path=documento/texto/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ id: viewerDocId, texto: text }),
+    });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+
+    // Actualizar texto en memoria y refrescar vista formateada
+    viewerRawText = text;
+    document.getElementById('vpContent').innerHTML = formatLegalText(text);
+
+    cancelEditMode();
+    toast('✅ ' + d.message || 'Texto guardado en Drive', 'ok');
+  } catch(err) {
+    toast('❌ Error al guardar: ' + err.message, 'err');
+    btn.textContent = '💾 Guardar en Drive';
+    btn.disabled = false;
   }
 }
 
@@ -1091,6 +1199,10 @@ document.addEventListener('keydown', e => {
 
 function closeDocView() {
   cerrarSearch();
+  cancelEditMode();
+  viewerRawText = '';
+  viewerDocId   = '';
+  viewerIsText  = false;
   document.getElementById('viewerPage').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   document.getElementById('app').style.flexDirection = 'column';
@@ -1283,13 +1395,20 @@ function renderDashboard() {
     </li>`).join('');
 
   // System status
+  const sentencias = allDocs.filter(d => d.tipo === 'sentencia').length;
+  const doctrina   = allDocs.filter(d => d.tipo === 'doctrina' || d.tipo === 'articulo').length;
+  const convenios  = allDocs.filter(d => d.tipo === 'convenio').length;
   document.getElementById('systemStatus').innerHTML = `
-    <div>🟢 <strong>GAS API</strong> — Conectado</div>
-    <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs · v1.1</div>
-    <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA</div>
-    <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am)</div>
-    <div>🟢 <strong>Web App</strong> — v1.6.3 · GitHub Pages activo</div>
-    <div>🔵 <strong>Sub-Agentes</strong> — 9 stubs · pendiente alimentar</div>`;
+    <div>🟢 <strong>GAS API</strong> — Conectado y operativo</div>
+    <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs · LEXIUS Venezuela cargado</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-left:18px">
+      ${legis} legislación · ${sentencias} sentencias · ${doctrina} doctrina · ${convenios} convenios
+    </div>
+    <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA (rama main)</div>
+    <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am Venezuela)</div>
+    <div>🟢 <strong>Web App</strong> — v1.7.0 · GitHub Pages activo</div>
+    <div>🟡 <strong>Sub-Agentes</strong> — 9 prompts completados · pendiente alimentar con jurisprudencia/doctrina</div>
+    <div>🟢 <strong>Ingesta</strong> — Subida manual + scraper URL activos</div>`;
 }
 
 // ── INGESTA ──────────────────────────────────────────────────
@@ -1330,26 +1449,81 @@ function cancelUpload() {
 async function submitUpload() {
   const titulo = document.getElementById('f-titulo').value.trim();
   if (!titulo) { toast('❌ El título es obligatorio','err'); return; }
-  if (!selectedFile) { toast('❌ Selecciona un archivo','err'); return; }
+  if (!selectedFile) { toast('❌ Selecciona un archivo primero','err'); return; }
 
-  toast('📤 Subiendo documento… (el proceso puede tardar 30s)');
-  // Nota: la subida real requiere que el GAS endpoint /subir esté configurado para recibir multipart
-  // Por ahora mostramos el formulario y avisamos
-  toast('ℹ️ Subida vía API lista — arrastra el archivo a Drive y Claude lo procesará automáticamente', 'ok');
+  const btn = document.querySelector('#itab-manual .btn-primary');
+  btn.textContent = '⏳ Subiendo…';
+  btn.disabled = true;
+
+  try {
+    // Leer el archivo como base64
+    const base64 = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload  = e => res(e.target.result.split(',')[1]); // solo la parte base64
+      reader.onerror = rej;
+      reader.readAsDataURL(selectedFile);
+    });
+
+    const ext = selectedFile.name.split('.').pop().toLowerCase();
+    const body = {
+      titulo,
+      materia:      document.getElementById('f-materia').value,
+      tipo:         document.getElementById('f-tipo').value,
+      autor:        document.getElementById('f-autor').value.trim() || '-',
+      año:          document.getElementById('f-anio').value,
+      expediente:   document.getElementById('f-expediente').value.trim() || null,
+      vigencia:     document.getElementById('f-vigencia').value,
+      tags:         document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+      resumen:      document.getElementById('f-resumen').value.trim() || '',
+      extension:    ext,
+      contenido_base64: base64,
+    };
+
+    const r = await fetch(GAS + '?path=subir', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+
+    toast('✅ Documento subido: ' + d.nombre_archivo, 'ok');
+    cancelUpload();
+
+    // Refrescar datos
+    await init();
+  } catch(e) {
+    toast('❌ Error al subir: ' + e.message, 'err');
+  } finally {
+    btn.textContent = '📤 Subir documento';
+    btn.disabled = false;
+  }
 }
 
 async function submitScrape() {
   const url = document.getElementById('scrapeUrl').value.trim();
   if (!url) { toast('❌ Introduce una URL','err'); return; }
-  document.getElementById('scrapeStatus').textContent = '⏳ Procesando URL…';
+  const status = document.getElementById('scrapeStatus');
+  status.innerHTML = '<span style="color:var(--text-muted)">⏳ Procesando URL con Jina AI Reader… esto puede tardar 20-30s.</span>';
   try {
-    const r = await fetch(GAS+'?path=scrape&url='+encodeURIComponent(url));
+    const r = await fetch(GAS + '?path=scrape', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ url }),
+    });
     const d = await r.json();
-    document.getElementById('scrapeStatus').textContent = d.success
-      ? '✅ Documento importado: ' + d.titulo
-      : '❌ Error: ' + (d.error || 'No se pudo procesar la URL');
+    if (d.error) throw new Error(d.error);
+    status.innerHTML = `
+      <div style="color:var(--green)">✅ Texto extraído correctamente</div>
+      <div style="font-size:12px;margin-top:6px;color:var(--text-muted)">
+        Materia detectada: <strong>${d.materia_detectada||'_Por_Clasificar'}</strong> ·
+        ${d.longitud_total?.toLocaleString('es')||0} caracteres
+        ${d.archivo_guardado ? ' · 📄 Guardado como: <strong>' + esc(d.archivo_guardado.nombre) + '</strong>' : ''}
+      </div>
+      ${d.texto_extraido ? `<pre style="margin-top:10px;font-size:11px;color:var(--text-muted);white-space:pre-wrap;max-height:120px;overflow:auto;background:var(--surface2);padding:8px;border-radius:6px">${esc(d.texto_extraido.substring(0,400))}…</pre>` : ''}`;
+    if (d.archivo_guardado) await init(); // refrescar tabla
   } catch(e) {
-    document.getElementById('scrapeStatus').textContent = '❌ Error de conexión con GAS';
+    status.innerHTML = '<span style="color:var(--red)">❌ Error: ' + esc(e.message) + '</span>';
   }
 }
 
