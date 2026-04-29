@@ -6,6 +6,97 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.8.1 — 2026-04-29 *(versión en pantalla: v1.8.1)*
+
+### Corregido — Base de datos vacía al cargar desde CDN
+
+- **`fetchIndex()` filtraba todos los documentos LEXIUS por ausencia del campo `estado`.**
+  - *Causa*: El filtro `.filter(d => d.estado === 'activo')` requería el campo explícito. El `jurista_index.json` generado por el scraper LEXIUS no incluye ese campo en ninguno de los 2,979 documentos. Al cargar desde GitHub Pages CDN, el resultado era un array vacío → biblioteca en blanco.
+  - *Fix*: Filtro cambiado a `.filter(d => !d.estado || d.estado === 'activo')`. Incluye docs sin campo `estado` (todos los LEXIUS) y excluye solo los marcados explícitamente como inactivos.
+  - *Detección*: Reportado por el usuario al ver la biblioteca vacía tras el deploy de v1.8.0.
+- **Caché `localStorage` corrupto (array vacío) ya no bloquea recarga.**
+  - *Fix*: `init()` detecta caché con longitud 0 y lo elimina antes de intentar un fetch fresco.
+
+---
+
+## v1.8.0 — 2026-04-29 *(versión en pantalla: v1.8.0)*
+
+### Añadido — Optimización de rendimiento: caché multi-capa + CDN
+
+- **Caché del índice en `localStorage` (stale-while-revalidate, TTL 30 min).**
+  - *Motivo*: La carga inicial requería una llamada GAS que tarda 2-5s por cold start + lectura de 5.8MB desde Drive. En cada visita se recargaba completamente.
+  - *Fix*: Al abrir la app, si el caché es válido (<30 min), los 2,979 docs se renderizan **instantáneamente** desde `localStorage`. Luego se refresca silenciosamente en background.
+- **Índice servido desde GitHub Pages CDN (Fastly) en lugar de GAS.**
+  - *Motivo*: GAS tiene cold start inherente de 1-3s. El mismo `jurista_index.json` ya está replicado en GitHub Pages donde es servido por CDN sin cold start.
+  - *Fix*: `fetchIndex()` usa `https://itovzla.github.io/EL-JURISTA/data/jurista_index.json` como fuente primaria, con GAS como fallback automático si falla.
+- **Textos de documentos persistidos en `sessionStorage`.**
+  - *Motivo*: `textCache` era un `Map` en memoria que se perdía al recargar la página. Cualquier refresh obligaba a re-fetch del texto desde GAS.
+  - *Fix*: `saveTextCache(id, text)` guarda en memoria **y** en `sessionStorage`. `loadTextCache(id)` consulta ambas capas. Documentos ya leídos en la sesión se abren instantáneamente incluso después de un refresh.
+- **Skeleton animado para el visor de PDFs.**
+  - *Motivo*: Al abrir un PDF con iframe de Drive, la pantalla aparecía en blanco sin indicador de carga.
+  - *Fix*: Se muestra un skeleton pulsante mientras carga el iframe. Al dispararse `onload`, el skeleton desaparece con transición y el PDF aparece con fade-in.
+
+---
+
+## v1.7.5 — 2026-04-29 *(versión en pantalla: v1.7.5)*
+
+### Corregido — Regresión en openDocView() al abrir documentos
+
+- **Docs con `drive_id` se mostraban como iframe en lugar de texto formateado.**
+  - *Causa*: La nueva lógica usaba `ext !== 'txt'` para decidir si mostrar iframe. Con el GAS anterior (sin redespliegue de v1.7.4), `nombre_archivo` no estaba en `allDocs`, por lo que `ext` era siempre `''`. `'' !== 'txt'` → `true` → iframe para todos los docs con drive_id. Resultado: la Constitución y otros docs de texto se mostraban como una hoja en blanco en lugar del visor formateado.
+  - *Fix*: Cambiado a `isBinary = ext === 'pdf' || ext === 'docx' || ext === 'doc'`. El iframe solo se activa si el formato binario está explícitamente confirmado. Si `nombre_archivo` falta del caché (GAS no redeployado), la carga de texto funciona igual que antes.
+- **Docs LEXIUS sin `drive_id` mostraban "Sin archivo asociado".**
+  - *Causa*: `hasFile = d.drive_id || d.nombre_archivo || d.lexius_file` era falsy cuando esos campos no estaban en allDocs.
+  - *Fix*: Eliminada la validación `hasFile`. Ahora siempre se intenta el fetch de texto al GAS. Si no existe el archivo, el GAS devuelve el error correspondiente.
+- **El visor formateado (colores, artículos, epígrafes), el botón Editar y el buscador interno vuelven a funcionar para todos los docs de texto.**
+
+---
+
+## v1.7.4 — 2026-04-29 *(versión en pantalla: v1.7.4)*
+
+### Optimizado — Apertura de documentos notablemente más rápida
+
+- **Eliminada la llamada GAS a `/indice/doc`** al abrir un documento.
+  - *Motivo*: La apertura requería 2 llamadas GAS seriales: primero `/indice/doc` (lee 5.8MB + devuelve metadata), luego `/documento/texto` (lee 5.8MB de nuevo + lee el archivo). Con el índice en Drive, cada llamada tarda 2-5s. En serie sumaban 4-10s de espera.
+  - *Fix*: La metadata (título, materia, tipo, badges, tags, cita_formal, drive_id) ahora se toma directamente de `allDocs` que ya está en memoria desde el init. El visor muestra la cabecera del documento **instantáneamente** sin ninguna llamada de red, y solo hace 1 llamada GAS para el texto.
+  - *Cambio en GAS*: `getIndiceResumen()` ahora incluye `nombre_archivo` y `lexius_file` para que el frontend pueda determinar el tipo de archivo sin el segundo fetch.
+
+- **Caché cliente de texto** (`textCache: Map<id, string>`).
+  - Documentos ya abiertos se muestran instantáneamente al volver a abrirlos en la misma sesión. Sin llamada GAS.
+
+- **Prefetch al hacer hover** sobre el título de un documento.
+  - Si el cursor se detiene 400ms sobre un título, el texto empieza a descargarse silenciosamente en segundo plano. Cuando el usuario hace click, el texto ya puede estar listo.
+
+- **Caché GAS de texto** (`CacheService`, TTL 6h, máx 100 KB/entrada).
+  - `getDocumento()` y `buscarYLeerArchivo()` ahora cachean el texto en `CacheService.getScriptCache()`. La segunda vez que cualquier usuario abra un doc en las siguientes 6h, el GAS no necesita leer el archivo de Drive — responde desde caché en ~200ms.
+
+---
+
+## v1.7.3 — 2026-04-29 *(versión en pantalla: v1.7.3)*
+
+### Corregido — URL GAS + bug text/plain en getDocumento()
+
+- **Nueva URL de despliegue GAS** tras redeploy con el fix de `getDocumento()`.
+  - *Fix*: URL actualizada en `index.html` (constante `GAS`) y en `CLAUDE.md`.
+- **`getDocumento(driveId)` ahora lee archivos `text/plain` correctamente.**
+  - *Motivo*: Documentos LEXIUS que tienen `drive_id` asignado en el índice (e.g. Constitución de Venezuela 1999) entraban por `getDocumento()` en lugar de `buscarYLeerArchivo()`. La primera función solo manejaba PDF y Google Docs, devolviendo el string `[Formato no soportado para extracción de texto: text/plain]` en lugar del texto real.
+  - *Fix*: Se añadió el caso `text/plain | application/octet-stream` como primera rama del `if` en `getDocumento()`, con `getBlob().getDataAsString('UTF-8')` + `limpiarTextoLexius()`. Se añadió también el caso DOCX para consistencia.
+  - *Detección*: Captura de pantalla del visor mostrando el mensaje de error literal en lugar del texto legal.
+
+---
+
+## v1.7.2 — 2026-04-29 *(versión en pantalla: v1.7.2)*
+
+### Añadido — Editor de bloques estructurados en el visor
+
+- **Editor de bloques** reemplaza al `<textarea>` plano del modo edición.
+  - *Motivo*: Al editar texto legal en un textarea raw, se perdían los colores y la jerarquía visual (títulos dorados, artículos con borde, epígrafes en itálica). El usuario necesitaba poder controlar el tipo de cada línea para mantener la estructura.
+  - *Comportamiento*: Al pulsar `✏️ Editar`, el texto se parsea automáticamente en bloques tipados usando la misma lógica que `formatLegalText()`. Cada bloque muestra un selector de tipo (`TÍTULO / CAPÍTULO`, `SECCIÓN`, `ARTÍCULO`, `EPÍGRAFE`, `PÁRRAFO`) y un `contenteditable` con los colores reales del visor en tiempo real. El usuario puede cambiar el tipo con el desplegable, reordenar bloques con ↑↓, insertar bloques con `+` o Enter, y eliminar con `✕`. Al guardar, los bloques se serializan a texto plano y se envían al GAS como antes.
+  - *CSS añadido*: `.edit-block`, `.edit-block-ctrl`, `.edit-block-content`, `.block-type-sel`, `.block-mini-btn`, `.block-add-row`.
+  - *Funciones JS nuevas*: `textToBlocks()`, `blocksToText()`, `renderBlockEditor()`, `createBlockEl()` (inline), `updateBlockType()`, `moveBlock()`, `insertBlock()`, `deleteBlock()`, `placeCaretAtStart()`, `placeCaretAtEnd()`.
+
+---
+
 ## v1.7.1 — 2026-04-28 *(versión en pantalla: v1.7.1)*
 
 ### Corregido — URL del GAS actualizada
