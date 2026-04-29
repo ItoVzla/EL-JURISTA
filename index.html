@@ -615,7 +615,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.7.3</span>
+    <span class="version-badge" id="versionBadge">v1.7.4</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -984,11 +984,9 @@ const MATERIA_MAP_VP = {
   Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio'
 };
 
-async function openDocView(id) {
-  // Guardar scroll y estado actual
+function openDocView(id) {
   history.pushState({ view: 'doc', id }, '', '');
 
-  // Ocultar app, mostrar viewer
   document.getElementById('app').style.display = 'none';
   document.getElementById('viewerPage').style.display = 'block';
   window.scrollTo(0, 0);
@@ -1001,100 +999,119 @@ async function openDocView(id) {
   document.getElementById('btnEditText').style.display = 'none';
   document.getElementById('btnEditText').dataset.mode = 'view';
 
-  // Reset UI
-  document.getElementById('vpLoading').style.display = 'flex';
-  document.getElementById('vpBody').style.display = 'none';
-  document.getElementById('vpBadges').innerHTML = '';
-  document.getElementById('vpTitle').textContent = '';
-  document.getElementById('vpContent').innerHTML = '';
-  document.getElementById('vpDriveLink').style.display = 'none';
-
-  // Buscar primero en memoria (datos parciales para título rápido)
-  const lite = allDocs.find(x => x.id === id);
-  if (lite) document.getElementById('vpTitle').textContent = lite.titulo || '…';
-
-  try {
-    const r = await fetch(GAS + '?path=indice/doc&id=' + encodeURIComponent(id));
-    const d = await r.json();
-    if (d.error) throw new Error(d.error);
-
-    document.title = (d.titulo || 'Documento') + ' — El Jurista';
-    document.getElementById('vpTitle').textContent = d.titulo || '—';
-
-    // Badges
-    const badges = [
-      d.materia  ? `<span class="badge badge-materia">${MATERIA_MAP_VP[d.materia]||d.materia}</span>` : '',
-      d.tipo     ? `<span class="badge badge-tipo">${d.tipo}</span>` : '',
-      d.año      ? `<span class="badge" style="background:rgba(255,255,255,.06);color:var(--text-muted)">${d.año}</span>` : '',
-      d.vigencia ? `<span class="badge" style="background:rgba(46,204,113,.12);color:var(--green)">${d.vigencia}</span>` : ''
-    ].filter(Boolean).join('');
-    document.getElementById('vpBadges').innerHTML = badges;
-
-    // Meta
-    const tags = (d.tags||[]).map(t=>`<span class="tag-pill">${esc(t)}</span>`).join('');
-    document.getElementById('vpMeta').innerHTML = `
-      ${(d.autor && d.autor!=='-') ? `<span style="font-size:13px;color:var(--text-muted)">${esc(d.autor)}</span>` : ''}
-      ${tags}
-      ${d.cita_formal ? `<span style="font-size:11px;color:var(--text-muted);font-style:italic;width:100%">${esc(d.cita_formal)}</span>` : ''}`;
-
-    // Drive link
-    if (d.drive_id) {
-      const dl = document.getElementById('vpDriveLink');
-      dl.href = 'https://drive.google.com/file/d/' + d.drive_id + '/view';
-      dl.style.display = 'inline-flex';
-    }
-
-    // Contenido — siempre intentar texto completo via GAS
-    const ext = (d.nombre_archivo||'').split('.').pop().toLowerCase();
-    const hasFile = d.drive_id || d.nombre_archivo;
-
-    if (d.drive_id && ext !== 'txt') {
-      // PDF / DOCX con drive_id: iframe embebido de Drive
-      document.getElementById('vpContent').innerHTML =
-        `<iframe src="https://drive.google.com/file/d/${d.drive_id}/preview"
-           style="width:100%;height:82vh;border:none;border-radius:8px"></iframe>`;
-    } else if (hasFile) {
-      // TXT (con o sin drive_id) o cualquier doc LEXIUS: pedir texto completo al GAS
-      document.getElementById('vpContent').innerHTML =
-        `<div style="text-align:center;padding:60px 20px;color:var(--text-muted)">
-           <div style="font-size:36px;margin-bottom:16px">⏳</div>
-           <div style="font-size:14px">Cargando texto completo…</div>
-           <div style="font-size:12px;margin-top:8px;opacity:.6">Esto puede tardar unos segundos.</div>
-         </div>`;
-      fetch(GAS + '?path=documento/texto&id=' + encodeURIComponent(d.id))
-        .then(r2 => r2.json())
-        .then(td => {
-          if (td.error) throw new Error(td.error);
-          viewerRawText = td.texto || '';
-          viewerIsText  = true;
-          // Mostrar botón de edición solo para archivos de texto
-          document.getElementById('btnEditText').style.display = 'inline-flex';
-          const rendered = formatLegalText(viewerRawText);
-          document.getElementById('vpContent').innerHTML = rendered ||
-            '<p style="color:var(--text-muted);font-style:italic">El documento no tiene contenido de texto.</p>';
-        })
-        .catch(err => {
-          document.getElementById('vpContent').innerHTML =
-            `<div style="padding:24px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25);
-                         border-radius:8px;color:var(--text-muted)">
-               <p style="color:var(--red);font-weight:600;margin-bottom:12px">❌ No se pudo cargar el texto completo</p>
-               <p style="font-size:13px;margin-bottom:8px">${esc(err.message)}</p>
-               <p style="font-size:12px">Para leer este documento, asegúrate de que el archivo
-               <strong>${esc(d.nombre_archivo||'')}</strong> esté en Drive.</p>
-             </div>`;
-        });
-    } else {
-      document.getElementById('vpContent').innerHTML =
-        '<p style="color:var(--text-muted);font-style:italic;padding:40px 0;text-align:center">Sin archivo asociado.</p>';
-    }
-
-    document.getElementById('vpLoading').style.display = 'none';
-    document.getElementById('vpBody').style.display = 'block';
-
-  } catch(err) {
+  // ── Metadata desde allDocs (ya cargado en memoria — sin llamada GAS) ──
+  const d = allDocs.find(x => x.id === id);
+  if (!d) {
     document.getElementById('vpLoading').innerHTML =
-      `<div style="color:var(--red);padding:20px">❌ Error: ${esc(err.message)}</div>`;
+      `<div style="color:var(--red);padding:20px">❌ Documento no encontrado en el índice</div>`;
+    document.getElementById('viewerPage').style.display = 'block';
+    return;
   }
+
+  // Render inmediato de cabecera (sin esperar red)
+  document.title = (d.titulo || 'Documento') + ' — El Jurista';
+  document.getElementById('vpTitle').textContent = d.titulo || '—';
+  document.getElementById('vpBadges').innerHTML = [
+    d.materia  ? `<span class="badge badge-materia">${MATERIA_MAP_VP[d.materia]||d.materia}</span>` : '',
+    d.tipo     ? `<span class="badge badge-tipo">${d.tipo}</span>` : '',
+    d.año      ? `<span class="badge" style="background:rgba(255,255,255,.06);color:var(--text-muted)">${d.año}</span>` : '',
+    d.vigencia ? `<span class="badge" style="background:rgba(46,204,113,.12);color:var(--green)">${d.vigencia}</span>` : ''
+  ].filter(Boolean).join('');
+  const tags = (d.tags||[]).map(t=>`<span class="tag-pill">${esc(t)}</span>`).join('');
+  document.getElementById('vpMeta').innerHTML =
+    `${(d.autor && d.autor!=='-') ? `<span style="font-size:13px;color:var(--text-muted)">${esc(d.autor)}</span>` : ''}
+     ${tags}
+     ${d.cita_formal ? `<span style="font-size:11px;color:var(--text-muted);font-style:italic;width:100%">${esc(d.cita_formal)}</span>` : ''}`;
+  if (d.drive_id) {
+    const dl = document.getElementById('vpDriveLink');
+    dl.href = 'https://drive.google.com/file/d/' + d.drive_id + '/view';
+    dl.style.display = 'inline-flex';
+  }
+  document.getElementById('vpLoading').style.display = 'none';
+  document.getElementById('vpBody').style.display = 'block';
+  document.getElementById('vpContent').innerHTML = '';
+
+  // ── Decidir cómo mostrar el contenido ──
+  const ext     = (d.nombre_archivo || '').split('.').pop().toLowerCase();
+  const hasFile = d.drive_id || d.nombre_archivo || d.lexius_file;
+
+  if (d.drive_id && ext !== 'txt') {
+    // PDF / DOCX — iframe embebido de Drive
+    document.getElementById('vpContent').innerHTML =
+      `<iframe src="https://drive.google.com/file/d/${d.drive_id}/preview"
+         style="width:100%;height:82vh;border:none;border-radius:8px"></iframe>`;
+    return;
+  }
+
+  if (!hasFile) {
+    document.getElementById('vpContent').innerHTML =
+      '<p style="color:var(--text-muted);font-style:italic;padding:40px 0;text-align:center">Sin archivo asociado.</p>';
+    return;
+  }
+
+  // ── TXT / LEXIUS: caché cliente primero, luego GAS ──
+  if (textCache.has(id)) {
+    _renderDocText(id, textCache.get(id));
+    return;
+  }
+
+  document.getElementById('vpContent').innerHTML =
+    `<div style="text-align:center;padding:60px 20px;color:var(--text-muted)">
+       <div style="font-size:36px;margin-bottom:16px">⏳</div>
+       <div style="font-size:14px">Cargando texto completo…</div>
+       <div style="font-size:12px;margin-top:8px;opacity:.6">Esto puede tardar unos segundos.</div>
+     </div>`;
+
+  fetch(GAS + '?path=documento/texto&id=' + encodeURIComponent(id))
+    .then(r => r.json())
+    .then(td => {
+      if (td.error) throw new Error(td.error);
+      textCache.set(id, td.texto || ''); // guardar para reaperturas instantáneas
+      _renderDocText(id, td.texto || '');
+    })
+    .catch(err => {
+      document.getElementById('vpContent').innerHTML =
+        `<div style="padding:24px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.25);
+                     border-radius:8px;color:var(--text-muted)">
+           <p style="color:var(--red);font-weight:600;margin-bottom:12px">❌ No se pudo cargar el texto</p>
+           <p style="font-size:13px;margin-bottom:8px">${esc(err.message)}</p>
+           <p style="font-size:12px">Asegúrate de que el archivo
+           <strong>${esc(d.nombre_archivo||'')}</strong> esté en Drive.</p>
+         </div>`;
+    });
+}
+
+function _renderDocText(id, texto) {
+  // Solo actualizar si el doc sigue abierto
+  if (viewerDocId !== id) return;
+  viewerRawText = texto;
+  viewerIsText  = true;
+  document.getElementById('btnEditText').style.display = 'inline-flex';
+  document.getElementById('vpContent').innerHTML = formatLegalText(texto) ||
+    '<p style="color:var(--text-muted);font-style:italic">El documento no tiene contenido de texto.</p>';
+}
+
+// ── CACHÉ CLIENTE ─────────────────────────────────────────────
+// Evita re-llamar al GAS si el doc ya fue abierto en esta sesión
+const textCache = new Map(); // id → texto plano
+
+// Prefetch al hacer hover 400ms sobre un título
+let _prefetchTimer = null;
+function prefetchDoc(id) {
+  if (textCache.has(id)) return;
+  clearTimeout(_prefetchTimer);
+  _prefetchTimer = setTimeout(() => {
+    if (textCache.has(id)) return;
+    const d = allDocs.find(x => x.id === id);
+    if (!d) return;
+    const ext = (d.nombre_archivo || '').split('.').pop().toLowerCase();
+    if (d.drive_id && ext !== 'txt') return; // PDF — no prefetch
+    if (!d.drive_id && !d.nombre_archivo && !d.lexius_file) return;
+    fetch(GAS + '?path=documento/texto&id=' + encodeURIComponent(id))
+      .then(r => r.json())
+      .then(td => { if (!td.error && td.texto) textCache.set(id, td.texto); })
+      .catch(() => {});
+  }, 400);
 }
 
 // ── ESTADO DEL VISOR ─────────────────────────────────────────
@@ -1683,9 +1700,9 @@ function renderTable() {
           <span onclick="openDocView('${esc(d.id)}')"
                 style="color:var(--gold);cursor:pointer;text-decoration:none;
                        border-bottom:1px dashed rgba(201,162,39,.35);transition:border .15s"
-                onmouseover="this.style.borderBottomStyle='solid'"
+                onmouseover="this.style.borderBottomStyle='solid';prefetchDoc('${esc(d.id)}')"
                 onmouseout="this.style.borderBottomStyle='dashed'"
-                title="Abrir en nueva pestaña">
+                title="Abrir documento">
             ${esc(d.titulo || '—')}
           </span>
         </div>
@@ -1813,7 +1830,7 @@ function renderDashboard() {
     </div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA (rama main)</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am Venezuela)</div>
-    <div>🟢 <strong>Web App</strong> — v1.7.3 · GitHub Pages activo</div>
+    <div>🟢 <strong>Web App</strong> — v1.7.4 · GitHub Pages activo</div>
     <div>🟡 <strong>Sub-Agentes</strong> — 9 prompts completados · pendiente alimentar con jurisprudencia/doctrina</div>
     <div>🟢 <strong>Ingesta</strong> — Subida manual + scraper URL activos</div>`;
 }
