@@ -534,7 +534,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.6.1</span>
+    <span class="version-badge" id="versionBadge">v1.6.2</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -1288,7 +1288,7 @@ function renderDashboard() {
     <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs · v1.1</div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am)</div>
-    <div>🟢 <strong>Web App</strong> — v1.6.1 · GitHub Pages activo</div>
+    <div>🟢 <strong>Web App</strong> — v1.6.2 · GitHub Pages activo</div>
     <div>🔵 <strong>Sub-Agentes</strong> — 9 stubs · pendiente alimentar</div>`;
 }
 
@@ -1720,7 +1720,7 @@ function switchDrawerTab(tab) {
 function formatLegalText(rawText) {
   if (!rawText) return '';
 
-  // 1. Limpiar artefactos de LEXIUS que lleguen por si acaso desde el cliente
+  // 1. Limpiar artefactos de LEXIUS
   const lexiusUI = [
     /Sintetizar texto legal con el Asistente Virtual\s*/gi,
     /Generar Video Podcast Legal usando este texto legal como contexto\s*/gi,
@@ -1733,149 +1733,161 @@ function formatLegalText(rawText) {
   ];
   lexiusUI.forEach(p => { rawText = rawText.replace(p, ''); });
 
-  // 2. Normalizar saltos de línea y espacios
+  // 2. Normalizar
   let text = rawText
     .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
     .replace(/\t/g, '  ')
-    .replace(/[ \xA0]{3,}/g, '  ')   // espacios múltiples → 2
-    .replace(/\n{4,}/g, '\n\n\n');   // máx 3 líneas en blanco
+    .replace(/[ \xA0]{3,}/g, '  ')
+    .replace(/\n{4,}/g, '\n\n\n');
 
   const lines = text.split('\n');
-  let html = '';
-  let inBlock = false;
-  let pendingLines = [];  // acumula líneas de párrafo
 
-  const flushP = () => {
-    if (pendingLines.length) {
-      html += `<p class="lv-p">${pendingLines.map(l => esc(l)).join(' ')}</p>`;
-      pendingLines = [];
-    }
-    inBlock = false;
-  };
+  // ── Helpers ──────────────────────────────────────────────
+
+  const isArticle = s => /^(Art[ií]culo|ARTÍCULO|Art\.)\s+\d+/i.test(s);
 
   const isHeading = s => {
-    const t = s.trim();
-    if (!t) return false;
-    // Encabezados estructurales
-    if (/^(TÍTULO|CAPÍTULO|SECCIÓN|DISPOSICI[OÓ]N|PARTE|LIBRO|ENMIENDA)\s*[IVXLCDM\d]/i.test(t)) return 'h2';
-    if (/^(TÍTULO|CAPÍTULO|SECCIÓN|DISPOSICI[OÓ]N TRANSITORIA|PARTE|LIBRO|ENMIENDA)\b/i.test(t) && t.length < 80) return 'h2';
-    // Artículos
-    if (/^(Art[ií]culo|ARTÍCULO|Art\.)\s+\d+/i.test(t)) return 'article';
-    // Sub-encabezados de sentencias y resoluciones
-    if (/^(CONSIDERANDO|VISTO\s+QUE|RESUELVE|DECIDE[^\w]|DECLARA[^\w]|OBSERVA[^\w]|MOTIVA|DISPOSITIVO)/i.test(t) && t.length < 100) return 'h3';
-    // Línea TODA EN MAYÚSCULAS corta = título de sección
-    if (t === t.toUpperCase() && /[A-ZÁÉÍÓÚÑ]{3,}/.test(t) && t.length > 3 && t.length < 90
-        && !/^\d+[\.\-\)]\s/.test(t) && !/^[IVX]+\b/.test(t)) return 'h2';
+    if (!s) return false;
+    if (/^(TÍTULO|CAPÍTULO|SECCIÓN|DISPOSICI[OÓ]N|PARTE|LIBRO|ENMIENDA)\s*[IVXLCDM\d]/i.test(s)) return 'h2';
+    if (/^(TÍTULO|CAPÍTULO|SECCIÓN|DISPOSICI[OÓ]N TRANSITORIA|PARTE|LIBRO|ENMIENDA)\b/i.test(s) && s.length < 80) return 'h2';
+    if (isArticle(s)) return 'article';
+    if (/^(CONSIDERANDO|VISTO\s+QUE|RESUELVE|DECIDE[^\w]|DECLARA[^\w]|OBSERVA[^\w]|MOTIVA|DISPOSITIVO)/i.test(s) && s.length < 100) return 'h3';
+    if (s === s.toUpperCase() && /[A-ZÁÉÍÓÚÑ]{3,}/.test(s) && s.length > 3 && s.length < 90
+        && !/^\d+[\.\-\)]/.test(s)) return 'h2';
     return false;
   };
 
+  // Epígrafe: frase corta en Title Case que NO es oración jurídica completa.
+  // Solo reconoce lo que ya está en el texto — no agrega nada.
+  const PREPS = new Set(['de','del','la','el','las','los','en','con','por','para',
+                         'a','y','o','e','u','al','su','sus','sobre','sin','ante','e']);
+  const isEpigrafe = s => {
+    if (!s || s.length > 100) return false;
+    if (isHeading(s)) return false;               // ya clasificado como heading
+    const words = s.split(/\s+/);
+    if (words.length < 1 || words.length > 12) return false;
+    if (/[,;]$/.test(s)) return false;            // termina en coma/punto y coma → oración
+    if (s.endsWith('.') && words.length > 2) return false; // termina en punto → oración
+    if (!/^[A-ZÁÉÍÓÚÑ]/.test(s)) return false;   // debe empezar con mayúscula
+    // Todas las palabras: mayúscula inicial O preposición/artículo corto
+    if (!words.every(w => /^[A-ZÁÉÍÓÚÑ]/.test(w) || PREPS.has(w.toLowerCase()))) return false;
+    // Excluir oraciones jurídicas típicas: "El Estado...", "La Ley...", "Se prohíbe..."
+    const looksLikeSentence =
+      /^(El|La|Los|Las|Se|Es|Son|Cuando|Todo|Toda|Queda|Quedan|Este|Esta|Estos|Estas)$/i
+        .test(words[0]) && words.length > 1 && /^[a-záéíóú]/.test(words[1]?.[0] || '');
+    return !looksLikeSentence;
+  };
+
+  // Siguiente línea no vacía a partir de índice `from` (exclusive)
+  const nextNonBlank = from => {
+    for (let j = from + 1; j < lines.length; j++) {
+      const t = lines[j].trim();
+      if (t) return t;
+    }
+    return '';
+  };
+
+  // ── Render ───────────────────────────────────────────────
+  let html        = '';
+  let pendingP    = [];   // líneas de párrafo acumuladas
+  let pendingEpi  = '';   // epígrafe pendiente para el próximo artículo
+
+  const flushP = () => {
+    if (pendingP.length) {
+      html += `<p class="lv-p">${pendingP.map(l => esc(l)).join(' ')}</p>`;
+      pendingP = [];
+    }
+  };
+
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trim = line.trim();
+    const trim  = lines[i].trim();
     const hType = isHeading(trim);
 
+    // ── Línea en blanco ──
     if (!trim) {
-      // Línea en blanco: si había párrafo acumulado con contenido, cerrarlo
-      if (pendingLines.length > 0) flushP();
+      flushP();
+      pendingEpi = '';   // línea en blanco cancela epígrafe pendiente sin artículo
       continue;
     }
 
+    // ── Encabezado h2 ──
     if (hType === 'h2') {
-      flushP();
-      // Agrupar título + posible subtítulo inmediato
-      let titleText = trim;
-      if (i + 1 < lines.length) {
-        const next = lines[i + 1].trim();
-        if (next && isHeading(next) === false && next.length < 120 && next === next.toUpperCase()) {
-          titleText += ' — ' + next;
-          i++;
-        }
-      }
-      html += `<h2 class="lv-h2">${esc(titleText)}</h2>`;
-    } else if (hType === 'h3') {
-      flushP();
+      flushP(); pendingEpi = '';
+      html += `<h2 class="lv-h2">${esc(trim)}</h2>`;
+      continue;
+    }
+
+    // ── Encabezado h3 ──
+    if (hType === 'h3') {
+      flushP(); pendingEpi = '';
       html += `<h3 class="lv-h3">${esc(trim)}</h3>`;
-    } else if (hType === 'article') {
+      continue;
+    }
+
+    // ── Artículo ──
+    if (hType === 'article') {
       flushP();
 
-      // ── Detección de epígrafe ──────────────────────────────
-      // El epígrafe es una línea corta tipo "Título de sección" que aparece:
-      //   a) En la misma línea del artículo: "Artículo 5. Libertad Personal"
-      //   b) En la línea inmediata siguiente al número del artículo
-      //
-      // Heurística: frase corta (≤ 80 chars, ≤ 10 palabras), sin punto final,
-      // con palabras en Title Case (mayúscula inicial), que NO sea una oración
-      // (no empieza con artículo seguido de verbo, no contiene comas largas, etc.)
-      const PREPS = new Set(['de','del','la','el','las','los','en','con','por','para',
-                             'a','y','o','e','u','al','su','sus','sobre','sin','ante']);
-      const isEpigrafe = s => {
-        if (!s || s.length > 80) return false;
-        const words = s.trim().split(/\s+/);
-        if (words.length > 10 || words.length < 1) return false;
-        if (s.endsWith(',') || s.endsWith(';')) return false;
-        // No debe terminar en punto (a menos que sea una sola palabra con punto abreviación)
-        if (s.endsWith('.') && words.length > 1) return false;
-        // Primera palabra debe empezar con mayúscula
-        if (!/^[A-ZÁÉÍÓÚÑ]/.test(s)) return false;
-        // Todas las palabras deben empezar con mayúscula O ser preposiciones/artículos cortos
-        const titleCase = words.every(w =>
-          /^[A-ZÁÉÍÓÚÑ]/.test(w) || PREPS.has(w.toLowerCase())
-        );
-        if (!titleCase) return false;
-        // No debe parecer inicio de oración jurídica (verbo conjugado tras artículo)
-        // Ej: "El Estado garantizará..." → NO epígrafe
-        // Ej: "Libertad Personal" → SÍ epígrafe
-        const secondWord = words[1] || '';
-        const looksLikeSentence = /^(El|La|Los|Las|Se|Es|Son|Cuando|Todo|Toda|Queda|Quedan)$/i.test(words[0])
-          && secondWord && /[a-záéíóú]/.test(secondWord[0]);
-        if (looksLikeSentence) return false;
-        return true;
-      };
+      const m      = trim.match(/^((?:Art[ií]culo|ARTÍCULO|Art\.)\s+\d+[\w°º\.]*\.?)\s*([\s\S]*)/i);
+      const artNum = m ? m[1] : trim;
+      let inline   = m ? m[2].trim() : '';
+      let artEpi   = pendingEpi;   // epígrafe que venía de la línea anterior
+      let artBody  = '';
+      pendingEpi   = '';
 
-      const m = trim.match(/^((?:Art[ií]culo|ARTÍCULO|Art\.)\s+\d+[\w°º\.]*\.?)\s*([\s\S]*)/i);
-      let artNum    = m ? m[1] : trim;
-      let artInline = m ? m[2].trim() : '';  // texto en la misma línea del número
-      let artEpi    = '';
-      let artBody   = '';
-
-      // Caso A: epígrafe en la misma línea del número ("Artículo 5. Libertad Personal")
-      if (artInline && isEpigrafe(artInline)) {
-        artEpi    = artInline;
-        artInline = '';
-      } else {
-        artBody = artInline;
+      // Si no había epígrafe previo, verificar si el inline es epígrafe
+      if (!artEpi && inline && isEpigrafe(inline)) {
+        artEpi = inline;
+        inline = '';
       }
+      artBody = inline;
 
-      // Caso B: epígrafe en la línea siguiente (solo si artBody está vacío hasta aquí)
+      // Si aún sin cuerpo, revisar si la próxima línea es epígrafe (caso B)
       if (!artBody && i + 1 < lines.length) {
-        const nextLine = lines[i + 1].trim();
-        if (nextLine && isEpigrafe(nextLine) && !isHeading(nextLine)) {
-          artEpi = nextLine;
-          i++;
+        const nxt = lines[i + 1].trim();
+        if (nxt && isEpigrafe(nxt) && !isArticle(nxt)) {
+          artEpi = artEpi || nxt;   // solo si no teníamos ya uno
+          if (!artEpi || artEpi === nxt) i++;
         }
       }
 
-      // Absorber el cuerpo del artículo (líneas de continuación)
+      // Absorber cuerpo: línea por línea hasta vacío, heading, o próximo artículo
       while (i + 1 < lines.length) {
-        const next = lines[i + 1].trim();
-        if (!next) break;
-        if (isHeading(next)) break;
-        artBody += (artBody ? ' ' : '') + next;
+        const nxt    = lines[i + 1].trim();
+        if (!nxt) break;
+        if (isHeading(nxt)) break;
+
+        // ★ CLAVE: si `nxt` parece epígrafe Y justo después viene un artículo,
+        //    es el epígrafe del SIGUIENTE artículo — no lo absorbemos
+        if (isEpigrafe(nxt) && isArticle(nextNonBlank(i + 1))) {
+          pendingEpi = nxt;
+          i++;   // consumir la línea del epígrafe
+          break;
+        }
+
+        artBody += (artBody ? ' ' : '') + nxt;
         i++;
       }
 
-      const epiHtml = artEpi
-        ? `<span class="lv-epigrafe">${esc(artEpi)}</span>`
-        : '';
+      const epiHtml = artEpi ? `<span class="lv-epigrafe">${esc(artEpi)}</span>` : '';
       html += `<div class="lv-article"><span class="lv-art-num">${esc(artNum)}.</span>${epiHtml} ${esc(artBody)}</div>`;
-    } else {
-      // Párrafo normal: acumular líneas
-      pendingLines.push(trim);
-      // Si la siguiente línea es vacía o un encabezado, cerrar el párrafo
-      const nextTrim = (lines[i + 1] || '').trim();
-      if (!nextTrim || isHeading(nextTrim)) flushP();
+      continue;
     }
+
+    // ── Texto normal ──
+    // ★ Si la línea parece epígrafe y la próxima línea no vacía es un artículo,
+    //    guardarla como pendingEpi en vez de meterla en un párrafo
+    if (isEpigrafe(trim) && isArticle(nextNonBlank(i))) {
+      flushP();
+      pendingEpi = trim;
+      continue;
+    }
+
+    pendingP.push(trim);
+    const nextTrim = (lines[i + 1] || '').trim();
+    if (!nextTrim || isHeading(nextTrim)) flushP();
   }
+
   flushP();
   return html;
 }
