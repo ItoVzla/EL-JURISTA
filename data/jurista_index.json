@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "ultima_actualizacion": "2026-04-29T01:25:11.811Z",
+  "ultima_actualizacion": "2026-04-29T01:25:58.207Z",
   "total_documentos": 2979,
   "fuente": "LEXIUS Venezuela - Base de datos completa",
   "documentos": [
@@ -125,7 +125,7 @@
     {
       "id": "c0a8f9af-edbd-4a34-aa8a-3f4810b9f1f2",
       "drive_id": null,
-      "titulo": "Código Orgánico Tributario2020",
+      "titulo": "Código Orgánico Tributario",
       "materia": "Constitucional",
       "sub_materia": "Legislacion",
       "tipo": "legislacion",
@@ -149,7 +149,9 @@
       "nombre_archivo": "CONSTITUCIONAL_LEY_-_2020_codigo-organico-tributario2020.txt",
       "lexius_file": "Legislación/Códigos/Código Orgánico Tributario2020.txt",
       "fecha_ingesta": "2026-04-28",
-      "estado": "activo"
+      "estado": "activo",
+      "gaceta_oficial": "",
+      "fecha_gaceta": ""
     },
     {
       "id": "c71bf5ae-0d74-4fc0-91c9-c723cea23ab0",
