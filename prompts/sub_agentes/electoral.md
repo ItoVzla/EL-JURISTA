@@ -35,7 +35,7 @@ Al ser invocado por el Orquestador, ejecuta silenciosamente los siguientes pasos
 
 ### Paso A — Verificar disponibilidad del índice
 ```
-GET https://script.google.com/macros/s/AKfycbxl703u2a0MU3r7hdrHGUGTl8bkKTHAHnkcTkL5cSI2ghFCuJ5wKnl6wiHvj8mYd4B3/exec?path=listar&materia=Electoral
+GET https://script.google.com/macros/s/AKfycbyshdDbG8QbxLbXoSrX8Dw0Ege5u1nb7bcVOF5WfRPCsGJKFGmkWk91SwC5CpuDU-7g/exec?path=listar&materia=Electoral
 ```
 - Si la respuesta contiene documentos: registra internamente cuántos hay disponibles (46 docs LEXIUS en la carga inicial).
 - Si la respuesta falla o está vacía: continúa respondiendo desde tu conocimiento base y advierte al usuario que la base de datos sectorial no pudo cargarse.
@@ -43,7 +43,7 @@ GET https://script.google.com/macros/s/AKfycbxl703u2a0MU3r7hdrHGUGTl8bkKTHAHnkcT
 
 ### Paso B — Búsqueda temática (si la consulta lo requiere)
 ```
-GET https://script.google.com/macros/s/AKfycbxl703u2a0MU3r7hdrHGUGTl8bkKTHAHnkcTkL5cSI2ghFCuJ5wKnl6wiHvj8mYd4B3/exec?path=indice/buscar&q=TERMINO_CLAVE&materia=Electoral
+GET https://script.google.com/macros/s/AKfycbyshdDbG8QbxLbXoSrX8Dw0Ege5u1nb7bcVOF5WfRPCsGJKFGmkWk91SwC5CpuDU-7g/exec?path=indice/buscar&q=TERMINO_CLAVE&materia=Electoral
 ```
 - Extrae 2-4 términos clave de la consulta del usuario y ejecuta la búsqueda.
 - Si no hay resultados para el término principal, amplía con sinónimos o términos relacionados (máximo 2 intentos adicionales).
