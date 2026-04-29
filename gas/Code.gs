@@ -19,7 +19,7 @@ const CONFIG = {
   INDEX_FILE_NAME:  'jurista_index.json',
   BACKUPS_ID:       '1BVUD0NZgE5hKYNoPJxY57ZjO6YX2fqIS', // carpeta "_BACKUPS"
   MAX_BACKUPS:      4,
-  GITHUB_TOKEN:     '[GITHUB_TOKEN — ver Credenciales.rtf en Drive]',
+  GITHUB_TOKEN:     '[GITHUB_TOKEN - ver Credenciales.rtf en Drive]',
   GITHUB_REPO:      'ItoVzla/EL-JURISTA',
   GITHUB_BRANCH:    'main',
   GITHUB_INDEX_PATH:'data/jurista_index.json',
@@ -48,12 +48,13 @@ function doGet(e) {
   const path   = params.path || '';
 
   try {
-    if (path === 'indice/resumen')  return jsonResponse(getIndiceResumen());
-    if (path === 'indice/buscar')   return jsonResponse(buscarEnIndice(params));
-    if (path === 'indice/doc')      return jsonResponse(getDocMeta(params.id));
-    if (path === 'documento')       return jsonResponse(getDocumento(params.id));
-    if (path === 'listar')          return jsonResponse(listarArchivos(params));
-    if (path === 'descargar')       return jsonResponse(getUrlDescarga(params.id));
+    if (path === 'indice/resumen')   return jsonResponse(getIndiceResumen());
+    if (path === 'indice/buscar')    return jsonResponse(buscarEnIndice(params));
+    if (path === 'indice/doc')       return jsonResponse(getDocMeta(params.id));
+    if (path === 'documento')        return jsonResponse(getDocumento(params.id));
+    if (path === 'documento/texto')  return jsonResponse(getTextoCompleto(params));
+    if (path === 'listar')           return jsonResponse(listarArchivos(params));
+    if (path === 'descargar')        return jsonResponse(getUrlDescarga(params.id));
     return jsonResponse({ error: 'Endpoint no encontrado', path: path }, 404);
   } catch (err) {
     return jsonResponse({ error: err.message }, 500);
@@ -194,6 +195,88 @@ function getDocumento(driveId) {
   return {
     drive_id:   driveId,
     titulo:     file.getName(),
+    texto:      texto,
+    caracteres: texto.length,
+  };
+}
+
+
+// ─────────────────────────────────────────────
+// GET /documento/texto?id=UUID  (o &nombre=FILENAME)
+// Devuelve el texto COMPLETO de un documento.
+// Prioridad:
+//   1. Si el doc tiene drive_id → delega a getDocumento(drive_id)
+//   2. Si no → busca el archivo por nombre en Drive (LEXIUS .txt)
+// ─────────────────────────────────────────────
+function getTextoCompleto(params) {
+  const id     = params.id     || '';
+  const nombre = params.nombre || '';
+
+  // Caso 1: se pasó un drive_id directo
+  if (!id && !nombre) throw new Error('Se requiere id (UUID) o nombre (filename)');
+
+  // Si vino UUID, buscar el doc en el índice
+  if (id) {
+    const index = leerIndex();
+    const doc   = index.documentos.find(d => d.id === id);
+    if (!doc) throw new Error('Documento no encontrado en índice: ' + id);
+
+    // Tiene drive_id: delegar al extractor de Drive
+    if (doc.drive_id) return getDocumento(doc.drive_id);
+
+    // No tiene drive_id: buscar por nombre de archivo
+    if (!doc.nombre_archivo) throw new Error('El documento no tiene archivo asociado');
+    return buscarYLeerArchivo(doc.nombre_archivo, doc.titulo);
+  }
+
+  // Se pasó nombre directamente
+  return buscarYLeerArchivo(nombre, nombre);
+}
+
+// Busca un archivo en todo el Drive por nombre y devuelve su texto
+function buscarYLeerArchivo(nombre, titulo) {
+  // Intentar primero con el nombre exacto
+  let files = DriveApp.getFilesByName(nombre);
+
+  if (!files.hasNext()) {
+    // Fallback: buscar sin extensión (puede que esté guardado diferente)
+    const sinExt = nombre.replace(/\.[^.]+$/, '');
+    files = DriveApp.searchFiles('title contains "' + sinExt.replace(/"/g, '') + '"');
+  }
+
+  if (!files.hasNext()) {
+    throw new Error('Archivo no encontrado en Drive: ' + nombre +
+      '. Carga el archivo en la carpeta de la materia correspondiente.');
+  }
+
+  const file     = files.next();
+  const mimeType = file.getMimeType();
+  let texto      = '';
+
+  if (mimeType === 'text/plain' || mimeType === 'application/octet-stream') {
+    texto = file.getBlob().getDataAsString('UTF-8');
+  } else if (mimeType === 'application/pdf') {
+    // Convertir PDF a Google Doc para extraer texto
+    const resource = { title: '_tmp_' + file.getId(), mimeType: 'application/vnd.google-apps.document' };
+    const tmpDoc   = Drive.Files.insert(resource, file.getBlob(), { convert: true });
+    texto          = DocumentApp.openById(tmpDoc.id).getBody().getText();
+    DriveApp.getFileById(tmpDoc.id).setTrashed(true);
+  } else if (mimeType === 'application/vnd.google-apps.document') {
+    texto = DocumentApp.openById(file.getId()).getBody().getText();
+  } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    // DOCX: convertir a Google Doc
+    const resource = { title: '_tmp_' + file.getId(), mimeType: 'application/vnd.google-apps.document' };
+    const tmpDoc   = Drive.Files.insert(resource, file.getBlob(), { convert: true });
+    texto          = DocumentApp.openById(tmpDoc.id).getBody().getText();
+    DriveApp.getFileById(tmpDoc.id).setTrashed(true);
+  } else {
+    throw new Error('Formato no soportado para lectura: ' + mimeType);
+  }
+
+  return {
+    nombre:     nombre,
+    titulo:     titulo || file.getName(),
+    drive_id:   file.getId(),
     texto:      texto,
     caracteres: texto.length,
   };
@@ -529,7 +612,8 @@ function actualizarDocMeta(body) {
   const EDITABLES = [
     'titulo', 'autor', 'año', 'materia', 'sub_materia', 'tipo', 'vigencia',
     'resumen', 'cita_formal', 'tags', 'ponente', 'sala', 'expediente',
-    'fecha_sentencia', 'partes', 'editorial'
+    'fecha_sentencia', 'partes', 'editorial', 'isbn',
+    'gaceta_oficial', 'fecha_gaceta', 'coautores'
   ];
   EDITABLES.forEach(k => {
     if (body[k] !== undefined) index.documentos[i][k] = body[k];
