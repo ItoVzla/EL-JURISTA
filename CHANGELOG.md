@@ -6,6 +6,73 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.5.0 — 2026-04-28 *(versión en pantalla: v1.5.0)*
+
+### Cambiado — Drawer rediseñado con campos contextuales por tipo de documento
+
+- **Pestaña "📋 Información" ahora muestra campos específicos según el tipo de documento.**
+  - *Motivo*: Los metadatos relevantes difieren radicalmente entre una ley, una sentencia y un libro. Mostrar todos siempre genera confusión.
+  - `legislacion`/`convenio`: Tipo normativa · Año publicación · Gaceta Oficial N° · Fecha en Gaceta · Materia · Vigencia
+  - `sentencia`: Sala · Expediente · Ponente · Fecha de sentencia · Partes · Materia
+  - `doctrina`/`articulo`: Autor(es) · Editorial · ISBN · Año · Materia
+  - Todos los tipos: Tags prominentes al final + botón **"📖 Leer documento completo"** en la parte superior.
+
+- **Pestaña "✏️ Editar" también muestra formulario contextual por tipo.**
+  - `legislacion`/`convenio`: campos Gaceta Oficial y Fecha en Gaceta añadidos; se eliminan campos irrelevantes (sala, isbn, etc.)
+  - `sentencia`: Sala, Expediente, Ponente, Fecha, Partes
+  - `doctrina`/`articulo`: Autor principal, Coautores, Editorial, ISBN
+  - Se eliminaron los campos Resumen y Cita formal del formulario de edición (información redundante).
+
+- **`saveDoc()` actualizado** para enviar al GAS sólo los campos del formulario activo (no intentar leer inputs que no existen en pantalla).
+
+- **Eliminada la pestaña "📖 Contenido"** del drawer — la lectura ahora se activa desde el botón directo en la pestaña Información.
+
+---
+
+## v1.4.1 — 2026-04-28 *(versión en pantalla: v1.4.1)*
+
+### Añadido / Corregido / Cambiado
+
+- **Pestaña "📖 Contenido" en el drawer.**
+  - *Motivo*: El sistema funciona como biblioteca virtual; el usuario necesita leer el documento.
+  - *Comportamiento*: Si el doc tiene `drive_id`, muestra un iframe embebido de Google Drive (PDF/Doc). Si no (caso actual con los 2,979 docs de LEXIUS), muestra el texto extraído (campo `resumen`) con formato legible y los fragmentos clave con resaltado lateral dorado. Incluye aviso de cómo cargar el PDF a Drive para tener el texto completo.
+
+- **Fix: error "Load failed" al guardar ediciones (CORS en Safari).**
+  - *Detección*: El usuario reportó "Error al guardar: Load failed" en Safari al intentar guardar desde el drawer.
+  - *Causa*: `Content-Type: application/json` dispara un preflight OPTIONS que GAS no responde, Safari bloquea el POST.
+  - *Fix*: Cambiado a `Content-Type: text/plain;charset=utf-8` en los dos endpoints POST (`indice/update` y `clasificar`). GAS recibe el body JSON correctamente vía `e.postData.contents`. No se requiere redeploy.
+
+- **Purga de "Lexius Venezuela" en `cita_formal` (copyright).**
+  - *Motivo*: Los 2,979 registros importados incluían `. Lexius Venezuela.` en la cita formal, referencia a la fuente de scraping que no debe aparecer por derechos de autor.
+  - *Fix*: Script Python sobre `jurista_index.json` — regex `\. Lexius Venezuela\.?$` → `.`. 0 referencias restantes. Índice actualizado en Drive y GitHub.
+
+---
+
+## v1.4.0 — 2026-04-28 *(versión en pantalla: v1.4.0)*
+
+### Añadido — Drawer visor + editor de documentos
+
+- **Panel lateral deslizante (drawer)** al hacer clic en "Ver / Editar" en cualquier documento.
+  - *Motivo*: El usuario necesita ver el contenido completo y editar los metadatos desde la Web App.
+  - *Vista*: Muestra todos los campos (resumen, cita formal, tags, campos de sentencia, enlace a Drive si existe). Carga datos completos desde GAS `GET /indice/doc`.
+  - *Edición*: Formulario con todos los campos editables (título, materia, tipo, autor, año, vigencia, sub-materia, cita formal, tags, resumen + campos específicos de sentencias). Guarda vía GAS `POST /indice/update` → actualiza jurista_index.json en Drive + replica a GitHub.
+  - *UX*: Cierra con ✕, clic en overlay, o tecla Escape. Responsive (100% ancho en móvil).
+- **Nuevos endpoints GAS** (requiere re-despliegue manual):
+  - `GET ?path=indice/doc&id=UUID` → retorna doc completo del índice
+  - `POST ?path=indice/update` → actualiza campos editables + sync GitHub
+
+---
+
+## v1.3.1 — 2026-04-28 *(versión en pantalla: v1.3.1)*
+
+### Corregido — Fetches del GAS (parámetro `path` vs `action`)
+
+- **El GAS usa `?path=` pero el HTML enviaba `?action=`.**
+  - *Detección*: Biblioteca aparecía vacía al entrar. El `init()` llamaba `?action=indice/resumen` y el GAS no encontraba ningún path → retornaba error 404 silencioso.
+  - *Fix*: Cambiados los 3 GET y 1 POST en `index.html` para usar `?path=` en lugar de `?action=`. POST de clasificar ahora incluye `?path=clasificar` en la URL en vez de en el body JSON.
+
+---
+
 ## v1.3.0 — 2026-04-28 *(versión en pantalla: v1.3.0)*
 
 ### Añadido — Infraestructura de Sub-Agentes (Fase 2 continuación)
