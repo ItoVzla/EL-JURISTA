@@ -19,7 +19,7 @@ const CONFIG = {
   INDEX_FILE_NAME:  'jurista_index.json',
   BACKUPS_ID:       '1BVUD0NZgE5hKYNoPJxY57ZjO6YX2fqIS', // carpeta "_BACKUPS"
   MAX_BACKUPS:      4,
-  GITHUB_TOKEN:     '[GITHUB_TOKEN — ver CLAUDE.md en Drive]',
+  GITHUB_TOKEN:     '[GITHUB_TOKEN - ver Drive]',
   GITHUB_REPO:      'ItoVzla/EL-JURISTA',
   GITHUB_BRANCH:    'main',
   GITHUB_INDEX_PATH:'data/jurista_index.json',
@@ -90,17 +90,19 @@ function getIndiceResumen() {
   return index.documentos
     .filter(d => d.estado === 'activo')
     .map(d => ({
-      id:          d.id,
-      drive_id:    d.drive_id,
-      titulo:      d.titulo,
-      materia:     d.materia,
-      sub_materia: d.sub_materia,
-      tipo:        d.tipo,
-      autor:       d.autor,
-      año:         d.año,
-      tags:        d.tags,
-      vigencia:    d.vigencia,
-      cita_formal: d.cita_formal,
+      id:             d.id,
+      drive_id:       d.drive_id,
+      nombre_archivo: d.nombre_archivo || '',   // necesario para omitir /indice/doc en el frontend
+      lexius_file:    d.lexius_file    || '',   // ídem — ruta LEXIUS del .txt
+      titulo:         d.titulo,
+      materia:        d.materia,
+      sub_materia:    d.sub_materia,
+      tipo:           d.tipo,
+      autor:          d.autor,
+      año:            d.año,
+      tags:           d.tags,
+      vigencia:       d.vigencia,
+      cita_formal:    d.cita_formal,
     }));
 }
 
@@ -174,6 +176,14 @@ function buscarEnIndice(params) {
 function getDocumento(driveId) {
   if (!driveId) throw new Error('Parámetro id requerido');
 
+  // ── Caché de texto (CacheService, TTL 6h) ─────────────────
+  const cache    = CacheService.getScriptCache();
+  const cacheKey = 'doc_txt_' + driveId;
+  const cached   = cache.get(cacheKey);
+  if (cached) {
+    return { drive_id: driveId, titulo: '', texto: cached, caracteres: cached.length, fromCache: true };
+  }
+
   const file = DriveApp.getFileById(driveId);
   const mimeType = file.getMimeType();
   let texto = '';
@@ -199,6 +209,11 @@ function getDocumento(driveId) {
     DriveApp.getFileById(tmpDoc.id).setTrashed(true);
   } else {
     texto = '[Formato no soportado para extracción de texto: ' + mimeType + ']';
+  }
+
+  // Guardar en caché si cabe (máx 100 KB por entrada de CacheService)
+  if (texto && texto.length <= 100000) {
+    try { cache.put(cacheKey, texto, 21600); } catch(e) { /* silent */ }
   }
 
   return {
@@ -254,6 +269,14 @@ function getTextoCompleto(params) {
 
 // Busca un archivo en todo el Drive por nombre y devuelve su texto
 function buscarYLeerArchivo(nombre, titulo) {
+  // ── Caché de texto (CacheService, TTL 6h) ─────────────────
+  const cache    = CacheService.getScriptCache();
+  const cacheKey = 'file_txt_' + nombre.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 200);
+  const cached   = cache.get(cacheKey);
+  if (cached) {
+    return { nombre, titulo: titulo || nombre, drive_id: '', texto: cached, caracteres: cached.length, fromCache: true };
+  }
+
   // 1. Búsqueda exacta por nombre
   let files = DriveApp.getFilesByName(nombre);
   if (!files.hasNext()) {
@@ -295,6 +318,11 @@ function buscarYLeerArchivo(nombre, titulo) {
 
   // Limpiar artefactos de UI de LEXIUS antes de devolver
   texto = limpiarTextoLexius(texto);
+
+  // Guardar en caché si cabe (máx 100 KB)
+  if (texto && texto.length <= 100000) {
+    try { cache.put(cacheKey, texto, 21600); } catch(e) { /* silent */ }
+  }
 
   return {
     nombre:     nombre,
