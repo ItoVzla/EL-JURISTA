@@ -17,6 +17,11 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 - **URL actualizada en 15 archivos**: `CLAUDE.md`, `index.html`, `CHANGELOG.md`, `buscador/gas_uploader.py`, `prompts/orquestador.md`, 9 prompts de sub-agentes, plan de implementación.
 
+- **Descubierto: GitHub Pages sirve desde rama `pages`, no `main`.**
+  - *Fix*: `index.html` subido a la rama `pages` (commit `e9bcc53`) para que el sitio refleje los cambios.
+  - *Regla nueva*: Cambios a `index.html` deben pushearse a **ambas** ramas: `main` (fuente de verdad) y `pages` (sitio live).
+  - *Verificado*: `https://itovzla.github.io/EL-JURISTA/` muestra v2.0.3 y URL GAS correcta.
+
 ---
 
 ## v2.0.2 — 2026-04-29 *(versión en pantalla: v2.0.2)*
