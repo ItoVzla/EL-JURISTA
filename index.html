@@ -511,7 +511,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v1.4.2</span>
+    <span class="version-badge" id="versionBadge">v1.4.3</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -778,20 +778,23 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- ─── VIEWER PAGE (nueva pestaña / ?doc=UUID) ───────────── -->
+<!-- ─── VIEWER PAGE (pantalla completa, misma pestaña) ──── -->
 <div id="viewerPage">
   <div class="viewer-topbar">
-    <div style="display:flex;align-items:center;gap:10px;font-weight:700;
-                font-size:16px;color:var(--gold)">
-      <span>⚖️</span> EL JURISTA
-    </div>
-    <div id="vpBadges" style="display:flex;gap:6px;flex-wrap:wrap;margin-left:8px"></div>
-    <div style="margin-left:auto">
-      <button onclick="window.close()" class="logout-btn" style="font-size:12px">✕ Cerrar</button>
+    <button onclick="closeDocView()" class="nav-btn"
+      style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:6px 14px">
+      &#8592; Volver
+    </button>
+    <div id="vpBadges" style="display:flex;gap:6px;flex-wrap:wrap;margin-left:6px"></div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <a id="vpDriveLink" href="#" target="_blank"
+         class="action-btn" style="display:none;text-decoration:none;padding:6px 12px;font-size:12px">
+        📂 Drive
+      </a>
     </div>
   </div>
   <div class="viewer-content">
-    <div id="vpLoading" class="drawer-spinner" style="height:200px">⏳ Cargando documento…</div>
+    <div id="vpLoading" class="drawer-spinner" style="height:200px">⏳ Cargando…</div>
     <div id="vpBody" style="display:none">
       <h1 class="viewer-title" id="vpTitle"></h1>
       <div class="viewer-meta" id="vpMeta"></div>
@@ -832,81 +835,119 @@ function logout() {
 document.getElementById('keyInput').addEventListener('keypress', e => { if(e.key==='Enter') login(); });
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeDrawer(); });
 
-// ── VIEWER EN NUEVA PESTAÑA ─────────────────────────────────
-function openDocNewTab(id) {
-  const url = location.origin + location.pathname + '?doc=' + encodeURIComponent(id);
-  window.open(url, '_blank');
-}
+// ── VISOR IN-PAGE ────────────────────────────────────────────
+const MATERIA_MAP_VP = {
+  Constitucional:'Constitucional', Laboral_Venezuela:'Laboral', Civil:'Civil',
+  Mercantil:'Mercantil', Penal:'Penal', Administrativo:'Administrativo',
+  Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio'
+};
 
-// Handler: si la URL tiene ?doc=UUID, mostrar viewer de página completa
-(async function checkViewerMode() {
-  const params = new URLSearchParams(location.search);
-  const docId = params.get('doc');
-  if (!docId) return;
+async function openDocView(id) {
+  // Guardar scroll y estado actual
+  history.pushState({ view: 'doc', id }, '', '');
 
-  // Ocultar app principal, mostrar viewer
-  document.getElementById('loginScreen').style.display = 'none';
+  // Ocultar app, mostrar viewer
   document.getElementById('app').style.display = 'none';
   document.getElementById('viewerPage').style.display = 'block';
+  window.scrollTo(0, 0);
+
+  // Reset estado
+  document.getElementById('vpLoading').style.display = 'flex';
+  document.getElementById('vpBody').style.display = 'none';
+  document.getElementById('vpBadges').innerHTML = '';
+  document.getElementById('vpTitle').textContent = '';
+  document.getElementById('vpContent').innerHTML = '';
+  document.getElementById('vpDriveLink').style.display = 'none';
+
+  // Buscar primero en memoria (datos parciales para título rápido)
+  const lite = allDocs.find(x => x.id === id);
+  if (lite) document.getElementById('vpTitle').textContent = lite.titulo || '…';
 
   try {
-    const r = await fetch(GAS + '?path=indice/doc&id=' + encodeURIComponent(docId));
+    const r = await fetch(GAS + '?path=indice/doc&id=' + encodeURIComponent(id));
     const d = await r.json();
     if (d.error) throw new Error(d.error);
 
-    // Título
-    document.title = d.titulo + ' — El Jurista';
+    document.title = (d.titulo || 'Documento') + ' — El Jurista';
     document.getElementById('vpTitle').textContent = d.titulo || '—';
 
     // Badges
-    const MATERIA_MAP = {Constitucional:'Constitucional',Laboral_Venezuela:'Laboral',
-      Civil:'Civil',Mercantil:'Mercantil',Penal:'Penal',Administrativo:'Administrativo',
-      Procesal:'Procesal',Electoral:'Electoral',Derecho_Probatorio:'Probatorio'};
     const badges = [
-      d.materia ? `<span class="badge badge-materia">${MATERIA_MAP[d.materia]||d.materia}</span>` : '',
-      d.tipo    ? `<span class="badge badge-tipo">${d.tipo}</span>` : '',
-      d.año     ? `<span class="badge" style="background:rgba(255,255,255,.06);color:var(--text-muted)">${d.año}</span>` : '',
-      d.vigencia? `<span class="badge" style="background:rgba(46,204,113,.12);color:var(--green)">${d.vigencia}</span>` : ''
+      d.materia  ? `<span class="badge badge-materia">${MATERIA_MAP_VP[d.materia]||d.materia}</span>` : '',
+      d.tipo     ? `<span class="badge badge-tipo">${d.tipo}</span>` : '',
+      d.año      ? `<span class="badge" style="background:rgba(255,255,255,.06);color:var(--text-muted)">${d.año}</span>` : '',
+      d.vigencia ? `<span class="badge" style="background:rgba(46,204,113,.12);color:var(--green)">${d.vigencia}</span>` : ''
     ].filter(Boolean).join('');
     document.getElementById('vpBadges').innerHTML = badges;
 
-    // Meta info
+    // Meta
     const tags = (d.tags||[]).map(t=>`<span class="tag-pill">${esc(t)}</span>`).join('');
     document.getElementById('vpMeta').innerHTML = `
       ${(d.autor && d.autor!=='-') ? `<span style="font-size:13px;color:var(--text-muted)">${esc(d.autor)}</span>` : ''}
       ${tags}
-      ${d.cita_formal ? `<span style="font-size:11px;color:var(--text-muted);font-style:italic;flex-basis:100%">${esc(d.cita_formal)}</span>` : ''}`;
+      ${d.cita_formal ? `<span style="font-size:11px;color:var(--text-muted);font-style:italic;width:100%">${esc(d.cita_formal)}</span>` : ''}`;
+
+    // Drive link
+    if (d.drive_id) {
+      const dl = document.getElementById('vpDriveLink');
+      dl.href = 'https://drive.google.com/file/d/' + d.drive_id + '/view';
+      dl.style.display = 'inline-flex';
+    }
 
     // Contenido
-    let contenido = '';
+    let html = '';
     if (d.drive_id) {
       const ext = (d.nombre_archivo||'').split('.').pop().toLowerCase();
       if (ext === 'txt') {
-        const tr = await fetch(GAS + '?path=documento&id=' + encodeURIComponent(d.drive_id));
-        const td = await tr.json();
-        contenido = formatLegalText(td.texto || '');
+        html = '<div class="drawer-spinner">⏳ Cargando texto…</div>';
+        // fetch async
+        fetch(GAS + '?path=documento&id=' + encodeURIComponent(d.drive_id))
+          .then(r2 => r2.json())
+          .then(td => {
+            document.getElementById('vpContent').innerHTML =
+              formatLegalText(td.texto || '') ||
+              '<p style="color:var(--text-muted)">Sin contenido de texto.</p>';
+          });
       } else {
-        contenido = `<iframe src="https://drive.google.com/file/d/${d.drive_id}/preview"
+        html = `<iframe src="https://drive.google.com/file/d/${d.drive_id}/preview"
           style="width:100%;height:80vh;border:none;border-radius:8px"></iframe>`;
       }
     } else {
-      contenido = formatLegalText(d.resumen || '');
+      html = formatLegalText(d.resumen || '');
       if (d.fragmentos_clave && d.fragmentos_clave.length) {
-        contenido += `<h3 class="lv-h3" style="margin-top:32px">Fragmentos destacados</h3>`;
-        contenido += d.fragmentos_clave.map(f=>`<blockquote class="lv-quote">${esc(f)}</blockquote>`).join('');
+        html += `<h3 class="lv-h3" style="margin-top:32px">Fragmentos destacados</h3>`;
+        html += d.fragmentos_clave.map(f=>`<blockquote class="lv-quote">${esc(f)}</blockquote>`).join('');
       }
+      if (!html) html = '<p style="color:var(--text-muted);font-style:italic">Sin contenido disponible.</p>';
     }
-    document.getElementById('vpContent').innerHTML = contenido ||
-      '<p style="color:var(--text-muted);font-style:italic">Sin contenido disponible.</p>';
+    document.getElementById('vpContent').innerHTML = html;
 
     document.getElementById('vpLoading').style.display = 'none';
     document.getElementById('vpBody').style.display = 'block';
 
   } catch(err) {
     document.getElementById('vpLoading').innerHTML =
-      `<div style="color:var(--red)">❌ Error al cargar: ${esc(err.message)}</div>`;
+      `<div style="color:var(--red);padding:20px">❌ Error: ${esc(err.message)}</div>`;
   }
-})();
+}
+
+function closeDocView() {
+  document.getElementById('viewerPage').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('app').style.flexDirection = 'column';
+  document.title = 'El Jurista — Biblioteca Jurídica';
+  history.back();
+}
+
+// Botón atrás del navegador
+window.addEventListener('popstate', e => {
+  if (document.getElementById('viewerPage').style.display !== 'none') {
+    document.getElementById('viewerPage').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('app').style.flexDirection = 'column';
+    document.title = 'El Jurista — Biblioteca Jurídica';
+  }
+});
 
 // Auto-login si ya tiene sesión
 if (localStorage.getItem('jurista_auth') === CLAVE) {
@@ -961,7 +1002,7 @@ function renderTable() {
     <tr>
       <td style="max-width:320px">
         <div style="font-weight:500">
-          <span onclick="openDocNewTab('${esc(d.id)}')"
+          <span onclick="openDocView('${esc(d.id)}')"
                 style="color:var(--gold);cursor:pointer;text-decoration:none;
                        border-bottom:1px dashed rgba(201,162,39,.35);transition:border .15s"
                 onmouseover="this.style.borderBottomStyle='solid'"
@@ -1334,7 +1375,7 @@ function renderViewMode(d) {
     <!-- Acciones rápidas -->
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
       ${driveBtn}
-      <button onclick="openDocNewTab('${esc(d.id)}')" class="action-btn"
+      <button onclick="openDocView('${esc(d.id)}')" class="action-btn"
         style="padding:8px 14px;font-size:12px">↗ Nueva pestaña</button>
     </div>
 
