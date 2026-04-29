@@ -6,6 +6,19 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.7.3 — 2026-04-29 *(versión en pantalla: v1.7.3)*
+
+### Corregido — URL GAS + bug text/plain en getDocumento()
+
+- **Nueva URL de despliegue GAS** tras redeploy con el fix de `getDocumento()`.
+  - *Fix*: URL actualizada en `index.html` (constante `GAS`) y en `CLAUDE.md`.
+- **`getDocumento(driveId)` ahora lee archivos `text/plain` correctamente.**
+  - *Motivo*: Documentos LEXIUS que tienen `drive_id` asignado en el índice (e.g. Constitución de Venezuela 1999) entraban por `getDocumento()` en lugar de `buscarYLeerArchivo()`. La primera función solo manejaba PDF y Google Docs, devolviendo el string `[Formato no soportado para extracción de texto: text/plain]` en lugar del texto real.
+  - *Fix*: Se añadió el caso `text/plain | application/octet-stream` como primera rama del `if` en `getDocumento()`, con `getBlob().getDataAsString('UTF-8')` + `limpiarTextoLexius()`. Se añadió también el caso DOCX para consistencia.
+  - *Detección*: Captura de pantalla del visor mostrando el mensaje de error literal en lugar del texto legal.
+
+---
+
 ## v1.7.2 — 2026-04-29 *(versión en pantalla: v1.7.2)*
 
 ### Añadido — Editor de bloques estructurados en el visor
