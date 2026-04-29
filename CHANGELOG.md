@@ -6,6 +6,26 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.7.4 — 2026-04-29 *(versión en pantalla: v1.7.4)*
+
+### Optimizado — Apertura de documentos notablemente más rápida
+
+- **Eliminada la llamada GAS a `/indice/doc`** al abrir un documento.
+  - *Motivo*: La apertura requería 2 llamadas GAS seriales: primero `/indice/doc` (lee 5.8MB + devuelve metadata), luego `/documento/texto` (lee 5.8MB de nuevo + lee el archivo). Con el índice en Drive, cada llamada tarda 2-5s. En serie sumaban 4-10s de espera.
+  - *Fix*: La metadata (título, materia, tipo, badges, tags, cita_formal, drive_id) ahora se toma directamente de `allDocs` que ya está en memoria desde el init. El visor muestra la cabecera del documento **instantáneamente** sin ninguna llamada de red, y solo hace 1 llamada GAS para el texto.
+  - *Cambio en GAS*: `getIndiceResumen()` ahora incluye `nombre_archivo` y `lexius_file` para que el frontend pueda determinar el tipo de archivo sin el segundo fetch.
+
+- **Caché cliente de texto** (`textCache: Map<id, string>`).
+  - Documentos ya abiertos se muestran instantáneamente al volver a abrirlos en la misma sesión. Sin llamada GAS.
+
+- **Prefetch al hacer hover** sobre el título de un documento.
+  - Si el cursor se detiene 400ms sobre un título, el texto empieza a descargarse silenciosamente en segundo plano. Cuando el usuario hace click, el texto ya puede estar listo.
+
+- **Caché GAS de texto** (`CacheService`, TTL 6h, máx 100 KB/entrada).
+  - `getDocumento()` y `buscarYLeerArchivo()` ahora cachean el texto en `CacheService.getScriptCache()`. La segunda vez que cualquier usuario abra un doc en las siguientes 6h, el GAS no necesita leer el archivo de Drive — responde desde caché en ~200ms.
+
+---
+
 ## v1.7.3 — 2026-04-29 *(versión en pantalla: v1.7.3)*
 
 ### Corregido — URL GAS + bug text/plain en getDocumento()
