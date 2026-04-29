@@ -6,6 +6,19 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.8.1 — 2026-04-29 *(versión en pantalla: v1.8.1)*
+
+### Corregido — Base de datos vacía al cargar desde CDN
+
+- **`fetchIndex()` filtraba todos los documentos LEXIUS por ausencia del campo `estado`.**
+  - *Causa*: El filtro `.filter(d => d.estado === 'activo')` requería el campo explícito. El `jurista_index.json` generado por el scraper LEXIUS no incluye ese campo en ninguno de los 2,979 documentos. Al cargar desde GitHub Pages CDN, el resultado era un array vacío → biblioteca en blanco.
+  - *Fix*: Filtro cambiado a `.filter(d => !d.estado || d.estado === 'activo')`. Incluye docs sin campo `estado` (todos los LEXIUS) y excluye solo los marcados explícitamente como inactivos.
+  - *Detección*: Reportado por el usuario al ver la biblioteca vacía tras el deploy de v1.8.0.
+- **Caché `localStorage` corrupto (array vacío) ya no bloquea recarga.**
+  - *Fix*: `init()` detecta caché con longitud 0 y lo elimina antes de intentar un fetch fresco.
+
+---
+
 ## v1.8.0 — 2026-04-29 *(versión en pantalla: v1.8.0)*
 
 ### Añadido — Optimización de rendimiento: caché multi-capa + CDN
