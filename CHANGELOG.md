@@ -6,6 +6,15 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v1.7.1 — 2026-04-28 *(versión en pantalla: v1.7.1)*
+
+### Corregido — URL del GAS actualizada
+
+- **Nueva URL de despliegue GAS** tras redeploy con el nuevo endpoint `POST /documento/texto/update`.
+  - *Fix*: URL actualizada en `index.html` (constante `GAS`) y en `CLAUDE.md`.
+
+---
+
 ## v1.7.0 — 2026-04-28 *(versión en pantalla: v1.7.0)*
 
 ### Añadido — Editor de texto en el visor + Ingesta funcional + Sub-agentes completos
