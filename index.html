@@ -616,7 +616,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v2.2.0</span>
+    <span class="version-badge" id="versionBadge">v2.3.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -2127,7 +2127,7 @@ function renderDashboard() {
     <div>🟢 <strong>Biblioteca LIBROS</strong> — ${libros.toLocaleString('es')} libros indexados con texto completo</div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA (rama main)</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am Venezuela)</div>
-    <div>🟢 <strong>Web App</strong> — v2.2.0 · GitHub Pages activo · caché CDN activo</div>
+    <div>🟢 <strong>Web App</strong> — v2.3.0 · GitHub Pages activo · caché CDN activo</div>
     <div>🟢 <strong>Sub-Agentes</strong> — 10 prompts operativos (incl. Buscador multi-fuente)</div>
     <div>🟢 <strong>Ingesta</strong> — Subida manual + scraper URL activos</div>`;
 }
@@ -2453,14 +2453,16 @@ function renderViewMode(d) {
   }
 
   // Read + Drive buttons
-  const driveSearchUrl = 'https://drive.google.com/drive/search?q=' + encodeURIComponent((d.titulo||'') + ' ' + (d.autor||''));
-  const driveBtn = isLibro
-    ? `<a href="${driveSearchUrl}" target="_blank" rel="noopener"
+  const driveDirectUrl = d.drive_id
+    ? 'https://drive.google.com/file/d/' + d.drive_id + '/view'
+    : null;
+  const driveBtn = driveDirectUrl
+    ? `<a href="${driveDirectUrl}" target="_blank" rel="noopener"
          style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;
                 background:rgba(66,133,244,.15);color:#4a90d9;border:1px solid rgba(66,133,244,.3);
                 border-radius:var(--radius);font-weight:600;font-size:13px;cursor:pointer;
                 margin-bottom:8px;text-decoration:none;box-sizing:border-box">
-         📂 Abrir en Google Drive</a>`
+         📄 Abrir en Google Drive</a>`
     : '';
   const readBtn = `${driveBtn}<button onclick="openDocView('${esc(d.id)}')"
     style="width:100%;padding:11px;background:var(--gold);color:#000;border:none;border-radius:var(--radius);
