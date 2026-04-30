@@ -2225,6 +2225,13 @@ async function openDrawer(id) {
   document.getElementById('docDrawer').classList.add('open');
   document.body.style.overflow = 'hidden';
 
+  // LIBROS: datos completos ya están en allDocs — no llamar al GAS
+  if (lite.fuente === 'LIBROS') {
+    currentDocFull = lite;
+    renderViewMode(lite);
+    return;
+  }
+
   // Fetch datos completos del GAS
   try {
     const r = await fetch(GAS + '?path=indice/doc&id=' + encodeURIComponent(id));
@@ -2284,9 +2291,10 @@ function renderViewMode(d) {
   };
 
   const tipo = (d.tipo || '').toLowerCase();
-  const isLeg  = tipo === 'legislacion' || tipo === 'convenio';
-  const isSent = tipo === 'sentencia';
-  const isDoc  = tipo === 'doctrina' || tipo === 'articulo';
+  const isLeg   = tipo === 'legislacion' || tipo === 'convenio';
+  const isSent  = tipo === 'sentencia';
+  const isDoc   = tipo === 'doctrina' || tipo === 'articulo';
+  const isLibro = tipo === 'libro';
 
   // Tags block
   const tagsHtml = (d.tags && d.tags.length)
@@ -2315,6 +2323,16 @@ function renderViewMode(d) {
         ${frow('Materia', d.materia)}
       </div>
       ${d.partes ? `<div class="field-block" style="margin-top:10px"><div class="field-label">Partes</div>${fv(d.partes)}</div>` : ''}`;
+  } else if (isLibro) {
+    metaHtml = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${d.autor && d.autor!=='-' ? `<div class="field-block" style="grid-column:1/-1"><div class="field-label">Autor</div>${fv(d.autor)}</div>` : ''}
+        ${frow('Año', d.año)}
+        ${frow('Materia', d.materia)}
+        ${frow('Vigencia', d.vigencia)}
+        ${d.editorial ? frow('Editorial', d.editorial) : ''}
+        ${d.isbn ? frow('ISBN', d.isbn) : ''}
+      </div>`;
   } else if (isDoc) {
     const autores = [d.autor, d.coautores].filter(x => x && x !== '-').join(', ');
     metaHtml = `
@@ -2337,11 +2355,20 @@ function renderViewMode(d) {
       </div>`;
   }
 
-  // Read button
-  const readBtn = `<button onclick="openDocView('${esc(d.id)}')"
+  // Read + Drive buttons
+  const driveSearchUrl = 'https://drive.google.com/drive/search?q=' + encodeURIComponent((d.titulo||'') + ' ' + (d.autor||''));
+  const driveBtn = isLibro
+    ? `<a href="${driveSearchUrl}" target="_blank" rel="noopener"
+         style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;
+                background:rgba(66,133,244,.15);color:#4a90d9;border:1px solid rgba(66,133,244,.3);
+                border-radius:var(--radius);font-weight:600;font-size:13px;cursor:pointer;
+                margin-bottom:8px;text-decoration:none;box-sizing:border-box">
+         📂 Abrir en Google Drive</a>`
+    : '';
+  const readBtn = `${driveBtn}<button onclick="openDocView('${esc(d.id)}')"
     style="width:100%;padding:11px;background:var(--gold);color:#000;border:none;border-radius:var(--radius);
            font-weight:700;font-size:14px;cursor:pointer;margin-bottom:16px;letter-spacing:.3px">
-    📖 Leer documento completo</button>`;
+    📖 ${isLibro ? 'Ver resumen e índice' : 'Leer documento completo'}</button>`;
 
   document.getElementById('drawerBody').innerHTML = `
     ${readBtn}
@@ -2372,7 +2399,7 @@ function renderViewMode(d) {
 function renderEditMode(d) {
   const MATERIAS = ['Constitucional','Laboral_Venezuela','Civil','Mercantil','Penal',
                     'Administrativo','Procesal','Electoral','Derecho_Probatorio'];
-  const TIPOS = ['legislacion','sentencia','doctrina','articulo','convenio'];
+  const TIPOS = ['legislacion','sentencia','libro','convenio','resolucion','acto_legislativo','doctrina','articulo'];
   const VIGENCIAS = ['vigente','derogado','modificado','historico'];
 
   const sel = (name, opts, val) =>
@@ -2383,13 +2410,40 @@ function renderEditMode(d) {
     `<input class="edit-input" id="e-${id}" type="${type}" value="${esc(String(val||''))}" placeholder="${placeholder}">`;
 
   const tipo = (d.tipo || '').toLowerCase();
-  const isLeg  = tipo === 'legislacion' || tipo === 'convenio';
-  const isSent = tipo === 'sentencia';
-  const isDoc  = tipo === 'doctrina' || tipo === 'articulo';
+  const isLeg   = tipo === 'legislacion' || tipo === 'convenio';
+  const isSent  = tipo === 'sentencia';
+  const isDoc   = tipo === 'doctrina' || tipo === 'articulo';
+  const isLibro = tipo === 'libro';
 
   // Common: Título + Materia + Tipo at top
   let typeFields = '';
-  if (isLeg) {
+  if (isLibro) {
+    typeFields = `
+      <div class="edit-field">
+        <label class="edit-label">Autor</label>
+        ${inp('autor', d.autor)}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Año</label>
+        ${inp('año', d.año, 'number')}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Editorial</label>
+        ${inp('editorial', d.editorial, 'text', 'Ej: Vadell Hermanos')}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">ISBN</label>
+        ${inp('isbn', d.isbn, 'text', 'Ej: 978-980-212-XXX-X')}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Edición</label>
+        ${inp('edicion', d.edicion, 'text', 'Ej: 3ra edición')}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Vigencia</label>
+        ${sel('vigencia', VIGENCIAS, d.vigencia)}
+      </div>`;
+  } else if (isLeg) {
     typeFields = `
       <div class="edit-field">
         <label class="edit-label">Tipo de normativa</label>
@@ -2763,9 +2817,10 @@ async function saveDoc() {
   const gs = id => document.getElementById('e-'+id)?.value || '';
   const tipo = gs('tipo') || d.tipo || '';
   const tipoLow = tipo.toLowerCase();
-  const isLeg  = tipoLow === 'legislacion' || tipoLow === 'convenio';
-  const isSent = tipoLow === 'sentencia';
-  const isDoc  = tipoLow === 'doctrina' || tipoLow === 'articulo';
+  const isLeg   = tipoLow === 'legislacion' || tipoLow === 'convenio';
+  const isSent  = tipoLow === 'sentencia';
+  const isDoc   = tipoLow === 'doctrina' || tipoLow === 'articulo';
+  const isLibro = tipoLow === 'libro';
 
   const payload = {
     id:      currentDocId,
@@ -2775,7 +2830,14 @@ async function saveDoc() {
     tags:    (g('tags') || (d.tags||[]).join(', ')).split(',').map(t=>t.trim()).filter(Boolean),
   };
 
-  if (isLeg) {
+  if (isLibro) {
+    payload.autor     = g('autor') || d.autor;
+    payload.año       = parseInt(g('año')) || d.año;
+    payload.editorial = g('editorial');
+    payload.isbn      = g('isbn');
+    payload.edicion   = g('edicion');
+    payload.vigencia  = gs('vigencia') || d.vigencia;
+  } else if (isLeg) {
     payload.año           = parseInt(g('año')) || d.año;
     payload.vigencia      = gs('vigencia') || d.vigencia;
     payload.gaceta_oficial= g('gaceta_oficial');
