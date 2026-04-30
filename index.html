@@ -1055,6 +1055,23 @@ function openDocView(id) {
   // ext: solo disponible si allDocs ya tiene nombre_archivo (GAS v1.7.5+)
   const ext = (d.nombre_archivo || '').split('.').pop().toLowerCase();
 
+  // LIBROS: mostrar resumen + fragmentos desde el índice local (sin llamar al GAS)
+  if (d.fuente === 'LIBROS') {
+    const partes = [];
+    if (d.resumen) partes.push('<p style="line-height:1.7">' + esc(d.resumen) + '</p>');
+    if (d.fragmentos_clave && d.fragmentos_clave.length) {
+      partes.push('<hr style="border-color:var(--border);margin:20px 0">');
+      partes.push('<p style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:12px">Fragmentos del índice</p>');
+      d.fragmentos_clave.forEach((f,i) => {
+        partes.push('<p style="line-height:1.7;margin-bottom:16px;padding-left:12px;border-left:2px solid var(--gold)">' + esc(f) + '</p>');
+      });
+    }
+    if (!partes.length) partes.push('<p style="color:var(--text-muted);font-style:italic">Sin texto disponible para este libro.</p>');
+    partes.push('<p style="font-size:11px;color:var(--text-muted);margin-top:24px;padding-top:12px;border-top:1px solid var(--border)">Texto extraído del índice (resumen y fragmentos clave del documento local)</p>');
+    document.getElementById('vpContent').innerHTML = partes.join('');
+    return;
+  }
+
   // Usar iframe SOLO si el formato binario está confirmado explícitamente
   const isBinary = d.drive_id && (ext === 'pdf' || ext === 'docx' || ext === 'doc');
   if (isBinary) {
