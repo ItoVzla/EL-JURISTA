@@ -648,15 +648,26 @@
       </select>
       <select id="filtTipo" onchange="applyFilters()">
         <option value="">Todos los tipos</option>
-        <option value="legislacion">Legislación</option>
-        <option value="sentencia">Sentencia</option>
-        <option value="libro">Libro</option>
-        <option value="convenio">Convenio</option>
-        <option value="resolucion">Resolución</option>
-        <option value="acto_legislativo">Acto Legislativo</option>
-        <option value="auto_procesal">Auto Procesal</option>
-        <option value="contrato">Contrato</option>
-        <option value="acta">Acta</option>
+        <optgroup label="── Legislación ──">
+          <option value="ley_ordinaria">Leyes Ordinarias</option>
+          <option value="ley_organica">Leyes Orgánicas</option>
+          <option value="codigo">Códigos</option>
+          <option value="constitucion">Constitución</option>
+          <option value="decreto">Decretos</option>
+          <option value="convenio">Internacionales / Convenios</option>
+          <option value="providencia">Providencias</option>
+          <option value="reglamento">Reglamentos</option>
+          <option value="gaceta_oficial">Gacetas Oficiales</option>
+        </optgroup>
+        <optgroup label="── Otros ──">
+          <option value="sentencia">Sentencia</option>
+          <option value="libro">Libro</option>
+          <option value="resolucion">Resolución</option>
+          <option value="acto_legislativo">Acto Legislativo</option>
+          <option value="auto_procesal">Auto Procesal</option>
+          <option value="contrato">Contrato</option>
+          <option value="acta">Acta</option>
+        </optgroup>
       </select>
       <select id="filtVigencia" onchange="applyFilters()">
         <option value="">Toda vigencia</option>
@@ -966,7 +977,7 @@
 </div>
 
 <script>
-const GAS = 'https://script.google.com/macros/s/AKfycbyshdDbG8QbxLbXoSrX8Dw0Ege5u1nb7bcVOF5WfRPCsGJKFGmkWk91SwC5CpuDU-7g/exec';
+const GAS = 'https://script.google.com/macros/s/AKfycbxP1AwAxArtCPDK9QJaE3Nixx3E21Eii5JXVpPKj6dbipEf25vVSUftLxDyS22SSFnv/exec';
 const CLAVE = 'ElJurista2026';
 const PER_PAGE = 50;
 
@@ -2008,7 +2019,14 @@ function applyFilters() {
     const text = ((d.titulo||'')+(d.autor||'')+(d.tags||[]).join(' ')).toLowerCase();
     if (q && !text.includes(q)) return false;
     if (m && d.materia !== m) return false;
-    if (t && d.tipo !== t) return false;
+    if (t) {
+      const LEG_SUBTYPES = ['ley_ordinaria','ley_organica','codigo','constitucion','decreto','providencia','reglamento','gaceta_oficial'];
+      if (LEG_SUBTYPES.includes(t)) {
+        if (d.subtipo !== t) return false;
+      } else {
+        if (d.tipo !== t) return false;
+      }
+    }
     if (v && !(d.vigencia||'').includes(v)) return false;
     return true;
   });
