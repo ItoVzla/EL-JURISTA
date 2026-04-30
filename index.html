@@ -1015,7 +1015,7 @@ const MATERIA_MAP_VP = {
   Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio'
 };
 
-function openDocView(id) {
+async function openDocView(id) {
   history.pushState({ view: 'doc', id }, '', '');
 
   document.getElementById('app').style.display = 'none';
