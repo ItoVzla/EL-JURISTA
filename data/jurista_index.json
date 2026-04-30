@@ -63100,7 +63100,7 @@
     {
       "id": "LIBRO_asociacion_arge_ius_variandi_laboral",
       "titulo": "Ius Variandi",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Asociacion Argentina de Derecho del",
@@ -63155,7 +63155,7 @@
     {
       "id": "LIBRO_benjamin_gutier_derecho_procesal_civil_i_laboral",
       "titulo": "Derecho Procesal Civil I. Princ",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "BENJAMIN GUTIERREZ PEREZ",
@@ -63172,7 +63172,7 @@
     {
       "id": "LIBRO_baltasar_carvaz_las_huelgas_y_el_derecho_laboral",
       "titulo": "Las Huelgas y el Derecho del Tr",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Baltasar Carvazos Flores",
@@ -63190,7 +63190,7 @@
     {
       "id": "LIBRO_barajas_montes_derecho_del_trabajo_laboral",
       "titulo": "Derecho Del Trabajo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Barajas Montes de Oca, Santiago",
@@ -63208,7 +63208,7 @@
     {
       "id": "LIBRO_barajas_montes_derecho_de_los_trabajador_laboral",
       "titulo": "Derecho de los trabajadores dom",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Barajas Montes de Oca, Santiago",
@@ -63225,7 +63225,7 @@
     {
       "id": "LIBRO_barajas_montes_los_contratos_especiales_laboral",
       "titulo": "Los Contratos Especiales Del Tr",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Barajas Montes de Oca, Santiago",
@@ -63242,7 +63242,7 @@
     {
       "id": "LIBRO_barajas_montes_los_contratos_especiales_laboral_128",
       "titulo": "Los Contratos Especiales de Tra",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Barajas Montes de Oca, Santiago",
@@ -63259,7 +63259,7 @@
     {
       "id": "LIBRO_barajas_montes_panorama_del_derecho_mexi_laboral",
       "titulo": "Panorama del Derecho Mexicano d",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Barajas Montes de Oca, Santiago",
@@ -63276,7 +63276,7 @@
     {
       "id": "LIBRO_barajas_montes_sistemas_para_la_formacio_laboral",
       "titulo": "SISTEMAS PARA LA FORMACION DE E",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Barajas Montes de Oca, Santiago",
@@ -63549,7 +63549,7 @@
     {
       "id": "LIBRO_carlos_s_olmo_b_etica_derecho_y_politica_probator",
       "titulo": "ETICA, DERECHO Y POLITICA EN LA",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "CARLOS S. OLMO BAU",
@@ -63566,7 +63566,7 @@
     {
       "id": "LIBRO_cct_ic_acta_aumento_salarial_hom_laboral",
       "titulo": "Acta Aumento Salarial Homologad - CCT-IC",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "CCT-IC",
@@ -63583,7 +63583,7 @@
     {
       "id": "LIBRO_cct_ic_acta_homologacion_cct_ic_laboral",
       "titulo": "Acta Homologacion CCT-IC Mayo 2 - CCT-IC",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "CCT-IC",
@@ -63600,7 +63600,7 @@
     {
       "id": "LIBRO_cct_ic_tabulador_julio_2019_cct_laboral",
       "titulo": "Tabulador julio 2019 - CCT-IC",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 2019,
       "autor": "CCT-IC",
@@ -63719,7 +63719,7 @@
     {
       "id": "LIBRO_csualyc_pasos_para_formar_un_sind_laboral",
       "titulo": "Pasos para formar un sindicato",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "CSUALyC",
@@ -63875,7 +63875,7 @@
     {
       "id": "LIBRO_carlos_lessona_teoria_general_de_la_prue_probator",
       "titulo": "Teoria General De La Prueba Tom",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Carlos Lessona",
@@ -63893,7 +63893,7 @@
     {
       "id": "LIBRO_carlos_lessona_teoria_general_de_la_prue_probator_165",
       "titulo": "Teoria General De La Prueba Tom",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Carlos Lessona",
@@ -63911,7 +63911,7 @@
     {
       "id": "LIBRO_carlos_lessona_teoria_general_de_la_prue_probator_166",
       "titulo": "Teoria General De La Prueba Tom",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Carlos Lessona",
@@ -63929,7 +63929,7 @@
     {
       "id": "LIBRO_carlos_reynosos_acerca_de_la_libertad_sin_laboral",
       "titulo": "Acerca de la libertad sindical",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Carlos Reynosos Castillo",
@@ -63963,7 +63963,7 @@
     {
       "id": "LIBRO_cassio_mesquita_flexibilizacion_en_el_der_laboral",
       "titulo": "Flexibilizacion en el Derecho d",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Cassio Mesquita, Barrios Jr_",
@@ -64171,7 +64171,7 @@
     {
       "id": "LIBRO_cooperativa_cep_hacia_la_construccion_del_laboral",
       "titulo": "Hacia la Construccion del Poder",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Cooperativa CEPEP",
@@ -64290,7 +64290,7 @@
     {
       "id": "LIBRO_daniel_silvio_m_teg_extension_de_responsa_probator",
       "titulo": "TEG Extension de Responsabilida",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Daniel Silvio Marugo",
@@ -64358,7 +64358,7 @@
     {
       "id": "LIBRO_de_diego_julian_manual_de_derecho_del_tra_laboral",
       "titulo": "Manual De Derecho Del Trabajo Y",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "De Diego, Julian Arturo",
@@ -67012,7 +67012,7 @@
     {
       "id": "LIBRO_enzo_completa_benjamin_constant_estudio_laboral",
       "titulo": "_Benjamin Constant_ estudio pre",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "ENZO COMPLETA",
@@ -67046,7 +67046,7 @@
     {
       "id": "LIBRO_escuela_julian_los_origenes_del_movimien_laboral",
       "titulo": "Los origenes del movimiento obr",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "ESCUELA _JULIAN BESTEIRO_",
@@ -67131,7 +67131,7 @@
     {
       "id": "LIBRO_eduardo_gasca_p_diccionario_de_terminos_j_laboral",
       "titulo": "Diccionario de terminos juridic",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Eduardo Gasca Pliego",
@@ -67216,7 +67216,7 @@
     {
       "id": "LIBRO_elmer_arce_la_tutela_laboral_de_los_laboral",
       "titulo": "La Tutela Laboral De Los Derech",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Elmer Arce",
@@ -67388,7 +67388,7 @@
     {
       "id": "LIBRO_enrique_de_la_g_los_sindicatos_frente_a_l_laboral",
       "titulo": "LOS SINDICATOS FRENTE A LOS PRO",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Enrique de la Garza Toledo",
@@ -67703,7 +67703,7 @@
     {
       "id": "LIBRO_freddy_mora_bas_derecho_individual_y_proc_laboral",
       "titulo": "Derecho Individual y Procesal d",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "FREDDY MORA BASTIDAS",
@@ -67997,7 +67997,7 @@
     {
       "id": "LIBRO_francisco_hoyos_temas_fundamentales_del_d_laboral",
       "titulo": "Temas Fundamentales Del Derecho",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Francisco Hoyos Henrechson",
@@ -68014,7 +68014,7 @@
     {
       "id": "LIBRO_francisco_iturr_el_movimiento_sindical_ve_laboral",
       "titulo": "El movimiento sindical venezola",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Francisco Iturraspe",
@@ -68135,7 +68135,7 @@
     {
       "id": "LIBRO_francisco_walke_el_ambito_de_la_negociaci_laboral",
       "titulo": "El ambito de la negociacion col",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Francisco Walker Errazuriz",
@@ -68152,7 +68152,7 @@
     {
       "id": "LIBRO_francisco_walke_introduccion_al_estudio_d_laboral",
       "titulo": "Introduccion Al Estudio Del Der",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Francisco Walker Errazuriz",
@@ -68169,7 +68169,7 @@
     {
       "id": "LIBRO_fredy_alvarez_b_desarrollo_del_movimiento_laboral",
       "titulo": "Desarrollo del movimiento sindi",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Fredy Alvarez Bernee",
@@ -68186,7 +68186,7 @@
     {
       "id": "LIBRO_fredy_alvarez_b_el_control_previo_en_los_laboral",
       "titulo": "El Control Previo en los Confli",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Fredy Alvarez Bernee",
@@ -68203,7 +68203,7 @@
     {
       "id": "LIBRO_fredy_alvarez_b_el_rol_de_los_sindicatos_laboral",
       "titulo": "El rol de los sindicatos desde",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Fredy Alvarez Bernee",
@@ -68544,7 +68544,7 @@
     {
       "id": "LIBRO_garcia_vara_pruebas_en_el_proceso_lab_laboral",
       "titulo": "Pruebas en el Proceso Laboral",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Garcia Vara",
@@ -68595,7 +68595,7 @@
     {
       "id": "LIBRO_gilberto_guerre_el_concubinato_en_la_cons_probator",
       "titulo": "EL CONCUBINATO EN LA CONSTITUCI",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Gilberto Guerrero Quintero",
@@ -68612,7 +68612,7 @@
     {
       "id": "LIBRO_gilberto_guerre_objeto_de_la_prueba_judic_probator",
       "titulo": "Objeto de la Prueba Judicial Ci",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Gilberto Guerrero Quintero",
@@ -68715,7 +68715,7 @@
     {
       "id": "LIBRO_guillermo_caban_diccionario_juridico_elem_laboral",
       "titulo": "Diccionario Juridico Elemental",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Guillermo Cabanellas de Torres",
@@ -68732,7 +68732,7 @@
     {
       "id": "LIBRO_guillermo_caban_diccionario_juridico_elem_laboral_448",
       "titulo": "Diccionario Juridico Elemental",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Guillermo Cabanellas de Torres",
@@ -69040,7 +69040,7 @@
     {
       "id": "LIBRO_hector_humeres_apuntes_del_derecho_del_t_laboral",
       "titulo": "Apuntes Del Derecho Del Trabajo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Hector Humeres",
@@ -69058,7 +69058,7 @@
     {
       "id": "LIBRO_hector_lucena_corporativismo_y_neoliber_laboral",
       "titulo": "Corporativismo y Neoliberalismo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Hector Lucena",
@@ -69092,7 +69092,7 @@
     {
       "id": "LIBRO_hector_sanjos_a_derecho_procesal_del_trab_laboral",
       "titulo": "Derecho Procesal del Trabajo_ P",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Hector Sanjos Azuela",
@@ -69110,7 +69110,7 @@
     {
       "id": "LIBRO_hector_sanjos_a_estudios_de_derecho_sindi_laboral",
       "titulo": "Estudios de Derecho Sindical y",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Hector Sanjos Azuela",
@@ -69195,7 +69195,7 @@
     {
       "id": "LIBRO_humberto_bello_tratado_derecho_probatori_probator",
       "titulo": "Tratado Derecho Probatorio 2015",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 2015,
       "autor": "Humberto Bello Tabares",
@@ -69212,7 +69212,7 @@
     {
       "id": "LIBRO_humberto_bello_tratado_derecho_probatori_probator_476",
       "titulo": "Tratado Derecho Probatorio 2015",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 2015,
       "autor": "Humberto Bello Tabares",
@@ -69263,7 +69263,7 @@
     {
       "id": "LIBRO_humberto_villas_el_trabajo_a_domicilio_un_laboral",
       "titulo": "El Trabajo a Domicilio Un Estud",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Humberto, Villasmil Prieto",
@@ -69366,7 +69366,7 @@
     {
       "id": "LIBRO_ignacio_albiol_compendio_de_derecho_del_laboral",
       "titulo": "Compendio De Derecho Del Trabaj",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Ignacio Albiol Montesino",
@@ -69383,7 +69383,7 @@
     {
       "id": "LIBRO_ignacio_albiol_compendio_de_derecho_del_laboral_486",
       "titulo": "Compendio De Derecho Del Trabaj",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Ignacio Albiol Montesino",
@@ -69400,7 +69400,7 @@
     {
       "id": "LIBRO_ignacio_carrill_introduccion_al_derecho_m_laboral",
       "titulo": "Introduccion al Derecho Mexican",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Ignacio Carrillo Prieto",
@@ -69417,7 +69417,7 @@
     {
       "id": "LIBRO_ignasi_beltran_la_suspension_de_la_relac_laboral",
       "titulo": "La Suspension De La Relacion De",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Ignasi Beltran, de Heredia Ruiz",
@@ -69451,7 +69451,7 @@
     {
       "id": "LIBRO_inpsasel_norma_tecnica_para_la_dec_laboral",
       "titulo": "Norma Tecnica para la Declaraci",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Inpsasel",
@@ -69893,7 +69893,7 @@
     {
       "id": "LIBRO_isaias_rodnguez_las_pruebas_de_testigos_i_probator",
       "titulo": "Las Pruebas de, Testigos, Infor",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Isaias Rodnguez",
@@ -70014,7 +70014,7 @@
     {
       "id": "LIBRO_jordi_ferrer_be_estudio_sobre_la_prueba_probator",
       "titulo": "Estudio Sobre La Prueba",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "JORDI FERRER BELTRAN",
@@ -70151,7 +70151,7 @@
     {
       "id": "LIBRO_juanita_galvis_derecho_laboral_colectivo_laboral",
       "titulo": "Derecho Laboral Colectivo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "JUANITA GALVIS CALDERON",
@@ -70202,7 +70202,7 @@
     {
       "id": "LIBRO_jacqueline_rich_el_impacto_de_la_ley_orga_laboral",
       "titulo": "El impacto de la Ley Organica d",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jacqueline Richter",
@@ -70253,7 +70253,7 @@
     {
       "id": "LIBRO_javier_neves_mu_introduccion_al_derecho_l_laboral",
       "titulo": "Introduccion Al Derecho Laboral",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Javier Neves Mujica",
@@ -70270,7 +70270,7 @@
     {
       "id": "LIBRO_javier_neves_mu_introduccion_al_derecho_l_laboral_538",
       "titulo": "Introduccion Al Derecho Laboral",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Javier Neves Mujica",
@@ -70372,7 +70372,7 @@
     {
       "id": "LIBRO_jordi_garcia_ca_estudio_sobre_la_admision_probator",
       "titulo": "ESTUDIO SOBRE LA ADMISION DE LA",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Jordi Garcia Castillon_",
@@ -70389,7 +70389,7 @@
     {
       "id": "LIBRO_jorge_gomez_pin_la_huelga_laboral",
       "titulo": "La Huelga",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jorge Gomez Pinzon",
@@ -70424,7 +70424,7 @@
     {
       "id": "LIBRO_jorge_m_angulo_el_trabajo_desde_su_aspec_laboral",
       "titulo": "El trabajo desde su aspecto hum",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jorge M., Angulo Argomedo",
@@ -70510,7 +70510,7 @@
     {
       "id": "LIBRO_jose_01_revista_trabajo_num_8_laboral",
       "titulo": "01-REVISTA TRABAJO NUM-8.indd",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose",
@@ -70528,7 +70528,7 @@
     {
       "id": "LIBRO_jose_davalos_derecho_colectivo_y_derec_laboral",
       "titulo": "Derecho Colectivo Y Derecho Pro",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose Davalos",
@@ -70545,7 +70545,7 @@
     {
       "id": "LIBRO_jose_davalos_origen_evolucion_y_ejerci_laboral",
       "titulo": "Origen, evolucion y ejercicio d",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose Davalos",
@@ -70579,7 +70579,7 @@
     {
       "id": "LIBRO_jose_luis_ugart_tema_1_tutela_judicial_laboral",
       "titulo": "Tema 1 Tutela Judicial",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose Luis Ugarte Munoz",
@@ -70596,7 +70596,7 @@
     {
       "id": "LIBRO_jose_luis_ugart_tema_2_nat_juridica_medid_laboral",
       "titulo": "Tema 2 Nat. Juridica Medidas",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose Luis Ugarte Munoz",
@@ -70613,7 +70613,7 @@
     {
       "id": "LIBRO_jose_luis_ugart_tema_3_presupuestos_proce_laboral",
       "titulo": "Tema 3 Presupuestos Procesales",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose Luis Ugarte Munoz",
@@ -70630,7 +70630,7 @@
     {
       "id": "LIBRO_jose_luis_ugart_tema_4_procedimiento_caut_laboral",
       "titulo": "Tema 4 Procedimiento Cautelar",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose Luis Ugarte Munoz",
@@ -70647,7 +70647,7 @@
     {
       "id": "LIBRO_jose_luis_ugart_tema_5_el_embargo_laboral",
       "titulo": "Tema 5 El Embargo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose Luis Ugarte Munoz",
@@ -70664,7 +70664,7 @@
     {
       "id": "LIBRO_jose_luis_ugart_tema_6_el_secuestro_laboral",
       "titulo": "Tema 6 El Secuestro",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose Luis Ugarte Munoz",
@@ -70681,7 +70681,7 @@
     {
       "id": "LIBRO_jose_luis_ugart_tema_7_prohibicion_enajen_laboral",
       "titulo": "Tema 7 Prohibicion Enajenar Gra",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose Luis Ugarte Munoz",
@@ -70698,7 +70698,7 @@
     {
       "id": "LIBRO_jose_luis_ugart_tema_8_tribunales_ejecuto_laboral",
       "titulo": "Tema 8 Tribunales Ejecutores",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose Luis Ugarte Munoz",
@@ -70715,7 +70715,7 @@
     {
       "id": "LIBRO_jose_luis_ugart_tema_9_medidas_innominada_laboral",
       "titulo": "Tema 9 Medidas Innominadas",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Jose Luis Ugarte Munoz",
@@ -70801,7 +70801,7 @@
     {
       "id": "LIBRO_juan_carlos_cor_los_derechos_inespecifico_laboral",
       "titulo": "Los derechos inespecificos labo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Juan Carlos Cortes Carcelen",
@@ -70835,7 +70835,7 @@
     {
       "id": "LIBRO_juan_carlos_var_actualidad_laboral_lottt_laboral",
       "titulo": "Actualidad Laboral. LOTTT impac",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Juan Carlos Varela",
@@ -70852,7 +70852,7 @@
     {
       "id": "LIBRO_juan_carlos_cor_los_derechos_inespecifico_laboral_572",
       "titulo": "Los Derechos Inespecificos Labo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Juan Carlos, Cortes Carcelen",
@@ -71060,7 +71060,7 @@
     {
       "id": "LIBRO_juliana_perez_r_la_carga_dinamica_de_la_p_probator",
       "titulo": "LA CARGA DINAMICA DE LA PRUEBA",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Juliana Perez Restrepo",
@@ -71078,7 +71078,7 @@
     {
       "id": "LIBRO_juliana_perez_r_la_carga_dinamica_de_la_p_probator_585",
       "titulo": "La Carga Dinamica De La Prueba",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Juliana Perez Restrepo",
@@ -71096,7 +71096,7 @@
     {
       "id": "LIBRO_julio_grisolia_derecho_del_trabajo_y_de_laboral",
       "titulo": "Derecho Del Trabajo Y De La Seg",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Julio Grisolia",
@@ -71114,7 +71114,7 @@
     {
       "id": "LIBRO_julio_ismael_ca_mecanismos_y_normas_de_pr_laboral",
       "titulo": "Mecanismos Y Normas De Protecci",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Julio Ismael Camacho",
@@ -71131,7 +71131,7 @@
     {
       "id": "LIBRO_julio_r_gomez_los_desvios_que_se_consta_laboral",
       "titulo": "Los Desvios Que Se Constatan Po",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Julio R. Gomez",
@@ -71148,7 +71148,7 @@
     {
       "id": "LIBRO_julio_r_gomez_los_desvios_que_se_consta_laboral_589",
       "titulo": "Los desvios que se constatan po",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Julio R. Gomez",
@@ -71182,7 +71182,7 @@
     {
       "id": "LIBRO_juris_line_29_07_2019_cronologias_bo_laboral",
       "titulo": "29 07 2019  Cronologias Bono de - Juris",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 2019,
       "autor": "Juris-Line",
@@ -71199,7 +71199,7 @@
     {
       "id": "LIBRO_juris_line_29_07_2019_cronologias_sa_laboral",
       "titulo": "29 07 2019 - Cronologias Salari - Juris",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 2019,
       "autor": "Juris-Line",
@@ -71216,7 +71216,7 @@
     {
       "id": "LIBRO_juris_line_29_07_2019_cronologias_in_laboral",
       "titulo": "29 07 2019 Cronologias Inamovil - Juris",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 2019,
       "autor": "Juris-Line",
@@ -71233,7 +71233,7 @@
     {
       "id": "LIBRO_karina_chiquinq_la_admision_de_los_hechos_probator",
       "titulo": "La admision de los hechos y la",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Karina Chiquinquira Martinez",
@@ -71301,7 +71301,7 @@
     {
       "id": "LIBRO_luis_munoz_saba_tecnica_probatoria_probator",
       "titulo": "Tecnica Probatoria",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "LUIS MUNOZ SABATE",
@@ -71335,7 +71335,7 @@
     {
       "id": "LIBRO_leo_rosembserg_la_carga_de_la_prueba_probator",
       "titulo": "La Carga de la Prueba",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Leo Rosembserg",
@@ -71490,7 +71490,7 @@
     {
       "id": "LIBRO_licet_hernandez_el_procedimiento_de_estab_laboral",
       "titulo": "El Procedimiento de Estabilidad",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Licet Hernandez Pena",
@@ -71749,7 +71749,7 @@
     {
       "id": "LIBRO_m_leon_faucher_del_derecho_al_trabajo_laboral",
       "titulo": "Del Derecho Al Trabajo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "M. Leon Faucher",
@@ -71767,7 +71767,7 @@
     {
       "id": "LIBRO_mengod_gimeno_r_libertad_sindical_efectos_laboral",
       "titulo": "LIBERTAD SINDICAL. EFECTOS DE L",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "MENGOD GIMENO, ROSA MARIA",
@@ -71871,7 +71871,7 @@
     {
       "id": "LIBRO_magdalena_echev_los_riesgos_laborales_de_laboral",
       "titulo": "Los Riesgos Laborales De La Sub",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Magdalena, Echeverria Tortello",
@@ -71888,7 +71888,7 @@
     {
       "id": "LIBRO_manuel_bellido_derecho_procesal_laboral_laboral",
       "titulo": "DERECHO PROCESAL LABORAL SALVAD",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Manuel Bellido Aspas",
@@ -71905,7 +71905,7 @@
     {
       "id": "LIBRO_marcos_lopez_on_los_principios_juridicos_laboral",
       "titulo": "Los Principios Juridicos Labora",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Marcos Lopez Oneto",
@@ -71922,7 +71922,7 @@
     {
       "id": "LIBRO_maria_alejandra_el_sistema_de_valoracion_probator",
       "titulo": "El sistema de valoracion de las",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Maria Alejandra Anez Castillo",
@@ -71956,7 +71956,7 @@
     {
       "id": "LIBRO_maria_belen_lin_apologia_de_una_cuestiona_probator",
       "titulo": "Apologia De Una Cuestionada Inv",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Maria Belen Linares",
@@ -71973,7 +71973,7 @@
     {
       "id": "LIBRO_maria_belen_lin_apologia_de_una_cuestiona_probator_637",
       "titulo": "Apologia de una cuestionada inv",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Maria Belen Linares",
@@ -72058,7 +72058,7 @@
     {
       "id": "LIBRO_maria_isabel_be_dinamica_de_la_prueba_en_probator",
       "titulo": "DINAMICA DE LA PRUEBA EN EL PRO",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Maria Isabel Benavente",
@@ -72076,7 +72076,7 @@
     {
       "id": "LIBRO_maria_isabel_be_dinamica_de_la_prueba_en_probator_643",
       "titulo": "Dinamica De La Prueba en El Pro",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Maria Isabel Benavente",
@@ -72094,7 +72094,7 @@
     {
       "id": "LIBRO_maria_isabel_be_dinamica_de_la_prueba_en_probator_644",
       "titulo": "Dinamica De La Prueba en El Pro",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Maria Isabel Benavente",
@@ -72282,7 +72282,7 @@
     {
       "id": "LIBRO_mario_ackerman_casos_materiales_del_dere_laboral",
       "titulo": "Casos Materiales Del Derecho De",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Mario Ackerman",
@@ -72316,7 +72316,7 @@
     {
       "id": "LIBRO_mario_garmendia_valores_y_principios_fund_laboral",
       "titulo": "Valores y Principios fundamenta",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Mario Garmendia Arigon",
@@ -72333,7 +72333,7 @@
     {
       "id": "LIBRO_mario_pasco_cos_el_principio_protector_en_laboral",
       "titulo": "El Principio Protector en el De",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Mario Pasco Cosmopolis",
@@ -72350,7 +72350,7 @@
     {
       "id": "LIBRO_mario_pasco_cos_el_principio_protector_en_laboral_659",
       "titulo": "El principio protector en el de",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Mario Pasco Cosmopolis",
@@ -72367,7 +72367,7 @@
     {
       "id": "LIBRO_marjorie_zuniga_el_declive_del_sindicalis_laboral",
       "titulo": "El declive del sindicalismo en",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Marjorie Zuniga Romero",
@@ -72384,7 +72384,7 @@
     {
       "id": "LIBRO_marjorie_zuniga_el_declive_del_sindicalis_laboral_661",
       "titulo": "El declive del sindicalismo en",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Marjorie Zuniga Romero",
@@ -72401,7 +72401,7 @@
     {
       "id": "LIBRO_marlon_meza_aplicacion_del_principio_laboral",
       "titulo": "Aplicacion del Principio Protec",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Marlon Meza",
@@ -72418,7 +72418,7 @@
     {
       "id": "LIBRO_marlon_meza_autonomia_del_derecho_pro_laboral",
       "titulo": "Autonomia del Derecho Procesal",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Marlon Meza",
@@ -72486,7 +72486,7 @@
     {
       "id": "LIBRO_mauricio_maldon_el_principio_de_razonabil_probator",
       "titulo": "El Principio De Razonabilidad Y",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Mauricio Maldonado Munoz",
@@ -72537,7 +72537,7 @@
     {
       "id": "LIBRO_michele_taruffo_la_prueba_articulos_y_con_probator",
       "titulo": "La Prueba, Articulos y Conferen",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Michele Taruffo",
@@ -72776,7 +72776,7 @@
     {
       "id": "LIBRO_mosart_victor_r_de_la_negociacion_colecti_laboral",
       "titulo": "De la Negociacion Colectiva",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Mosart Victor Russomano",
@@ -72793,7 +72793,7 @@
     {
       "id": "LIBRO_mozart_victor_r_de_la_negociacion_colecti_laboral",
       "titulo": "De la negociacion colectiva",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Mozart Victor Russomano",
@@ -72810,7 +72810,7 @@
     {
       "id": "LIBRO_mozart_victor_r_la_estabilidad_del_trabaj_laboral",
       "titulo": "La Estabilidad del Trabajador e",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Mozart Victor Russomano",
@@ -72827,7 +72827,7 @@
     {
       "id": "LIBRO_mozart_victor_r_procedimientos_laborales_laboral",
       "titulo": "Procedimientos Laborales",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Mozart Victor Russomano",
@@ -72844,7 +72844,7 @@
     {
       "id": "LIBRO_nattan_nisimbla_los_principios_rectores_d_probator",
       "titulo": "LOS PRINCIPIOS RECTORES DEL PRO",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "NATTAN NISIMBLAT",
@@ -72861,7 +72861,7 @@
     {
       "id": "LIBRO_nestor_del_buen_derecho_del_trabajo_tomo_laboral",
       "titulo": "Derecho Del Trabajo - Tomo Segu",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "NESTOR DEL BUEN L_",
@@ -72879,7 +72879,7 @@
     {
       "id": "LIBRO_nestor_del_buen_derechos_del_trabajador_d_laboral",
       "titulo": "Derechos del trabajador de conf",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "NESTOR DEL BUEN L_",
@@ -72896,7 +72896,7 @@
     {
       "id": "LIBRO_nestor_del_buen_el_nacimiento_del_derecho_laboral",
       "titulo": "El Nacimiento del Derecho del T",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "NESTOR DEL BUEN L_",
@@ -72913,7 +72913,7 @@
     {
       "id": "LIBRO_nestor_del_buen_el_nacimiento_del_derecho_laboral_692",
       "titulo": "El nacimiento del Derecho del T",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "NESTOR DEL BUEN L_",
@@ -72930,7 +72930,7 @@
     {
       "id": "LIBRO_nestor_del_buen_instituciones_de_derecho_laboral",
       "titulo": "Instituciones de derecho del tr",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "NESTOR DEL BUEN L_",
@@ -72947,7 +72947,7 @@
     {
       "id": "LIBRO_nestor_del_buen_los_principios_del_derech_laboral",
       "titulo": "LOS PRINCIPIOS DEL DERECHO PROC",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "NESTOR DEL BUEN L_",
@@ -72964,7 +72964,7 @@
     {
       "id": "LIBRO_nestor_del_buen_naturaleza_juridica_de_l_laboral",
       "titulo": "Naturaleza juridica de l ahuelg",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "NESTOR DEL BUEN L_",
@@ -73101,7 +73101,7 @@
     {
       "id": "LIBRO_nieves_peralta_aspectos_relevantes_de_la_probator",
       "titulo": "ASPECTOS RELEVANTES DE LA CARGA",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "NIEVES PERALTA DE MORALES",
@@ -73118,7 +73118,7 @@
     {
       "id": "LIBRO_nely_vasquez_de_una_introduccion_a_la_fil_laboral",
       "titulo": "Una Introduccion a La Filosofia",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Nely Vasquez de Pena",
@@ -73135,7 +73135,7 @@
     {
       "id": "LIBRO_nicolas_sanchez_el_trabajo_desde_su_aspec_laboral",
       "titulo": "El trabajo desde su aspecto eco",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Nicolas Sanchez Y Sotto",
@@ -73187,7 +73187,7 @@
     {
       "id": "LIBRO_oit_buenas_practicas_y_desafi_laboral",
       "titulo": "Buenas practicas y desafios en - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73204,7 +73204,7 @@
     {
       "id": "LIBRO_oit_convenios_de_la_oit_y_los_laboral",
       "titulo": "CONVENIOS DE LA OIT Y LOS DEREC - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73221,7 +73221,7 @@
     {
       "id": "LIBRO_oit_conferencia_internacional_laboral",
       "titulo": "Conferencia Internacional del T - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73238,7 +73238,7 @@
     {
       "id": "LIBRO_oit_informes_del_comite_de_li_laboral",
       "titulo": "INFORMES DEL COMITE DE LIBERTAD - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73255,7 +73255,7 @@
     {
       "id": "LIBRO_oit_informe_para_el_debate_fo_laboral",
       "titulo": "Informe para el debate Foro de - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73272,7 +73272,7 @@
     {
       "id": "LIBRO_oit_informes_del_comite_de_li_laboral_713",
       "titulo": "Informes del Comite de Libertad - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73289,7 +73289,7 @@
     {
       "id": "LIBRO_oit_informes_del_comite_de_li_laboral_714",
       "titulo": "Informes del Comite de Libertad - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73306,7 +73306,7 @@
     {
       "id": "LIBRO_oit_informes_del_comite_de_li_laboral_715",
       "titulo": "Informes del Comite de Libertad - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73323,7 +73323,7 @@
     {
       "id": "LIBRO_oit_informes_del_comite_de_li_laboral_716",
       "titulo": "Informes del Comite de Libertad - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73340,7 +73340,7 @@
     {
       "id": "LIBRO_oit_informes_del_comite_de_li_laboral_717",
       "titulo": "Informes del Comite de Libertad - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73357,7 +73357,7 @@
     {
       "id": "LIBRO_oit_la_libertad_sindical_oit_laboral",
       "titulo": "La Libertad Sindical - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73374,7 +73374,7 @@
     {
       "id": "LIBRO_oit_la_iniciativa_relativa_a_laboral",
       "titulo": "La iniciativa relativa a las no - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73391,7 +73391,7 @@
     {
       "id": "LIBRO_oit_la_libertad_de_asociacion_laboral",
       "titulo": "La libertad de asociacion y la - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73408,7 +73408,7 @@
     {
       "id": "LIBRO_oit_libertad_sindical_y_negoc_laboral",
       "titulo": "Libertad Sindical y Negociacion - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73425,7 +73425,7 @@
     {
       "id": "LIBRO_oit_segundad_salud_y_bienesta_laboral",
       "titulo": "Segundad, salud y bienestar en - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73442,7 +73442,7 @@
     {
       "id": "LIBRO_oit_seguridad_y_salud_en_la_c_laboral",
       "titulo": "Seguridad y salud en la constru - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73459,7 +73459,7 @@
     {
       "id": "LIBRO_oit_trabajo_y_sindicatos_dura_laboral",
       "titulo": "Trabajo y Sindicatos Durante lo - OIT",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "OIT",
@@ -73495,7 +73495,7 @@
     {
       "id": "LIBRO_organizacion_de_aplicacion_de_los_derecho_laboral",
       "titulo": "Aplicacion De Los Derechos Labo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "ORGANIZACION DE MUJERES SALVADORENA",
@@ -73529,7 +73529,7 @@
     {
       "id": "LIBRO_olinda_noelia_d_teg_la_gravedad_de_la_fal_laboral",
       "titulo": "TEG La gravedad de la falta com",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Olinda Noelia del Rocio",
@@ -73581,7 +73581,7 @@
     {
       "id": "LIBRO_oscar_ermida_ur_derechos_humanos_laborale_laboral",
       "titulo": "DERECHOS HUMANOS LABORALES EN E",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Oscar Ermida Uriarte",
@@ -73616,7 +73616,7 @@
     {
       "id": "LIBRO_otto_morales_be_el_salario_integral_laboral",
       "titulo": "El salario integral",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Otto Morales Benitez",
@@ -73668,7 +73668,7 @@
     {
       "id": "LIBRO_perfecto_andres_la_toscana_esencial_de_pi_probator",
       "titulo": "La Toscana Esencial de Piero Ca",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "PERFECTO ANDRES IBANEZ",
@@ -73857,7 +73857,7 @@
     {
       "id": "LIBRO_patricia_chia_s_el_movimiento_obrero_lati_laboral",
       "titulo": "El movimiento obrero latinoamer",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Patricia Chia Serrano",
@@ -73874,7 +73874,7 @@
     {
       "id": "LIBRO_patricia_kurczy_decimocuarto_encuentro_ib_laboral",
       "titulo": "DECIMOCUARTO ENCUENTRO IBEROAME",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Patricia Kurczyn Villalobos",
@@ -73891,7 +73891,7 @@
     {
       "id": "LIBRO_patricia_kurczy_derecho_social_memoria_de_laboral",
       "titulo": "DERECHO SOCIAL. MEMORIA DEL CON",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Patricia Kurczyn Villalobos",
@@ -73908,7 +73908,7 @@
     {
       "id": "LIBRO_patricia_kurczy_derecho_de_las_mujeres_tr_laboral",
       "titulo": "Derecho de las mujeres trabajad",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Patricia Kurczyn Villalobos",
@@ -73925,7 +73925,7 @@
     {
       "id": "LIBRO_patricia_kurczy_estudios_juridicos_en_hom_laboral",
       "titulo": "Estudios Juridicos en Homenaje",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Patricia Kurczyn Villalobos",
@@ -73942,7 +73942,7 @@
     {
       "id": "LIBRO_patricia_kurczy_evolucion_y_tendencias_re_laboral",
       "titulo": "Evolucion y tendencias reciente",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Patricia Kurczyn Villalobos",
@@ -73959,7 +73959,7 @@
     {
       "id": "LIBRO_patricia_kurczy_hacia_un_nuevo_derecho_de_laboral",
       "titulo": "Hacia Un Nuevo Derecho Del Trab",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Patricia Kurczyn Villalobos",
@@ -73976,7 +73976,7 @@
     {
       "id": "LIBRO_patricia_kurczy_libertad_sindical_clausul_laboral",
       "titulo": "Libertad Sindical_ Clausula de",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Patricia Kurczyn Villalobos",
@@ -74044,7 +74044,7 @@
     {
       "id": "LIBRO_perez_crespo_gu_la_doctrina_de_la_carga_d_probator",
       "titulo": "La Doctrina De La Carga Dinamic",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Perez Crespo, Guillermo",
@@ -74112,7 +74112,7 @@
     {
       "id": "LIBRO_puig_farras_jul_el_actor_sindical_en_la_t_laboral",
       "titulo": "El actor sindical en la transfo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Puig Farras, Julio",
@@ -74129,7 +74129,7 @@
     {
       "id": "LIBRO_rafael_tena_suc_derecho_procesal_del_trab_laboral",
       "titulo": "DERECHO PROCESAL DEL TRABAJO",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "RAFAEL TENA SUCK",
@@ -74199,7 +74199,7 @@
     {
       "id": "LIBRO_rodolfo_capon_f_diccionario_de_derecho_so_laboral",
       "titulo": "DICCIONARIO DE DERECHO SOCIAL D",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "RODOLFO CAPON FILAS",
@@ -74267,7 +74267,7 @@
     {
       "id": "LIBRO_rafael_alfonzo_derecho_individual_de_tra_laboral",
       "titulo": "DERECHO INDIVIDUAL DE TRABAJO - Rafael Alfonzo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Rafael Alfonzo-Guzman",
@@ -74285,7 +74285,7 @@
     {
       "id": "LIBRO_rafael_alfonzo_el_contrato_colectivo_de_laboral",
       "titulo": "El Contrato Colectivo de Trabaj - Rafael Alfonzo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Rafael Alfonzo-Guzman",
@@ -74302,7 +74302,7 @@
     {
       "id": "LIBRO_rafael_alfonzo_la_inherencia_y_conexidad_laboral",
       "titulo": "la inherencia y conexidad de ac - Rafael Alfonzo",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Rafael Alfonzo-Guzman",
@@ -74319,7 +74319,7 @@
     {
       "id": "LIBRO_rafael_caldera_el_bien_comun_universal_y_laboral",
       "titulo": "El Bien Comun Universal y la Ju",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Rafael Caldera",
@@ -74559,7 +74559,7 @@
     {
       "id": "LIBRO_ricardo_francis_la_prueba_en_el_proceso_l_laboral",
       "titulo": "La Prueba en El Proceso Laboral",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Ricardo Francisco Seco",
@@ -74576,7 +74576,7 @@
     {
       "id": "LIBRO_ricardo_francis_la_prueba_en_el_proceso_l_laboral_789",
       "titulo": "La prueba en el proceso laboral",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Ricardo Francisco Seco",
@@ -74681,7 +74681,7 @@
     {
       "id": "LIBRO_rios_estavillo_derecho_de_los_trabajador_laboral",
       "titulo": "Derecho de los trabajadores dom",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Rios Estavillo, Juan Jose",
@@ -74698,7 +74698,7 @@
     {
       "id": "LIBRO_rios_estavillo_derechos_de_los_patrones_laboral",
       "titulo": "Derechos de los patrones",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Rios Estavillo, Juan Jose",
@@ -74818,7 +74818,7 @@
     {
       "id": "LIBRO_ruben_alayon_mo_comuna_y_poder_comunal_laboral",
       "titulo": "Comuna y Poder Comunal",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Ruben, Alayon Monserrat",
@@ -74852,7 +74852,7 @@
     {
       "id": "LIBRO_sergio_gamonal_el_derecho_colectivo_del_laboral",
       "titulo": "El Derecho Colectivo Del Trabaj",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "SERGIO GAMONAL",
@@ -74922,7 +74922,7 @@
     {
       "id": "LIBRO_sanchez_castane_derecho_de_los_trabajador_laboral",
       "titulo": "Derecho De Los Trabajadores",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Sanchez Castaneda, Alfredo",
@@ -74939,7 +74939,7 @@
     {
       "id": "LIBRO_sandra_alvarez_la_prescripcion_laboral_laboral",
       "titulo": "La prescripcion laboral",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Sandra Alvarez Bernee de Escalona",
@@ -75043,7 +75043,7 @@
     {
       "id": "LIBRO_sergio_c_doming_antologia_del_derecho_del_laboral",
       "titulo": "Antologia del Derecho del Traba",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Sergio C. Dominguez Mota",
@@ -75383,7 +75383,7 @@
     {
       "id": "LIBRO_thodosio_a_palo_el_trabajo_desde_su_aspec_laboral",
       "titulo": "El trabajo desde su aspecto hum",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Thodosio A., Palomino Ramirez",
@@ -76048,7 +76048,7 @@
     {
       "id": "LIBRO_w_sanguineti_ra_derecho_constitucional_de_laboral",
       "titulo": "Derecho Constitucional del Trab",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "W. Sanguineti Raymond",
@@ -76099,7 +76099,7 @@
     {
       "id": "LIBRO_yesid_carrillo_giro_hacia_la_topica_y_la_probator",
       "titulo": "Giro Hacia La Topica Y La Nueva",
-      "materia": "Probatorio",
+      "materia": "Derecho_Probatorio",
       "tipo": "libro",
       "año": 0,
       "autor": "Yesid Carrillo de la Rosa",
@@ -76116,7 +76116,7 @@
     {
       "id": "LIBRO_yoll_meza_los_derechos_constitucion_laboral",
       "titulo": "Los Derechos Constitucionales y",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 0,
       "autor": "Yoll Meza",
@@ -76133,7 +76133,7 @@
     {
       "id": "LIBRO_inamovilidad_cr_29_07_2019_juris_line_cro_laboral",
       "titulo": "29 07 2019 - Juris-Line - Crono - inamovilidad Cronologias",
-      "materia": "Laboral",
+      "materia": "Laboral_Venezuela",
       "tipo": "libro",
       "año": 2019,
       "autor": "inamovilidad Cronologias",
