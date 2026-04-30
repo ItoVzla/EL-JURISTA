@@ -675,6 +675,11 @@
         <option value="derogado">Derogado</option>
         <option value="modificado">Modificado</option>
       </select>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-muted);cursor:pointer;white-space:nowrap">
+        <input type="checkbox" id="filtDrive" checked onchange="applyFilters()"
+               style="accent-color:var(--gold);cursor:pointer">
+        Solo en Drive
+      </label>
       <button onclick="clearFilters()">✕ Limpiar</button>
     </div>
 
@@ -2020,7 +2025,9 @@ function applyFilters() {
   const m = document.getElementById('filtMateria').value;
   const t = document.getElementById('filtTipo').value;
   const v = document.getElementById('filtVigencia').value;
+  const soloEnDrive = document.getElementById('filtDrive') ? document.getElementById('filtDrive').checked : true;
   filtered = allDocs.filter(d => {
+    if (soloEnDrive && !d.drive_id) return false;
     const text = ((d.titulo||'')+(d.autor||'')+(d.tags||[]).join(' ')).toLowerCase();
     if (q && !text.includes(q)) return false;
     if (m && d.materia !== m) return false;
@@ -2044,6 +2051,7 @@ function clearFilters() {
   document.getElementById('filtMateria').value = '';
   document.getElementById('filtTipo').value = '';
   document.getElementById('filtVigencia').value = '';
+  const fd = document.getElementById('filtDrive'); if (fd) fd.checked = true;
   filtered = [...allDocs];
   currentPage = 1;
   renderTable();
