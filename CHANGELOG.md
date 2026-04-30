@@ -6,6 +6,32 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v2.1.0 — 2026-04-29 *(versión en pantalla: v2.1.0)*
+
+### Añadido — Enriquecimiento masivo del índice + sentencias SCS
+
+- **2,940 docs LEXIUS enriquecidos** con `resumen`, `fragmentos_clave` y `tags` generados desde archivos `.txt` locales.
+  - *Método*: Lectura directa de `LEXIUS_DB/` (72MB, 2,979 archivos). Sin costo de tokens — procesamiento 100% local.
+  - *Antes*: todos los docs tenían `resumen: ""`, `fragmentos_clave: []`.
+  - *Ahora*: resumen de 80 palabras + 3 fragmentos clave + tags semánticos por materia.
+
+- **39 documentos eliminados** sin valor jurídico sustancial:
+  - Acuerdos de honor (condecoraciones, imposición de órdenes al mérito).
+  - Leyes de creación de condecoraciones sin disposiciones jurídicas.
+  - Documentos con < 100 palabras de contenido real.
+
+- **115 tipos corregidos**: docs etiquetados como `sentencia` en LEXIUS que son en realidad decisiones administrativas → reclasificados como `resolucion`.
+
+- **125 sentencias SCS/TSJ 2026 agregadas** al índice desde `EL_JURISTA_DB/Laboral_Venezuela/Jurisprudencia/`.
+  - *Campos nuevos*: `expediente`, `ponente`, `fecha_sentencia`, `sala`, `procedimiento`.
+  - *Estaban ausentes* del índice GitHub — ahora visibles para el Orquestador.
+
+- **Script `enriquecer_index.py`** creado para futuras actualizaciones del índice.
+
+**Índice final: 3,065 documentos activos.**
+
+---
+
 ## v2.0.3 — 2026-04-29 *(versión en pantalla: v2.0.3)*
 
 ### Corregido — Nuevo redespliegue GAS + URL actualizada
