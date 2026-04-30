@@ -1194,20 +1194,23 @@ async function fetchIndex() {
     return (data.documentos || [])
       .filter(d => !d.estado || d.estado === 'activo')  // incluir docs sin campo estado (LEXIUS)
       .map(d => ({
-        id:             d.id,
-        drive_id:       d.drive_id       || '',
-        nombre_archivo: d.nombre_archivo || '',
-        lexius_file:    d.lexius_file    || '',
-        titulo:         d.titulo,
-        materia:        d.materia,
-        sub_materia:    d.sub_materia    || '',
-        tipo:           d.tipo,
-        autor:          d.autor,
-        año:            d.año,
-        tags:           d.tags,
-        vigencia:       d.vigencia,
-        cita_formal:    d.cita_formal    || '',
-        fecha_ingesta:  d.fecha_ingesta  || '',
+        id:               d.id,
+        drive_id:         d.drive_id         || '',
+        nombre_archivo:   d.nombre_archivo   || '',
+        lexius_file:      d.lexius_file      || '',
+        titulo:           d.titulo,
+        materia:          d.materia,
+        sub_materia:      d.sub_materia      || '',
+        tipo:             d.tipo,
+        autor:            d.autor,
+        año:              d.año,
+        tags:             d.tags,
+        vigencia:         d.vigencia,
+        cita_formal:      d.cita_formal      || '',
+        fecha_ingesta:    d.fecha_ingesta    || '',
+        fuente:           d.fuente           || '',
+        resumen:          d.resumen          || '',
+        fragmentos_clave: d.fragmentos_clave || [],
       }));
   } catch(e) {
     // 2. Fallback: GAS (más lento, pero siempre disponible)
@@ -1859,14 +1862,15 @@ function renderTable() {
 
   const rows = page.map(d => `
     <tr>
-      <td style="max-width:320px">
+      <td style="min-width:220px">
         <div style="font-weight:500">
           <span onclick="openDocView('${esc(d.id)}')"
                 style="color:var(--gold);cursor:pointer;text-decoration:none;
-                       border-bottom:1px dashed rgba(201,162,39,.35);transition:border .15s"
+                       border-bottom:1px dashed rgba(201,162,39,.35);transition:border .15s;
+                       word-break:break-word"
                 onmouseover="this.style.borderBottomStyle='solid';prefetchDoc('${esc(d.id)}')"
                 onmouseout="this.style.borderBottomStyle='dashed'"
-                title="Abrir documento">
+                title="${esc(d.titulo || '')}${d.autor && d.autor!=='-' ? ' — '+esc(d.autor) : ''}">
             ${esc(d.titulo || '—')}
           </span>
         </div>
