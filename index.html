@@ -1055,20 +1055,33 @@ function openDocView(id) {
   // ext: solo disponible si allDocs ya tiene nombre_archivo (GAS v1.7.5+)
   const ext = (d.nombre_archivo || '').split('.').pop().toLowerCase();
 
-  // LIBROS: mostrar resumen + fragmentos desde el índice local (sin llamar al GAS)
+  // LIBROS: intentar cargar PDF vía GAS; si no hay drive_id, mostrar tags
   if (d.fuente === 'LIBROS') {
-    const partes = [];
-    if (d.resumen) partes.push('<p style="line-height:1.7">' + esc(d.resumen) + '</p>');
-    if (d.fragmentos_clave && d.fragmentos_clave.length) {
-      partes.push('<hr style="border-color:var(--border);margin:20px 0">');
-      partes.push('<p style="font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:12px">Fragmentos del índice</p>');
-      d.fragmentos_clave.forEach((f,i) => {
-        partes.push('<p style="line-height:1.7;margin-bottom:16px;padding-left:12px;border-left:2px solid var(--gold)">' + esc(f) + '</p>');
-      });
+    if (d.drive_id) {
+      // Ya tenemos el ID — mostrar iframe directo
+      _mostrarLibroPdf(d.drive_id, d);
+      return;
     }
-    if (!partes.length) partes.push('<p style="color:var(--text-muted);font-style:italic">Sin texto disponible para este libro.</p>');
-    partes.push('<p style="font-size:11px;color:var(--text-muted);margin-top:24px;padding-top:12px;border-top:1px solid var(--border)">Texto extraído del índice (resumen y fragmentos clave del documento local)</p>');
-    document.getElementById('vpContent').innerHTML = partes.join('');
+    // Intentar obtener drive_id del GAS
+    document.getElementById('vpContent').innerHTML =
+      `<div style="text-align:center;padding:40px 20px;color:var(--text-muted)">
+         <div style="font-size:32px;margin-bottom:12px">📚</div>
+         <div style="font-size:13px">Buscando PDF en Drive…</div>
+       </div>`;
+    try {
+      const r = await fetch(GAS + '?path=libro/pdf-id&id=' + encodeURIComponent(d.id));
+      const res = await r.json();
+      if (res.drive_id) {
+        // Guardar en allDocs para futuras vistas
+        const idx = allDocs.findIndex(x => x.id === d.id);
+        if (idx !== -1) allDocs[idx].drive_id = res.drive_id;
+        d.drive_id = res.drive_id;
+        _mostrarLibroPdf(res.drive_id, d);
+        return;
+      }
+    } catch(e) {}
+    // Sin drive_id: mostrar tags + link a carpeta LIBROS
+    _mostrarLibroSinPdf(d);
     return;
   }
 
@@ -1138,6 +1151,67 @@ function _renderDocText(id, texto) {
   document.getElementById('btnEditText').style.display = 'inline-flex';
   document.getElementById('vpContent').innerHTML = formatLegalText(texto) ||
     '<p style="color:var(--text-muted);font-style:italic">El documento no tiene contenido de texto.</p>';
+}
+
+// ── LIBROS helpers ────────────────────────────────────────────
+
+function _mostrarLibroPdf(driveId, d) {
+  const vpContent = document.getElementById('vpContent');
+  const previewUrl = `https://drive.google.com/file/d/${driveId}/preview`;
+  const openUrl    = `https://drive.google.com/file/d/${driveId}/view`;
+  vpContent.style.cssText += ';position:relative;';
+  vpContent.innerHTML = `
+    <div style="display:flex;flex-direction:column;height:82vh;gap:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <span style="font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">${esc(d.titulo||'')}</span>
+        <a href="${openUrl}" target="_blank" rel="noopener"
+           style="font-size:12px;color:var(--accent);text-decoration:none;white-space:nowrap;padding:4px 10px;
+                  border:1px solid var(--accent);border-radius:6px;flex-shrink:0">
+          ↗ Abrir en pestaña
+        </a>
+      </div>
+      <div id="pdfSkeleton" style="flex:1;border-radius:8px;
+           background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);
+           background-size:200% 100%;animation:skelPulse 1.5s ease infinite;
+           display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+        <div style="font-size:28px">📄</div>
+        <div style="font-size:13px;color:var(--text-muted)">Cargando PDF…</div>
+      </div>
+      <iframe src="${previewUrl}"
+        onload="var s=document.getElementById('pdfSkeleton');if(s){s.style.display='none';} this.style.opacity='1'"
+        style="position:absolute;top:36px;left:0;right:0;bottom:0;width:100%;
+               height:calc(82vh - 36px);border:none;border-radius:8px;opacity:0;transition:opacity .4s"
+      ></iframe>
+    </div>`;
+}
+
+function _mostrarLibroSinPdf(d) {
+  const tags = (d.tags || []);
+  const pillsHtml = tags.length
+    ? tags.map(t => `<span style="display:inline-block;padding:4px 12px;border-radius:20px;
+        background:rgba(var(--accent-rgb,0,120,212),.12);color:var(--accent);
+        font-size:12px;font-weight:500;border:1px solid rgba(var(--accent-rgb,0,120,212),.25)">${esc(t)}</span>`).join(' ')
+    : `<span style="color:var(--text-muted);font-size:13px;font-style:italic">Sin palabras clave registradas.</span>`;
+
+  const carpetaUrl = 'https://drive.google.com/drive/folders/1-l9ZA6OfKxGg1DDTHOIU4xc25QYfVzCu';
+  document.getElementById('vpContent').innerHTML = `
+    <div style="padding:24px 20px">
+      <div style="margin-bottom:20px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+                    color:var(--text-muted);margin-bottom:10px">Palabras clave</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">${pillsHtml}</div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+        PDF no disponible en caché local. Búscalo en la carpeta de libros en Drive.
+      </div>
+      <a href="${carpetaUrl}" target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+                background:var(--accent);color:#fff;border-radius:8px;
+                font-size:13px;font-weight:500;text-decoration:none">
+        📁 Abrir carpeta LIBROS en Drive
+      </a>
+    </div>`;
 }
 
 // ── CACHÉ CLIENTE ─────────────────────────────────────────────
