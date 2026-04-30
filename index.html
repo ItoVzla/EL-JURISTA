@@ -616,7 +616,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v2.1.0</span>
+    <span class="version-badge" id="versionBadge">v2.2.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -650,9 +650,13 @@
         <option value="">Todos los tipos</option>
         <option value="legislacion">Legislación</option>
         <option value="sentencia">Sentencia</option>
-        <option value="doctrina">Doctrina</option>
-        <option value="articulo">Artículo</option>
+        <option value="libro">Libro</option>
         <option value="convenio">Convenio</option>
+        <option value="resolucion">Resolución</option>
+        <option value="acto_legislativo">Acto Legislativo</option>
+        <option value="auto_procesal">Auto Procesal</option>
+        <option value="contrato">Contrato</option>
+        <option value="acta">Acta</option>
       </select>
       <select id="filtVigencia" onchange="applyFilters()">
         <option value="">Toda vigencia</option>
@@ -685,8 +689,14 @@
       <div class="card">
         <div class="card-icon">⚖️</div>
         <div class="card-label">Materias Activas</div>
-        <div class="card-value" id="d-materias">9</div>
+        <div class="card-value" id="d-materias">—</div>
         <div class="card-sub">áreas del Derecho</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📚</div>
+        <div class="card-label">Libros Doctrina</div>
+        <div class="card-value" id="d-libros">—</div>
+        <div class="card-sub">biblioteca jurídica indexada</div>
       </div>
       <div class="card">
         <div class="card-icon">📋</div>
@@ -694,18 +704,27 @@
         <div class="card-value" id="d-legis">—</div>
         <div class="card-sub">leyes, códigos y decretos</div>
       </div>
-      <div class="card">
-        <div class="card-icon">🔄</div>
-        <div class="card-label">Backup</div>
-        <div class="card-value" style="font-size:16px;margin-top:12px" id="d-backup">Domingos 2am</div>
-        <div class="card-sub">trigger GAS activo ✅</div>
+    </div>
+
+    <div class="two-col">
+      <div class="chart-section">
+        <div class="chart-title">Distribución por Materia</div>
+        <div class="bar-chart" id="barChart">
+          <div style="color:var(--text-muted);font-size:13px">Cargando estadísticas…</div>
+        </div>
+      </div>
+      <div class="chart-section">
+        <div class="chart-title">Distribución por Tipo</div>
+        <div class="bar-chart" id="tipoChart">
+          <div style="color:var(--text-muted);font-size:13px">Cargando estadísticas…</div>
+        </div>
       </div>
     </div>
 
     <div class="chart-section">
-      <div class="chart-title">Distribución por Materia</div>
-      <div class="bar-chart" id="barChart">
-        <div style="color:var(--text-muted);font-size:13px">Cargando estadísticas…</div>
+      <div class="chart-title">Libros por Materia</div>
+      <div class="bar-chart" id="librosChart">
+        <div style="color:var(--text-muted);font-size:13px">Cargando…</div>
       </div>
     </div>
 
@@ -1914,28 +1933,59 @@ function clearFilters() {
 
 // ── DASHBOARD ────────────────────────────────────────────────
 function renderDashboard() {
-  const total = allDocs.length;
-  document.getElementById('d-total').textContent = total.toLocaleString('es');
+  const total  = allDocs.length;
+  const libros = allDocs.filter(d => d.tipo === 'libro').length;
+  const legis  = allDocs.filter(d => d.tipo === 'legislacion').length;
 
-  const legis = allDocs.filter(d => d.tipo === 'legislacion').length;
-  document.getElementById('d-legis').textContent = legis.toLocaleString('es');
+  document.getElementById('d-total').textContent   = total.toLocaleString('es');
+  document.getElementById('d-libros').textContent  = libros.toLocaleString('es');
+  document.getElementById('d-legis').textContent   = legis.toLocaleString('es');
 
   // Count by materia
-  const counts = {};
-  allDocs.forEach(d => { counts[d.materia] = (counts[d.materia]||0)+1; });
-  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  const max = sorted[0]?.[1] || 1;
+  const matCounts = {};
+  allDocs.forEach(d => { const m = d.materia||'Sin materia'; matCounts[m] = (matCounts[m]||0)+1; });
+  const matSorted = Object.entries(matCounts).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('d-materias').textContent = matSorted.length;
+  const matMax = matSorted[0]?.[1] || 1;
 
-  document.getElementById('barChart').innerHTML = sorted.map(([mat, cnt]) => `
-    <div class="bar-row">
-      <div class="bar-label">${fmtMateria(mat)}</div>
+  function buildBar([label, cnt], max, color) {
+    return `<div class="bar-row">
+      <div class="bar-label">${esc(label)}</div>
       <div class="bar-track">
-        <div class="bar-fill" style="width:${(cnt/max*100).toFixed(1)}%"></div>
+        <div class="bar-fill" style="width:${(cnt/max*100).toFixed(1)}%;${color?'background:'+color:''}"></div>
       </div>
       <div class="bar-num">${cnt.toLocaleString('es')}</div>
-    </div>`).join('');
+    </div>`;
+  }
 
-  // Recent (last 10)
+  document.getElementById('barChart').innerHTML =
+    matSorted.map(e => buildBar([fmtMateria(e[0]), e[1]], matMax)).join('');
+
+  // Count by tipo
+  const tipoCounts = {};
+  allDocs.forEach(d => { const t = d.tipo||'otro'; tipoCounts[t] = (tipoCounts[t]||0)+1; });
+  const tipoSorted = Object.entries(tipoCounts).sort((a,b)=>b[1]-a[1]);
+  const tipoMax = tipoSorted[0]?.[1] || 1;
+  const tipoLabels = {
+    legislacion:'Legislación', sentencia:'Sentencia', libro:'Libro',
+    convenio:'Convenio', resolucion:'Resolución', acto_legislativo:'Acto Legislativo',
+    auto_procesal:'Auto Procesal', contrato:'Contrato', acta:'Acta'
+  };
+  document.getElementById('tipoChart').innerHTML =
+    tipoSorted.map(([t,c]) => buildBar([tipoLabels[t]||t, c], tipoMax, t==='libro'?'#c9a227':null)).join('');
+
+  // Libros por materia
+  const librosMat = {};
+  allDocs.filter(d=>d.tipo==='libro').forEach(d => {
+    const m = d.materia||'Sin materia'; librosMat[m] = (librosMat[m]||0)+1;
+  });
+  const libMatSorted = Object.entries(librosMat).sort((a,b)=>b[1]-a[1]);
+  const libMax = libMatSorted[0]?.[1] || 1;
+  document.getElementById('librosChart').innerHTML = libMatSorted.length
+    ? libMatSorted.map(e => buildBar([fmtMateria(e[0]), e[1]], libMax, '#c9a227')).join('')
+    : '<div style="color:var(--text-muted);font-size:13px">Sin libros indexados</div>';
+
+  // Recent
   const recent = [...allDocs].sort((a,b)=>(b.fecha_ingesta||'').localeCompare(a.fecha_ingesta||'')).slice(0,8);
   document.getElementById('recentList').innerHTML = recent.map(d => `
     <li class="recent-item">
@@ -1947,19 +1997,20 @@ function renderDashboard() {
     </li>`).join('');
 
   // System status
-  const sentencias = allDocs.filter(d => d.tipo === 'sentencia').length;
-  const doctrina   = allDocs.filter(d => d.tipo === 'doctrina' || d.tipo === 'articulo').length;
-  const convenios  = allDocs.filter(d => d.tipo === 'convenio').length;
+  const sentencias  = allDocs.filter(d => d.tipo === 'sentencia').length;
+  const convenios   = allDocs.filter(d => d.tipo === 'convenio').length;
+  const resoluciones= allDocs.filter(d => d.tipo === 'resolucion').length;
   document.getElementById('systemStatus').innerHTML = `
     <div>🟢 <strong>GAS API</strong> — Conectado y operativo</div>
-    <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs · LEXIUS Venezuela cargado</div>
+    <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs cargados</div>
     <div style="font-size:11px;color:var(--text-muted);margin-left:18px">
-      ${legis} legislación · ${sentencias} sentencias · ${doctrina} doctrina · ${convenios} convenios
+      ${legis.toLocaleString('es')} legislación · ${sentencias} sentencias · ${libros.toLocaleString('es')} libros · ${convenios} convenios · ${resoluciones} resoluciones
     </div>
+    <div>🟢 <strong>Biblioteca LIBROS</strong> — ${libros.toLocaleString('es')} libros indexados con texto completo</div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA (rama main)</div>
     <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am Venezuela)</div>
-    <div>🟢 <strong>Web App</strong> — v2.1.0 · GitHub Pages activo · caché CDN activo</div>
-    <div>🟡 <strong>Sub-Agentes</strong> — 9 prompts completados · pendiente alimentar con jurisprudencia/doctrina</div>
+    <div>🟢 <strong>Web App</strong> — v2.2.0 · GitHub Pages activo · caché CDN activo</div>
+    <div>🟢 <strong>Sub-Agentes</strong> — 10 prompts operativos (incl. Buscador multi-fuente)</div>
     <div>🟢 <strong>Ingesta</strong> — Subida manual + scraper URL activos</div>`;
 }
 
