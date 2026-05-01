@@ -616,7 +616,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v2.4.0</span>
+    <span class="version-badge" id="versionBadge">v2.5.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -645,6 +645,7 @@
         <option value="Procesal">Procesal</option>
         <option value="Electoral">Electoral</option>
         <option value="Derecho_Probatorio">Derecho Probatorio</option>
+        <option value="General">General</option>
       </select>
       <select id="filtTipo" onchange="applyFilters()">
         <option value="">Todos los tipos</option>
@@ -679,6 +680,11 @@
         <input type="checkbox" id="filtDrive" checked onchange="applyFilters()"
                style="accent-color:var(--gold);cursor:pointer">
         Solo en Drive
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#e8a838;cursor:pointer;white-space:nowrap" title="Mostrar solo libros pendientes de revisión de categoría">
+        <input type="checkbox" id="filtPendiente" onchange="applyFilters()"
+               style="accent-color:#e8a838;cursor:pointer">
+        Pendientes
       </label>
       <button onclick="clearFilters()">✕ Limpiar</button>
     </div>
@@ -1046,7 +1052,8 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeDrawer(); 
 const MATERIA_MAP_VP = {
   Constitucional:'Constitucional', Laboral_Venezuela:'Laboral', Civil:'Civil',
   Mercantil:'Mercantil', Penal:'Penal', Administrativo:'Administrativo',
-  Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio'
+  Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio',
+  General:'General'
 };
 
 async function openDocView(id) {
@@ -1316,7 +1323,7 @@ async function fetchIndex() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     return (data.documentos || [])
-      .filter(d => !d.estado || d.estado === 'activo')  // incluir docs sin campo estado (LEXIUS)
+      .filter(d => !d.estado || d.estado === 'activo' || d.estado === 'pendiente_revision')
       .map(d => ({
         id:               d.id,
         drive_id:         d.drive_id         || '',
@@ -1330,10 +1337,12 @@ async function fetchIndex() {
         año:              d.año,
         tags:             d.tags,
         vigencia:         d.vigencia,
+        estado:           d.estado           || 'activo',
         cita_formal:      d.cita_formal      || '',
         fecha_ingesta:    d.fecha_ingesta    || '',
         fuente:           d.fuente           || '',
         resumen:          d.resumen          || '',
+        indice_libro:     d.indice_libro     || '',
         fragmentos_clave: d.fragmentos_clave || [],
       }));
   } catch(e) {
@@ -1917,7 +1926,7 @@ async function init() {
   if (cached && cached.length) {
     // ── Render inmediato desde caché ──────────────────────────
     allDocs  = cached;
-    filtered = [...allDocs];
+    filtered = allDocs.filter(d => d.estado !== 'pendiente_revision');
     document.getElementById('totalDocs').textContent = allDocs.length.toLocaleString('es');
     renderTable();
     renderDashboard();
@@ -1933,7 +1942,7 @@ async function init() {
         if (fresh.length !== allDocs.length ||
             (fresh[0] && allDocs[0] && fresh[0].id !== allDocs[0].id)) {
           allDocs  = fresh;
-          filtered = [...allDocs];
+          filtered = allDocs.filter(d => d.estado !== 'pendiente_revision');
           document.getElementById('totalDocs').textContent = allDocs.length.toLocaleString('es');
           renderTable();
           renderDashboard();
@@ -1950,7 +1959,7 @@ async function init() {
     const docs = await fetchIndex();
     allDocs  = docs;
     saveIndexCache(docs);
-    filtered = [...allDocs];
+    filtered = allDocs.filter(d => d.estado !== 'pendiente_revision');
     document.getElementById('totalDocs').textContent = allDocs.length.toLocaleString('es');
     renderTable();
     renderDashboard();
@@ -2000,7 +2009,11 @@ function renderTable() {
         </div>
         ${d.autor && d.autor !== '-' ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${esc(d.autor)}</div>` : ''}
       </td>
-      <td><span class="badge badge-materia">${fmtMateria(d.materia)}</span></td>
+      <td>
+        <span class="badge badge-materia">${fmtMateria(d.materia)}</span>
+        ${d.sub_materia ? `<span style="font-size:10px;color:var(--text-muted);display:block;margin-top:2px">${esc(d.sub_materia)}</span>` : ''}
+        ${d.estado === 'pendiente_revision' ? `<span style="font-size:10px;color:#e8a838;display:block;margin-top:2px">⏳ pendiente</span>` : ''}
+      </td>
       <td><span class="badge badge-tipo">${d.tipo || '—'}</span></td>
       <td style="color:var(--text-muted)">${d.año || '—'}</td>
       <td>${vigenciaBadge(d.vigencia)}</td>
@@ -2055,13 +2068,17 @@ function applyFilters() {
   const t = document.getElementById('filtTipo').value;
   const v = document.getElementById('filtVigencia').value;
   const soloEnDrive = document.getElementById('filtDrive') ? document.getElementById('filtDrive').checked : true;
+  const soloPendiente = document.getElementById('filtPendiente') ? document.getElementById('filtPendiente').checked : false;
   filtered = allDocs.filter(d => {
+    const isPendiente = d.estado === 'pendiente_revision';
+    // pendiente filter: show only pending when checked, hide pending when unchecked
+    if (soloPendiente && !isPendiente) return false;
+    if (!soloPendiente && isPendiente) return false;
     if (soloEnDrive && !d.drive_id) return false;
-    const text = ((d.titulo||'')+(d.autor||'')+(d.tags||[]).join(' ')).toLowerCase();
+    const text = ((d.titulo||'')+(d.autor||'')+(d.tags||[]).join(' ')+(d.sub_materia||'')).toLowerCase();
     if (q && !text.includes(q)) return false;
     if (m && d.materia !== m) return false;
     if (t) {
-      // Todos los tipos (incluyendo sub-tipos de legislación) se comparan contra d.tipo directamente
       if (d.tipo !== t) return false;
     }
     if (v && !(d.vigencia||'').includes(v)) return false;
@@ -2077,7 +2094,8 @@ function clearFilters() {
   document.getElementById('filtTipo').value = '';
   document.getElementById('filtVigencia').value = '';
   const fd = document.getElementById('filtDrive'); if (fd) fd.checked = true;
-  filtered = [...allDocs];
+  const fp = document.getElementById('filtPendiente'); if (fp) fp.checked = false;
+  filtered = allDocs.filter(d => d.estado !== 'pendiente_revision');
   currentPage = 1;
   renderTable();
 }
@@ -2473,7 +2491,8 @@ function renderDrawerBadges(d) {
   const MATERIA_MAP = {
     Constitucional:'Constitucional', Laboral_Venezuela:'Laboral', Civil:'Civil',
     Mercantil:'Mercantil', Penal:'Penal', Administrativo:'Administrativo',
-    Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio'
+    Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio',
+    General:'General'
   };
   const bgs = {
     vigente:'rgba(46,204,113,.15)', derogado:'rgba(231,76,60,.15)',
@@ -2541,6 +2560,7 @@ function renderViewMode(d) {
         ${d.autor && d.autor!=='-' ? `<div class="field-block" style="grid-column:1/-1"><div class="field-label">Autor</div>${fv(d.autor)}</div>` : ''}
         ${frow('Año', d.año)}
         ${frow('Materia', d.materia)}
+        ${d.sub_materia ? frow('Sub-categoría', d.sub_materia) : ''}
         ${frow('Vigencia', d.vigencia)}
         ${d.editorial ? frow('Editorial', d.editorial) : ''}
         ${d.isbn ? frow('ISBN', d.isbn) : ''}
@@ -2630,6 +2650,23 @@ function renderViewMode(d) {
     ${resumenHtml}
     ${indiceHtml}
 
+    ${d.estado === 'pendiente_revision' ? `
+    <div class="separator"></div>
+    <div style="background:rgba(232,168,56,.08);border:1px solid rgba(232,168,56,.3);border-radius:var(--radius);padding:12px;margin-bottom:12px">
+      <div style="font-size:12px;color:#e8a838;margin-bottom:8px;font-weight:600">⏳ Pendiente de revisión de categoría</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="confirmarCategoria('${esc(d.id)}')"
+          style="flex:1;min-width:140px;padding:8px 12px;background:#e8a838;color:#000;border:none;
+                 border-radius:var(--radius);font-weight:700;font-size:13px;cursor:pointer">
+          Confirmar categoría
+        </button>
+        <button onclick="switchTab('edit')"
+          style="flex:1;min-width:140px;padding:8px 12px;background:transparent;color:#e8a838;
+                 border:1px solid rgba(232,168,56,.4);border-radius:var(--radius);font-size:13px;cursor:pointer">
+          Cambiar categoría
+        </button>
+      </div>
+    </div>` : ''}
     <div style="font-size:11px;color:var(--text-muted);margin-top:8px">
       ID: ${esc(d.id||'—')} · Ingesta: ${esc(d.fecha_ingesta||'—')} · Estado: ${esc(d.estado||'activo')}
     </div>`;
@@ -2644,7 +2681,7 @@ function renderViewMode(d) {
 
 function renderEditMode(d) {
   const MATERIAS = ['Constitucional','Laboral_Venezuela','Civil','Mercantil','Penal',
-                    'Administrativo','Procesal','Electoral','Derecho_Probatorio'];
+                    'Administrativo','Procesal','Electoral','Derecho_Probatorio','General'];
   const TIPOS = ['legislacion','sentencia','libro','convenio','resolucion','acto_legislativo','doctrina','articulo'];
   const VIGENCIAS = ['vigente','derogado','modificado','historico'];
 
@@ -2684,6 +2721,10 @@ function renderEditMode(d) {
       <div class="edit-field">
         <label class="edit-label">Edición</label>
         ${inp('edicion', d.edicion, 'text', 'Ej: 3ra edición')}
+      </div>
+      <div class="edit-field">
+        <label class="edit-label">Sub-categoría</label>
+        ${inp('sub_materia', d.sub_materia, 'text', 'Ej: Historia, Filosofía, Ajedrez…')}
       </div>
       <div class="edit-field">
         <label class="edit-label">Vigencia</label>
@@ -3093,6 +3134,7 @@ async function saveDoc() {
     payload.editorial    = g('editorial');
     payload.isbn         = g('isbn');
     payload.edicion      = g('edicion');
+    payload.sub_materia  = g('sub_materia');
     payload.vigencia     = gs('vigencia') || d.vigencia;
     payload.resumen      = document.getElementById('e-resumen')?.value.trim() || d.resumen || '';
     payload.indice_libro = document.getElementById('e-indice_libro')?.value.trim() || d.indice_libro || '';
@@ -3150,6 +3192,38 @@ async function saveDoc() {
   }
 }
 
+// ── CONFIRMAR CATEGORÍA ──────────────────────────────────────
+async function confirmarCategoria(docId) {
+  const doc = allDocs.find(x => x.id === docId);
+  if (!doc) return;
+  try {
+    const r = await fetch(GAS + '?path=indice/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ id: docId, estado: 'activo' })
+    });
+    const res = await r.json();
+    if (res.success) {
+      doc.estado = 'activo';
+      if (currentDocFull && currentDocFull.id === docId) {
+        currentDocFull.estado = 'activo';
+        renderViewMode(currentDocFull);
+      }
+      // remove from filtered if pendiente filter not active
+      const fp = document.getElementById('filtPendiente');
+      if (!fp || !fp.checked) {
+        filtered = filtered.filter(x => x.id !== docId);
+        renderTable();
+      }
+      toast('Categoría confirmada', 'ok');
+    } else {
+      throw new Error(res.error || 'Error desconocido');
+    }
+  } catch(e) {
+    toast('Error al confirmar: ' + e.message, 'err');
+  }
+}
+
 // ── NAVIGATION ───────────────────────────────────────────────
 function switchView(v) {
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
@@ -3169,7 +3243,8 @@ function fmtMateria(m) {
   const map = {
     Constitucional:'Constitucional', Laboral_Venezuela:'Laboral', Civil:'Civil',
     Mercantil:'Mercantil', Penal:'Penal', Administrativo:'Administrativo',
-    Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio'
+    Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio',
+    General:'General'
   };
   return map[m] || m;
 }
