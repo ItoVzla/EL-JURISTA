@@ -661,7 +661,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v2.6.2</span>
+    <span class="version-badge" id="versionBadge">v2.6.3</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -3693,52 +3693,17 @@ function encShowApVol(volKey) {
   ).join('');
 }
 
-let _encCurrentDriveId = null;
-
 function encOpenPdf(driveId, label) {
-  _encCurrentDriveId = driveId;
-  const wrap = document.getElementById('encViewerWrap');
-  const frame = document.getElementById('encPdfFrame');
-  const skelEl = document.getElementById('encPdfSkeleton');
-  const labelEl = document.getElementById('encViewerLabel');
-  const card = document.getElementById('encViewerCard');
-  const cardLabel = document.getElementById('encViewerCardLabel');
-  const driveBtn = document.getElementById('encViewerDriveBtn');
-
   document.querySelectorAll('.enc-vol-btn').forEach(b => b.classList.remove('active'));
   const activeBtn = [...document.querySelectorAll('.enc-vol-btn')]
     .find(b => b.onclick?.toString().includes(driveId));
   if (activeBtn) activeBtn.classList.add('active');
-
-  labelEl.textContent = label;
-  cardLabel.textContent = label;
-  driveBtn.href = 'https://drive.google.com/file/d/' + driveId + '/view';
-
-  // Show card, hide iframe
-  frame.src = '';
-  frame.style.opacity = '0';
-  skelEl.style.display = 'none';
-  card.style.display = 'flex';
-  wrap.style.display = 'flex';
-  wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
-}
-
-function encTryPreview() {
-  if (!_encCurrentDriveId) return;
-  const card = document.getElementById('encViewerCard');
-  const skelEl = document.getElementById('encPdfSkeleton');
-  const frame = document.getElementById('encPdfFrame');
-  card.style.display = 'none';
-  skelEl.style.display = 'flex';
-  frame.src = 'https://drive.google.com/file/d/' + _encCurrentDriveId + '/preview';
+  window.open('https://drive.google.com/file/d/' + driveId + '/view', '_blank', 'noopener');
 }
 
 function encCloseViewer() {
   document.getElementById('encViewerWrap').style.display = 'none';
-  document.getElementById('encPdfFrame').src = '';
-  document.getElementById('encViewerCard').style.display = 'flex';
   document.querySelectorAll('.enc-vol-btn').forEach(b => b.classList.remove('active'));
-  _encCurrentDriveId = null;
 }
 
 // ── NAVIGATION ───────────────────────────────────────────────
