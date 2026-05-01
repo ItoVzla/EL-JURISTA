@@ -616,7 +616,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v2.3.0</span>
+    <span class="version-badge" id="versionBadge">v2.4.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -792,7 +792,8 @@
             <select id="f-tipo" onchange="updateFormFields()">
               <option value="legislacion">Legislación</option>
               <option value="sentencia">Sentencia</option>
-              <option value="doctrina">Doctrina</option>
+              <option value="libro">Libro</option>
+              <option value="doctrina">Doctrina / Artículo</option>
               <option value="articulo">Artículo</option>
               <option value="convenio">Convenio Internacional</option>
             </select>
@@ -811,6 +812,21 @@
               <option value="Derecho_Probatorio">Derecho Probatorio</option>
             </select>
           </div>
+
+          <!-- ISBN (solo para libro/doctrina) -->
+          <div class="form-group" id="fg-isbn" style="display:none">
+            <label>ISBN</label>
+            <div style="display:flex;gap:6px">
+              <input type="text" id="f-isbn" placeholder="978-980-212-XXX-X"
+                     style="flex:1" oninput="isbnChanged()">
+              <button type="button" onclick="autoFillISBN()"
+                      style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);
+                             color:var(--text);border-radius:6px;cursor:pointer;font-size:12px;white-space:nowrap"
+                      id="btnIsbn">🔍 Auto</button>
+            </div>
+            <div id="isbnStatus" style="font-size:11px;color:var(--text-muted);margin-top:4px"></div>
+          </div>
+
           <div class="form-group" id="fg-autor">
             <label>Autor / Sala</label>
             <input type="text" id="f-autor" placeholder="Apellido, Nombre o Sala TSJ…">
@@ -819,6 +835,13 @@
             <label>Año</label>
             <input type="number" id="f-anio" placeholder="2024" min="1800" max="2099">
           </div>
+
+          <!-- Editorial (libro/doctrina) -->
+          <div class="form-group" id="fg-editorial" style="display:none">
+            <label>Editorial</label>
+            <input type="text" id="f-editorial" placeholder="Ej: Vadell Hermanos…">
+          </div>
+
           <div class="form-group" id="fg-expediente" style="display:none">
             <label>N° Expediente</label>
             <input type="text" id="f-expediente" placeholder="AA60-S-2023-000001">
@@ -839,6 +862,12 @@
           <div class="form-group full">
             <label>Resumen (opcional)</label>
             <textarea id="f-resumen" rows="3" placeholder="Breve descripción del documento…"></textarea>
+          </div>
+          <!-- Índice del libro (solo para libro) -->
+          <div class="form-group full" id="fg-indice" style="display:none">
+            <label>Índice / Tabla de contenido</label>
+            <textarea id="f-indice" rows="6"
+                      placeholder="Pega aquí el índice completo del libro (capítulos, secciones…)"></textarea>
           </div>
         </div>
         <div style="display:flex;gap:10px;margin-top:18px">
@@ -982,7 +1011,7 @@
 </div>
 
 <script>
-const GAS = 'https://script.google.com/macros/s/AKfycbxP1AwAxArtCPDK9QJaE3Nixx3E21Eii5JXVpPKj6dbipEf25vVSUftLxDyS22SSFnv/exec';
+const GAS = 'https://script.google.com/macros/s/AKfycbxyOwee4oYgG1PwuvIQu0_8r0-cG0BCLGREY1FRpidEysyTD6d5kXcBSIsmbDKptKc4/exec';
 const CLAVE = 'ElJurista2026';
 const PER_PAGE = 50;
 
@@ -2032,12 +2061,8 @@ function applyFilters() {
     if (q && !text.includes(q)) return false;
     if (m && d.materia !== m) return false;
     if (t) {
-      const LEG_SUBTYPES = ['ley_ordinaria','ley_organica','codigo','constitucion','decreto','providencia','reglamento','gaceta_oficial'];
-      if (LEG_SUBTYPES.includes(t)) {
-        if (d.subtipo !== t) return false;
-      } else {
-        if (d.tipo !== t) return false;
-      }
+      // Todos los tipos (incluyendo sub-tipos de legislación) se comparan contra d.tipo directamente
+      if (d.tipo !== t) return false;
     }
     if (v && !(d.vigencia||'').includes(v)) return false;
     return true;
@@ -2122,22 +2147,40 @@ function renderDashboard() {
       </div>
     </li>`).join('');
 
-  // System status
-  const sentencias  = allDocs.filter(d => d.tipo === 'sentencia').length;
-  const convenios   = allDocs.filter(d => d.tipo === 'convenio').length;
-  const resoluciones= allDocs.filter(d => d.tipo === 'resolucion').length;
+  // System status — calculos locales inmediatos
+  const sentencias   = allDocs.filter(d => d.tipo === 'sentencia').length;
+  const convenios    = allDocs.filter(d => d.tipo === 'convenio').length;
+  const resoluciones = allDocs.filter(d => d.tipo === 'resolucion').length;
+  const conDriveId   = allDocs.filter(d => d.drive_id).length;
+  const sinDriveId   = total - conDriveId;
   document.getElementById('systemStatus').innerHTML = `
-    <div>🟢 <strong>GAS API</strong> — Conectado y operativo</div>
+    <div>🟡 <strong>GAS API</strong> — Verificando conexión…</div>
     <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs cargados</div>
     <div style="font-size:11px;color:var(--text-muted);margin-left:18px">
       ${legis.toLocaleString('es')} legislación · ${sentencias} sentencias · ${libros.toLocaleString('es')} libros · ${convenios} convenios · ${resoluciones} resoluciones
     </div>
-    <div>🟢 <strong>Biblioteca LIBROS</strong> — ${libros.toLocaleString('es')} libros indexados con texto completo</div>
+    <div>🟢 <strong>Archivos en Drive</strong> — ${conDriveId.toLocaleString('es')} con ID verificado · <span style="color:${sinDriveId>0?'var(--yellow)':'var(--green)'}">${sinDriveId} sin ID</span></div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA (rama main)</div>
-    <div>🟢 <strong>Backup Drive</strong> — Trigger activo (domingos 2am Venezuela)</div>
-    <div>🟢 <strong>Web App</strong> — v2.3.0 · GitHub Pages activo · caché CDN activo</div>
-    <div>🟢 <strong>Sub-Agentes</strong> — 10 prompts operativos (incl. Buscador multi-fuente)</div>
-    <div>🟢 <strong>Ingesta</strong> — Subida manual + scraper URL activos</div>`;
+    <div>🟢 <strong>Web App</strong> — v2.3.0 · GitHub Pages · caché CDN activo</div>
+    <div>🟢 <strong>Sub-Agentes</strong> — 10 prompts operativos</div>`;
+  // Ping real al GAS en background
+  const t0 = Date.now();
+  fetch(GAS + '?path=indice/resumen', { method: 'GET', cache: 'no-store' })
+    .then(r => {
+      const ms  = Date.now() - t0;
+      const ok  = r.ok;
+      const el  = document.getElementById('systemStatus');
+      if (!el) return;
+      const firstDiv = el.querySelector('div');
+      if (firstDiv) firstDiv.innerHTML = ok
+        ? `🟢 <strong>GAS API</strong> — Conectado y operativo <span style="font-size:11px;color:var(--text-muted)">(${ms}ms)</span>`
+        : `🔴 <strong>GAS API</strong> — Error HTTP ${r.status}`;
+    })
+    .catch(() => {
+      const el = document.getElementById('systemStatus');
+      const firstDiv = el?.querySelector('div');
+      if (firstDiv) firstDiv.innerHTML = '🔴 <strong>GAS API</strong> — Sin conexión';
+    });
 }
 
 // ── INGESTA ──────────────────────────────────────────────────
@@ -2166,7 +2209,45 @@ function handleFile(f) {
 
 function updateFormFields() {
   const tipo = document.getElementById('f-tipo').value;
-  document.getElementById('fg-expediente').style.display = tipo==='sentencia'?'block':'none';
+  const isLibro   = tipo === 'libro';
+  const isDoc     = tipo === 'doctrina' || tipo === 'articulo';
+  const isSent    = tipo === 'sentencia';
+  document.getElementById('fg-expediente').style.display = isSent ? 'block' : 'none';
+  document.getElementById('fg-isbn').style.display       = (isLibro || isDoc) ? 'block' : 'none';
+  document.getElementById('fg-editorial').style.display  = (isLibro || isDoc) ? 'block' : 'none';
+  document.getElementById('fg-indice').style.display     = isLibro ? 'block' : 'none';
+}
+
+function isbnChanged() {
+  document.getElementById('isbnStatus').textContent = '';
+}
+
+async function autoFillISBN() {
+  const isbn = document.getElementById('f-isbn').value.trim();
+  if (!isbn) { toast('❌ Escribe un ISBN primero', 'err'); return; }
+  const btn = document.getElementById('btnIsbn');
+  btn.textContent = '⏳';
+  btn.disabled = true;
+  document.getElementById('isbnStatus').textContent = 'Buscando…';
+  try {
+    const r = await fetch(GAS + '?path=isbn/buscar&isbn=' + encodeURIComponent(isbn));
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    // Auto-completar campos
+    if (d.titulo)    document.getElementById('f-titulo').value    = d.titulo + (d.subtitulo ? ': ' + d.subtitulo : '');
+    if (d.autores)   document.getElementById('f-autor').value     = d.autores;
+    if (d.año)       document.getElementById('f-anio').value      = d.año;
+    if (d.editorial) document.getElementById('f-editorial').value = d.editorial;
+    if (d.descripcion) document.getElementById('f-resumen').value = d.descripcion;
+    document.getElementById('isbnStatus').textContent = '✅ Datos cargados desde ' + (d.fuente || 'API');
+    toast('✅ Metadatos completados desde ' + (d.fuente || 'API'), 'ok');
+  } catch(e) {
+    document.getElementById('isbnStatus').textContent = '❌ ' + e.message;
+    toast('❌ ISBN no encontrado: ' + e.message, 'err');
+  } finally {
+    btn.textContent = '🔍 Auto';
+    btn.disabled = false;
+  }
 }
 
 function cancelUpload() {
@@ -2193,17 +2274,21 @@ async function submitUpload() {
       reader.readAsDataURL(selectedFile);
     });
 
-    const ext = selectedFile.name.split('.').pop().toLowerCase();
+    const ext  = selectedFile.name.split('.').pop().toLowerCase();
+    const tipo = document.getElementById('f-tipo').value;
     const body = {
       titulo,
       materia:      document.getElementById('f-materia').value,
-      tipo:         document.getElementById('f-tipo').value,
+      tipo,
       autor:        document.getElementById('f-autor').value.trim() || '-',
       año:          document.getElementById('f-anio').value,
-      expediente:   document.getElementById('f-expediente').value.trim() || null,
+      expediente:   document.getElementById('f-expediente')?.value.trim() || null,
       vigencia:     document.getElementById('f-vigencia').value,
       tags:         document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
       resumen:      document.getElementById('f-resumen').value.trim() || '',
+      isbn:         document.getElementById('f-isbn')?.value.trim() || null,
+      editorial:    document.getElementById('f-editorial')?.value.trim() || null,
+      indice_libro: document.getElementById('f-indice')?.value.trim() || '',
       extension:    ext,
       contenido_base64: base64,
     };
@@ -2362,6 +2447,28 @@ function closeDrawer() {
   currentDocFull = null;
 }
 
+async function verificarEnDrive(docId) {
+  const btn = document.getElementById('btnVerificarDrive');
+  if (btn) { btn.textContent = '⏳ Buscando…'; btn.disabled = true; }
+  try {
+    const r = await fetch(GAS + '?path=libro/pdf-id&id=' + encodeURIComponent(docId));
+    const d = await r.json();
+    if (d.drive_id) {
+      // Actualizar en memoria y volver a renderizar
+      const idx = allDocs.findIndex(x => x.id === docId);
+      if (idx !== -1) allDocs[idx].drive_id = d.drive_id;
+      if (currentDocFull) currentDocFull.drive_id = d.drive_id;
+      toast('✅ Archivo encontrado en Drive', 'ok');
+      renderViewMode(currentDocFull || allDocs.find(x => x.id === docId) || {});
+    } else {
+      throw new Error(d.error || 'No encontrado');
+    }
+  } catch(e) {
+    toast('❌ ' + e.message, 'err');
+    if (btn) { btn.textContent = '🔍 Buscar archivo en Drive'; btn.disabled = false; }
+  }
+}
+
 function renderDrawerBadges(d) {
   const MATERIA_MAP = {
     Constitucional:'Constitucional', Laboral_Venezuela:'Laboral', Civil:'Civil',
@@ -2460,7 +2567,7 @@ function renderViewMode(d) {
       </div>`;
   }
 
-  // Read + Drive buttons
+  // Botón Drive — directo al archivo (no a la carpeta)
   const driveDirectUrl = d.drive_id
     ? 'https://drive.google.com/file/d/' + d.drive_id + '/view'
     : null;
@@ -2470,12 +2577,41 @@ function renderViewMode(d) {
                 background:rgba(66,133,244,.15);color:#4a90d9;border:1px solid rgba(66,133,244,.3);
                 border-radius:var(--radius);font-weight:600;font-size:13px;cursor:pointer;
                 margin-bottom:8px;text-decoration:none;box-sizing:border-box">
-         📄 Abrir en Google Drive</a>`
-    : '';
+         📄 Abrir archivo en Google Drive</a>`
+    : (isLibro
+        ? `<button onclick="verificarEnDrive('${esc(d.id)}')" id="btnVerificarDrive"
+             style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;
+                    background:rgba(201,162,39,.1);color:var(--gold);border:1px solid rgba(201,162,39,.3);
+                    border-radius:var(--radius);font-weight:600;font-size:13px;cursor:pointer;
+                    margin-bottom:8px;box-sizing:border-box">
+             🔍 Buscar archivo en Drive</button>`
+        : '');
+
   const readBtn = `${driveBtn}<button onclick="openDocView('${esc(d.id)}')"
     style="width:100%;padding:11px;background:var(--gold);color:#000;border:none;border-radius:var(--radius);
            font-weight:700;font-size:14px;cursor:pointer;margin-bottom:16px;letter-spacing:.3px">
     📖 ${isLibro ? 'Ver resumen e índice' : 'Leer documento completo'}</button>`;
+
+  // Índice del libro
+  const indiceHtml = (isLibro && d.indice_libro)
+    ? `<div class="separator"></div>
+       <div style="margin-bottom:16px">
+         <div class="field-label" style="margin-bottom:8px">Índice del libro</div>
+         <pre style="white-space:pre-wrap;font-size:12px;color:var(--text-muted);
+                     background:var(--surface2);border:1px solid var(--border);
+                     border-radius:6px;padding:12px;max-height:300px;overflow-y:auto;
+                     font-family:inherit;line-height:1.6">${esc(d.indice_libro)}</pre>
+       </div>`
+    : '';
+
+  // Resumen
+  const resumenHtml = d.resumen
+    ? `<div class="separator"></div>
+       <div style="margin-bottom:16px">
+         <div class="field-label" style="margin-bottom:8px">Resumen</div>
+         <div style="font-size:13px;color:var(--text-muted);line-height:1.6">${esc(d.resumen)}</div>
+       </div>`
+    : '';
 
   document.getElementById('drawerBody').innerHTML = `
     ${readBtn}
@@ -2491,7 +2627,10 @@ function renderViewMode(d) {
       <div style="display:flex;flex-wrap:wrap;gap:6px">${tagsHtml}</div>
     </div>
 
-    <div style="font-size:11px;color:var(--text-muted)">
+    ${resumenHtml}
+    ${indiceHtml}
+
+    <div style="font-size:11px;color:var(--text-muted);margin-top:8px">
       ID: ${esc(d.id||'—')} · Ingesta: ${esc(d.fecha_ingesta||'—')} · Estado: ${esc(d.estado||'activo')}
     </div>`;
 
@@ -2549,6 +2688,17 @@ function renderEditMode(d) {
       <div class="edit-field">
         <label class="edit-label">Vigencia</label>
         ${sel('vigencia', VIGENCIAS, d.vigencia)}
+      </div>
+      <div class="edit-field edit-full">
+        <label class="edit-label">Resumen</label>
+        <textarea class="edit-input" id="e-resumen" rows="3"
+                  style="resize:vertical">${esc(d.resumen||'')}</textarea>
+      </div>
+      <div class="edit-field edit-full">
+        <label class="edit-label">Índice / Tabla de contenido</label>
+        <textarea class="edit-input" id="e-indice_libro" rows="8"
+                  style="resize:vertical;font-size:12px;font-family:inherit;line-height:1.6"
+                  placeholder="Pega aquí el índice completo del libro…">${esc(d.indice_libro||'')}</textarea>
       </div>`;
   } else if (isLeg) {
     typeFields = `
@@ -2938,12 +3088,14 @@ async function saveDoc() {
   };
 
   if (isLibro) {
-    payload.autor     = g('autor') || d.autor;
-    payload.año       = parseInt(g('año')) || d.año;
-    payload.editorial = g('editorial');
-    payload.isbn      = g('isbn');
-    payload.edicion   = g('edicion');
-    payload.vigencia  = gs('vigencia') || d.vigencia;
+    payload.autor        = g('autor') || d.autor;
+    payload.año          = parseInt(g('año')) || d.año;
+    payload.editorial    = g('editorial');
+    payload.isbn         = g('isbn');
+    payload.edicion      = g('edicion');
+    payload.vigencia     = gs('vigencia') || d.vigencia;
+    payload.resumen      = document.getElementById('e-resumen')?.value.trim() || d.resumen || '';
+    payload.indice_libro = document.getElementById('e-indice_libro')?.value.trim() || d.indice_libro || '';
   } else if (isLeg) {
     payload.año           = parseInt(g('año')) || d.año;
     payload.vigencia      = gs('vigencia') || d.vigencia;
