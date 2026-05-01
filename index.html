@@ -233,6 +233,7 @@
   }
   @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   @keyframes skelPulse { 0%,100%{background-position:200% 0} 50%{background-position:-200% 0} }
+  @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
   .loading-bar.show { display: block; }
 
   .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
@@ -616,7 +617,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v2.5.0</span>
+    <span class="version-badge" id="versionBadge">v2.5.1</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -1011,6 +1012,7 @@
     <div id="vpBody" style="display:none">
       <h1 class="viewer-title" id="vpTitle"></h1>
       <div class="viewer-meta" id="vpMeta"></div>
+      <div id="vpMetaPanel"></div>
       <div class="legal-viewer viewer-body" id="vpContent"></div>
     </div>
   </div>
@@ -1094,6 +1096,7 @@ async function openDocView(id) {
     `${(d.autor && d.autor!=='-') ? `<span style="font-size:13px;color:var(--text-muted)">${esc(d.autor)}</span>` : ''}
      ${tags}
      ${d.cita_formal ? `<span style="font-size:11px;color:var(--text-muted);font-style:italic;width:100%">${esc(d.cita_formal)}</span>` : ''}`;
+  renderVpMetaPanel(d);
   if (d.drive_id) {
     const dl = document.getElementById('vpDriveLink');
     dl.href = 'https://drive.google.com/file/d/' + d.drive_id + '/view';
@@ -1271,6 +1274,203 @@ function _mostrarLibroSinPdf(d) {
     </div>`;
 }
 
+// ── VIEWER META PANEL (libro) ─────────────────────────────────
+function renderVpMetaPanel(d) {
+  const panel = document.getElementById('vpMetaPanel');
+  if (!panel) return;
+  if ((d.tipo || '').toLowerCase() !== 'libro') { panel.innerHTML = ''; return; }
+  _vpMetaViewMode(d);
+}
+
+function _vpMetaViewMode(d) {
+  const panel = document.getElementById('vpMetaPanel');
+  if (!panel) return;
+  const chips = [
+    d.editorial ? `<span><span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-right:4px">Editorial</span>${esc(d.editorial)}</span>` : '',
+    d.año       ? `<span><span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-right:4px">Año</span>${esc(String(d.año))}</span>` : '',
+    d.pais      ? `<span><span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-right:4px">País</span>${esc(d.pais)}</span>` : '',
+    d.edicion   ? `<span><span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-right:4px">Edición</span>${esc(d.edicion)}</span>` : '',
+    d.isbn      ? `<span><span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-right:4px">ISBN</span>${esc(d.isbn)}</span>` : '',
+  ].filter(Boolean);
+  const coautores = d.coautores && d.coautores !== '-' ? d.coautores : '';
+  panel.innerHTML = `
+    <div style="border-top:1px solid var(--border);padding:12px 0 4px">
+      ${chips.length ? `<div style="display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--text);margin-bottom:${coautores?'8px':'10px'}">${chips.join('')}</div>` : ''}
+      ${coautores ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:10px"><span style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-right:4px">Co-autores</span>${esc(coautores)}</div>` : ''}
+      <div style="display:flex;gap:8px;padding-bottom:4px">
+        <button onclick="_vpMetaEditMode()"
+          style="padding:5px 13px;background:transparent;border:1px solid var(--border);border-radius:6px;
+                 color:var(--text-muted);font-size:12px;cursor:pointer;transition:border-color .15s"
+          onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+          ✏️ Editar info
+        </button>
+        <button onclick="toggleVpIndice()"
+          style="padding:5px 13px;background:transparent;border:1px solid var(--border);border-radius:6px;
+                 color:var(--text-muted);font-size:12px;cursor:pointer;transition:border-color .15s"
+          onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+          📋 ${d.indice_libro ? 'Ver / editar índice' : 'Agregar índice'}
+        </button>
+      </div>
+    </div>`;
+}
+
+function _vpMetaEditMode() {
+  const d = allDocs.find(x => x.id === viewerDocId);
+  if (!d) return;
+  const panel = document.getElementById('vpMetaPanel');
+  const inp = (id, val, type, ph) =>
+    `<input id="vpm-${id}" type="${type||'text'}" value="${esc(String(val||''))}"
+      placeholder="${ph||''}"
+      style="width:100%;box-sizing:border-box;padding:7px 10px;background:var(--surface2);
+             border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none">`;
+  panel.innerHTML = `
+    <div style="border:1px solid rgba(201,162,39,.3);border-radius:8px;padding:16px;
+                margin:8px 0 12px;background:rgba(201,162,39,.04)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div style="grid-column:1/-1">
+          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);display:block;margin-bottom:4px">Título</label>
+          ${inp('titulo', d.titulo)}
+        </div>
+        <div>
+          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);display:block;margin-bottom:4px">Autor</label>
+          ${inp('autor', d.autor !== '-' ? d.autor : '')}
+        </div>
+        <div>
+          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);display:block;margin-bottom:4px">Co-autores</label>
+          ${inp('coautores', d.coautores, 'text', 'Separados por comas')}
+        </div>
+        <div>
+          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);display:block;margin-bottom:4px">Editorial</label>
+          ${inp('editorial', d.editorial)}
+        </div>
+        <div>
+          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);display:block;margin-bottom:4px">Año</label>
+          ${inp('año', d.año, 'number')}
+        </div>
+        <div>
+          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);display:block;margin-bottom:4px">País</label>
+          ${inp('pais', d.pais, 'text', 'Ej: Venezuela, México…')}
+        </div>
+        <div>
+          <label style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);display:block;margin-bottom:4px">Edición</label>
+          ${inp('edicion', d.edicion, 'text', 'Ej: 3ra edición')}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="saveVpMeta()" id="btnVpmSave"
+          style="padding:7px 18px;background:var(--gold);color:#000;border:none;border-radius:6px;
+                 font-weight:700;font-size:13px;cursor:pointer">💾 Guardar</button>
+        <button onclick="_vpMetaViewMode(allDocs.find(x=>x.id===viewerDocId))"
+          style="padding:7px 14px;background:transparent;border:1px solid var(--border);
+                 border-radius:6px;color:var(--text-muted);font-size:13px;cursor:pointer">Cancelar</button>
+      </div>
+    </div>`;
+}
+
+async function saveVpMeta() {
+  const d = allDocs.find(x => x.id === viewerDocId);
+  if (!d) return;
+  const btn = document.getElementById('btnVpmSave');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Guardando…'; }
+  const g = id => document.getElementById('vpm-'+id)?.value.trim() || '';
+  const payload = {
+    id:        viewerDocId,
+    titulo:    g('titulo') || d.titulo,
+    autor:     g('autor'),
+    coautores: g('coautores'),
+    editorial: g('editorial'),
+    año:       parseInt(g('año')) || d.año || '',
+    pais:      g('pais'),
+    edicion:   g('edicion'),
+  };
+  try {
+    const r = await fetch(GAS + '?path=indice/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    const res = await r.json();
+    if (res.success) {
+      Object.assign(d, payload);
+      document.getElementById('vpTitle').textContent = d.titulo || '—';
+      document.getElementById('vpMeta').innerHTML =
+        `${(d.autor && d.autor!=='-') ? `<span style="font-size:13px;color:var(--text-muted)">${esc(d.autor)}</span>` : ''}`;
+      _vpMetaViewMode(d);
+      toast('Guardado', 'ok');
+    } else throw new Error(res.error || 'Error desconocido');
+  } catch(e) {
+    toast('Error: ' + e.message, 'err');
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+  }
+}
+
+function toggleVpIndice() {
+  const existing = document.getElementById('vpIndiceFloat');
+  if (existing) { existing.remove(); return; }
+  const d = allDocs.find(x => x.id === viewerDocId);
+  if (!d) return;
+  const fp = document.createElement('div');
+  fp.id = 'vpIndiceFloat';
+  fp.style.cssText = `
+    position:fixed;bottom:20px;right:20px;
+    width:min(500px,90vw);max-height:70vh;
+    display:flex;flex-direction:column;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.55);
+    z-index:2000;overflow:hidden;
+    animation:slideUp .2s ease`;
+  fp.innerHTML = `
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);
+                display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <span style="font-size:13px;font-weight:600;color:var(--gold)">📋 Índice del libro</span>
+      <button onclick="document.getElementById('vpIndiceFloat').remove()"
+        style="background:none;border:none;color:var(--text-muted);font-size:17px;cursor:pointer;
+               padding:2px 8px;border-radius:4px;line-height:1">&times;</button>
+    </div>
+    <textarea id="vpIndiceTA"
+      style="flex:1;min-height:220px;max-height:calc(70vh - 90px);padding:14px 16px;
+             background:transparent;border:none;color:var(--text);font-size:12px;
+             line-height:1.75;resize:none;outline:none;font-family:inherit"
+      placeholder="Pega aquí el índice o tabla de contenido del libro…">${esc(d.indice_libro || '')}</textarea>
+    <div style="padding:10px 16px;border-top:1px solid var(--border);
+                display:flex;gap:8px;align-items:center;flex-shrink:0">
+      <button onclick="saveVpIndice()" id="btnVpIndiceSave"
+        style="padding:6px 16px;background:var(--gold);color:#000;border:none;border-radius:6px;
+               font-weight:700;font-size:13px;cursor:pointer">💾 Guardar índice</button>
+      <span id="vpIndiceSaveStatus" style="font-size:12px;color:var(--text-muted)"></span>
+    </div>`;
+  document.body.appendChild(fp);
+  document.getElementById('vpIndiceTA')?.focus();
+}
+
+async function saveVpIndice() {
+  const d = allDocs.find(x => x.id === viewerDocId);
+  if (!d) return;
+  const ta  = document.getElementById('vpIndiceTA');
+  const btn = document.getElementById('btnVpIndiceSave');
+  const st  = document.getElementById('vpIndiceSaveStatus');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳…'; }
+  try {
+    const r = await fetch(GAS + '?path=indice/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ id: viewerDocId, indice_libro: ta.value.trim() })
+    });
+    const res = await r.json();
+    if (res.success) {
+      d.indice_libro = ta.value.trim();
+      if (st) { st.textContent = '✓ Guardado'; setTimeout(() => { if(st) st.textContent=''; }, 2500); }
+      _vpMetaViewMode(d);
+    } else throw new Error(res.error || 'Error');
+  } catch(e) {
+    if (st) st.textContent = '❌ ' + e.message;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar índice'; }
+  }
+}
+
 // ── CACHÉ CLIENTE ─────────────────────────────────────────────
 // textCache: Map en memoria (rápido, descartado al recargar)
 // sessionStorage: persiste durante la sesión del navegador
@@ -1343,6 +1543,11 @@ async function fetchIndex() {
         fuente:           d.fuente           || '',
         resumen:          d.resumen          || '',
         indice_libro:     d.indice_libro     || '',
+        editorial:        d.editorial        || '',
+        isbn:             d.isbn             || '',
+        edicion:          d.edicion          || '',
+        coautores:        d.coautores        || '',
+        pais:             d.pais             || '',
         fragmentos_clave: d.fragmentos_clave || [],
       }));
   } catch(e) {
