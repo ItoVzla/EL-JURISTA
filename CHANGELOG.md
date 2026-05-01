@@ -6,6 +6,19 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v2.6.5 — 2026-05-01 *(versión en pantalla: v2.6.5)*
+
+### Añadido
+
+- **Eliminar documento desde el visor.**
+  - Botón "🗑 Eliminar documento" al pie del panel lateral (todos los tipos).
+  - Modal de confirmación con: nombre del documento, advertencia, campo de contraseña y botón rojo.
+  - Validación de contraseña en cliente (CLAVE) y en servidor (GAS) — doble capa.
+  - GAS: si el doc tiene `drive_id`, llama `DriveApp.getFileById().setTrashed(true)` para enviar el archivo a la papelera de Drive.
+  - En caso de éxito: doc removido de `allDocs` y `filtered`, drawer cerrado, tabla actualizada, toast de confirmación.
+
+---
+
 ## v2.6.2 — 2026-05-01 *(versión en pantalla: v2.6.2)*
 
 ### Cambiado
