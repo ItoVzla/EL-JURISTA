@@ -661,7 +661,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v2.6.4</span>
+    <span class="version-badge" id="versionBadge">v2.6.5</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -3010,7 +3010,14 @@ function renderViewMode(d) {
     </div>` : ''}
     <div style="font-size:11px;color:var(--text-muted);margin-top:8px">
       ID: ${esc(d.id||'—')} · Ingesta: ${esc(d.fecha_ingesta||'—')} · Estado: ${esc(d.estado||'activo')}
-    </div>`;
+    </div>
+    <div class="separator" style="margin-top:16px"></div>
+    <button onclick="iniciarEliminar('${esc(d.id)}','${esc(d.titulo||d.nombre_archivo||'')}')"
+      style="width:100%;padding:9px;background:rgba(220,53,69,.1);color:#dc3545;border:1px solid rgba(220,53,69,.35);
+             border-radius:var(--radius);font-size:13px;cursor:pointer;font-weight:600;margin-top:8px;
+             letter-spacing:.2px">
+      🗑 Eliminar documento
+    </button>`;
 
   drawerTab = 'view';
   ['view','edit'].forEach(t => {
@@ -3534,6 +3541,73 @@ async function saveDoc() {
 }
 
 // ── CONFIRMAR CATEGORÍA ──────────────────────────────────────
+// ── ELIMINAR DOCUMENTO ───────────────────────────────────
+let _deleteTargetId = null;
+
+function iniciarEliminar(id, titulo) {
+  _deleteTargetId = id;
+  document.getElementById('deleteModalTitle').textContent = titulo || id;
+  document.getElementById('deleteModalPass').value = '';
+  document.getElementById('deleteModalError').style.display = 'none';
+  document.getElementById('deleteModalBtn').disabled = false;
+  document.getElementById('deleteModalBtn').textContent = 'Eliminar definitivamente';
+  document.getElementById('deleteModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('deleteModalPass').focus(), 80);
+}
+
+function cerrarModalEliminar() {
+  document.getElementById('deleteModal').style.display = 'none';
+  _deleteTargetId = null;
+}
+
+async function ejecutarEliminar() {
+  const pass = document.getElementById('deleteModalPass').value;
+  const errEl = document.getElementById('deleteModalError');
+  const btn = document.getElementById('deleteModalBtn');
+
+  if (!pass) {
+    errEl.textContent = 'Ingresa la contraseña.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (pass !== CLAVE) {
+    errEl.textContent = 'Contraseña incorrecta.';
+    errEl.style.display = 'block';
+    document.getElementById('deleteModalPass').value = '';
+    document.getElementById('deleteModalPass').focus();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Eliminando…';
+  errEl.style.display = 'none';
+
+  try {
+    const res = await fetch(GAS + '?path=eliminar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: _deleteTargetId, password: pass })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    // Remover de allDocs y filtered
+    allDocs  = allDocs.filter(d => d.id !== _deleteTargetId);
+    filtered = filtered.filter(d => d.id !== _deleteTargetId);
+
+    cerrarModalEliminar();
+    closeDrawer();
+    renderTable(filtered, currentPage = 1);
+    toast('Documento eliminado correctamente.');
+  } catch(err) {
+    btn.disabled = false;
+    btn.textContent = 'Eliminar definitivamente';
+    errEl.textContent = 'Error: ' + err.message;
+    errEl.style.display = 'block';
+  }
+}
+
+// ── CONFIRMAR CATEGORÍA ──────────────────────────────────
 async function confirmarCategoria(docId) {
   const doc = allDocs.find(x => x.id === docId);
   if (!doc) return;
@@ -3748,5 +3822,53 @@ function toast(msg, type='') {
   t._timer = setTimeout(()=>t.classList.remove('show'), 3500);
 }
 </script>
+<!-- ── MODAL ELIMINAR DOCUMENTO ───────────────────────────── -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:9000;
+     background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+     align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid rgba(220,53,69,.4);border-radius:12px;
+              max-width:420px;width:100%;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <span style="font-size:24px">🗑</span>
+      <div>
+        <div style="font-weight:700;font-size:16px;color:#dc3545">Eliminar documento</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Esta acción no se puede deshacer</div>
+      </div>
+    </div>
+    <div id="deleteModalTitle"
+      style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+             padding:10px 12px;font-size:13px;color:var(--text);margin-bottom:16px;
+             font-weight:500;word-break:break-word"></div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">
+      El documento será eliminado del índice y enviado a la papelera de Google Drive
+      (si tiene archivo vinculado). Esta operación requiere confirmación con tu contraseña.
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px">
+        Contraseña de acceso
+      </label>
+      <input id="deleteModalPass" type="password" placeholder="Ingresa tu contraseña"
+        onkeydown="if(event.key==='Enter')ejecutarEliminar()"
+        style="width:100%;padding:9px 12px;background:var(--surface2);
+               border:1px solid var(--border);border-radius:6px;color:var(--text);
+               font-size:13px;box-sizing:border-box;outline:none">
+      <div id="deleteModalError"
+        style="display:none;color:#dc3545;font-size:12px;margin-top:6px"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="cerrarModalEliminar()"
+        style="flex:1;padding:10px;background:transparent;border:1px solid var(--border);
+               border-radius:var(--radius);color:var(--text-muted);cursor:pointer;font-size:13px">
+        Cancelar
+      </button>
+      <button id="deleteModalBtn" onclick="ejecutarEliminar()"
+        style="flex:1;padding:10px;background:#dc3545;border:none;border-radius:var(--radius);
+               color:#fff;cursor:pointer;font-size:13px;font-weight:700">
+        Eliminar definitivamente
+      </button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
