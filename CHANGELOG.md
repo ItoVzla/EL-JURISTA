@@ -6,6 +6,16 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v2.6.2 — 2026-05-01 *(versión en pantalla: v2.6.2)*
+
+### Cambiado
+
+- **OMEBA excluido de la Biblioteca — solo accesible desde Enciclopedias.**
+  - *Motivo*: los 276 tomos OMEBA estaban indexados en `jurista_index.json` como libros General, apareciendo mezclados en la Biblioteca.
+  - *Fix*: filtro `/^omeba/i` en `fetchIndex()` (CDN path y fallback GAS). No afecta `omeba_index.json` ni la pestaña Enciclopedias.
+
+---
+
 ## v2.6.1 — 2026-05-01 *(versión en pantalla: v2.6.1)*
 
 ### Corregido
