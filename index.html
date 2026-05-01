@@ -661,7 +661,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v2.6.0</span>
+    <span class="version-badge" id="versionBadge">v2.6.1</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -847,22 +847,39 @@
       <div class="enc-viewer-bar">
         <span id="encViewerLabel" style="font-weight:500;color:var(--text)"></span>
         <div style="display:flex;gap:8px">
-          <a id="encViewerOpen" href="#" target="_blank" rel="noopener"
-             style="font-size:12px;color:var(--gold);text-decoration:none;padding:3px 10px;
-                    border:1px solid rgba(201,162,39,.35);border-radius:5px">↗ Abrir en pestaña</a>
           <button onclick="encCloseViewer()"
             style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 4px">✕</button>
         </div>
       </div>
-      <div style="flex:1;position:relative">
-        <div id="encPdfSkeleton"
+      <div style="flex:1;position:relative;overflow:hidden">
+        <!-- Card modo default -->
+        <div id="encViewerCard"
           style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+                 flex-direction:column;gap:16px;background:var(--surface2);border-radius:0 0 8px 8px;padding:32px">
+          <div style="font-size:48px">📄</div>
+          <div id="encViewerCardLabel"
+            style="font-size:14px;color:var(--text);text-align:center;max-width:480px;font-weight:500"></div>
+          <a id="encViewerDriveBtn" href="#" target="_blank" rel="noopener"
+            style="background:var(--gold);color:#1a1507;font-weight:700;padding:10px 28px;border-radius:8px;
+                   text-decoration:none;font-size:14px;letter-spacing:.3px">↗ Abrir en Google Drive</a>
+          <button onclick="encTryPreview()"
+            style="background:none;border:1px solid var(--border);color:var(--text-muted);cursor:pointer;
+                   font-size:12px;padding:6px 16px;border-radius:6px;margin-top:4px">
+            Intentar previsualizar aquí
+          </button>
+          <div style="font-size:11px;color:var(--text-muted);text-align:center;max-width:360px;line-height:1.5">
+            La previsualización requiere sesión activa de Google en el navegador.
+          </div>
+        </div>
+        <!-- Iframe — solo carga cuando usuario lo solicita -->
+        <div id="encPdfSkeleton"
+          style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;
                  flex-direction:column;gap:12px;background:var(--surface2);border-radius:0 0 8px 8px">
           <div style="font-size:28px">📄</div>
           <div style="font-size:13px;color:var(--text-muted)">Cargando PDF…</div>
         </div>
         <iframe id="encPdfFrame" src="" style="width:100%;height:100%;border:none;border-radius:0 0 8px 8px;
-          opacity:0;transition:opacity .3s"
+          opacity:0;transition:opacity .3s;position:absolute;inset:0"
           onload="document.getElementById('encPdfSkeleton').style.display='none';this.style.opacity='1'">
         </iframe>
       </div>
@@ -3675,35 +3692,52 @@ function encShowApVol(volKey) {
   ).join('');
 }
 
+let _encCurrentDriveId = null;
+
 function encOpenPdf(driveId, label) {
+  _encCurrentDriveId = driveId;
   const wrap = document.getElementById('encViewerWrap');
   const frame = document.getElementById('encPdfFrame');
   const skelEl = document.getElementById('encPdfSkeleton');
   const labelEl = document.getElementById('encViewerLabel');
-  const openEl = document.getElementById('encViewerOpen');
+  const card = document.getElementById('encViewerCard');
+  const cardLabel = document.getElementById('encViewerCardLabel');
+  const driveBtn = document.getElementById('encViewerDriveBtn');
 
-  // Highlight active vol button if in current letter
   document.querySelectorAll('.enc-vol-btn').forEach(b => b.classList.remove('active'));
   const activeBtn = [...document.querySelectorAll('.enc-vol-btn')]
     .find(b => b.onclick?.toString().includes(driveId));
   if (activeBtn) activeBtn.classList.add('active');
 
   labelEl.textContent = label;
-  openEl.href = 'https://drive.google.com/file/d/' + driveId + '/view';
+  cardLabel.textContent = label;
+  driveBtn.href = 'https://drive.google.com/file/d/' + driveId + '/view';
 
-  // Reset iframe
-  skelEl.style.display = 'flex';
-  frame.style.opacity = '0';
+  // Show card, hide iframe
   frame.src = '';
-  wrap.style.display = 'block';
-  frame.src = 'https://drive.google.com/file/d/' + driveId + '/preview';
+  frame.style.opacity = '0';
+  skelEl.style.display = 'none';
+  card.style.display = 'flex';
+  wrap.style.display = 'flex';
   wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function encTryPreview() {
+  if (!_encCurrentDriveId) return;
+  const card = document.getElementById('encViewerCard');
+  const skelEl = document.getElementById('encPdfSkeleton');
+  const frame = document.getElementById('encPdfFrame');
+  card.style.display = 'none';
+  skelEl.style.display = 'flex';
+  frame.src = 'https://drive.google.com/file/d/' + _encCurrentDriveId + '/preview';
 }
 
 function encCloseViewer() {
   document.getElementById('encViewerWrap').style.display = 'none';
   document.getElementById('encPdfFrame').src = '';
+  document.getElementById('encViewerCard').style.display = 'flex';
   document.querySelectorAll('.enc-vol-btn').forEach(b => b.classList.remove('active'));
+  _encCurrentDriveId = null;
 }
 
 // ── NAVIGATION ───────────────────────────────────────────────
