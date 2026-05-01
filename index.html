@@ -902,9 +902,16 @@
     <!-- Pendientes -->
     <div id="itab-pendientes" style="display:none">
       <div class="chart-section">
-        <div class="chart-title">Documentos en _Por_Clasificar</div>
+        <div class="chart-title">Archivos sin clasificar en Drive</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">
+          Archivos subidos a la carpeta <code>_Por_Clasificar/</code> en Drive que aún no han sido indexados.
+          Para revisar los <strong>542 libros General pendientes de categoría</strong>, usa
+          <button onclick="switchView('biblioteca');document.getElementById('filtPendiente').checked=true;applyFilters()"
+            style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;
+                   text-decoration:underline;padding:0">Biblioteca → filtro Pendientes</button>.
+        </p>
         <div id="pendientesList">
-          <div style="color:var(--text-muted);font-size:13px">Cargando documentos pendientes…</div>
+          <div style="color:var(--text-muted);font-size:13px">Consultando Drive…</div>
         </div>
       </div>
     </div>
@@ -2374,17 +2381,23 @@ function renderDashboard() {
   const sentencias   = allDocs.filter(d => d.tipo === 'sentencia').length;
   const convenios    = allDocs.filter(d => d.tipo === 'convenio').length;
   const resoluciones = allDocs.filter(d => d.tipo === 'resolucion').length;
-  const conDriveId   = allDocs.filter(d => d.drive_id).length;
-  const sinDriveId   = total - conDriveId;
+  const librosActivos    = allDocs.filter(d => d.tipo === 'libro' && d.estado !== 'pendiente_revision');
+  const librosSinId      = librosActivos.filter(d => !d.drive_id).length;
+  const librosConId      = librosActivos.length - librosSinId;
+  const pendRevision     = allDocs.filter(d => d.estado === 'pendiente_revision').length;
+  const appVersion       = document.getElementById('versionBadge')?.textContent || 'v2.5.1';
   document.getElementById('systemStatus').innerHTML = `
     <div>🟡 <strong>GAS API</strong> — Verificando conexión…</div>
     <div>🟢 <strong>Índice</strong> — ${total.toLocaleString('es')} docs cargados</div>
     <div style="font-size:11px;color:var(--text-muted);margin-left:18px">
       ${legis.toLocaleString('es')} legislación · ${sentencias} sentencias · ${libros.toLocaleString('es')} libros · ${convenios} convenios · ${resoluciones} resoluciones
     </div>
-    <div>🟢 <strong>Archivos en Drive</strong> — ${conDriveId.toLocaleString('es')} con ID verificado · <span style="color:${sinDriveId>0?'var(--yellow)':'var(--green)'}">${sinDriveId} sin ID</span></div>
+    <div>🟢 <strong>Libros con PDF en Drive</strong> — ${librosConId.toLocaleString('es')} verificados${librosSinId > 0 ? ` · <span style="color:var(--yellow)">${librosSinId} sin ID</span>` : ' · <span style="color:var(--green)">todos verificados</span>'}</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-left:18px">
+      ${pendRevision} libros pendientes de revisión de categoría · legislación/sentencias usan texto LEXIUS (sin Drive ID)
+    </div>
     <div>🟢 <strong>GitHub Backup</strong> — ItoVzla/EL-JURISTA (rama main)</div>
-    <div>🟢 <strong>Web App</strong> — v2.3.0 · GitHub Pages · caché CDN activo</div>
+    <div>🟢 <strong>Web App</strong> — ${appVersion} · GitHub Pages · caché CDN activo</div>
     <div>🟢 <strong>Sub-Agentes</strong> — 10 prompts operativos</div>`;
   // Ping real al GAS en background
   const t0 = Date.now();
