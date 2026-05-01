@@ -3598,6 +3598,8 @@ async function ejecutarEliminar() {
     cerrarModalEliminar();
     closeDrawer();
     renderTable(filtered, currentPage = 1);
+    document.getElementById('totalDocs').textContent = allDocs.length.toLocaleString('es');
+    renderDashboard();
     toast('Documento eliminado correctamente.');
   } catch(err) {
     btn.disabled = false;
