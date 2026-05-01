@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "ultima_actualizacion": "2026-05-01T13:29:21.532660",
+  "ultima_actualizacion": "2026-05-01T19:17:38.969Z",
   "total_documentos": 4408,
   "fuente": "LEXIUS Venezuela - Base de datos completa",
   "documentos": [
@@ -118626,13 +118626,13 @@
       "id": "a5301078-11bf-4b5a-a932-2231f6567540",
       "drive_id": "151rAUJrCYOlE3n29xrWb7-PtxFCmAw0P",
       "titulo": "La Carga de la Prueba",
-      "materia": "General",
+      "materia": "Derecho_Probatorio",
       "sub_materia": "General",
       "tipo": "libro",
       "autor": "Leo Rosembserg",
       "año": null,
-      "editorial": null,
-      "isbn": null,
+      "editorial": "",
+      "isbn": "",
       "vigencia": "vigente",
       "tags": [],
       "resumen": "",
@@ -118643,7 +118643,8 @@
       "lexius_file": "",
       "fuente": "LIBROS",
       "fecha_ingesta": "2026-05-01",
-      "estado": "pendiente_revision"
+      "estado": "pendiente_revision",
+      "edicion": ""
     },
     {
       "id": "34849736-8c56-4c8b-afe4-8bcaea73d0c5",
