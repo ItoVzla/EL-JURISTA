@@ -6,6 +6,141 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v2.6.1 — 2026-05-01 *(versión en pantalla: v2.6.1)*
+
+### Corregido
+
+- **Visor Enciclopedias: reemplazado iframe automático por tarjeta con enlace Drive.**
+  - *Motivo*: el iframe de `drive.google.com/preview` falla con error de autenticación en contexto embebido (GitHub Pages no comparte cookies de sesión Google).
+  - *Fix*: `encOpenPdf()` ahora muestra tarjeta con botón "↗ Abrir en Google Drive" (abre pestaña, funciona siempre) y botón secundario "Intentar previsualizar aquí" que carga el iframe sólo cuando el usuario lo solicita explícitamente (`encTryPreview()`).
+
+---
+
+## v2.5.1 — 2026-05-01 *(versión en pantalla: v2.5.1)*
+
+### Añadido — Panel de metadata editable en vista de libro
+
+- **`vpMetaPanel`** — bloque de info debajo del título/autor en la vista de libro: editorial, año, país, edición, ISBN, co-autores.
+- **Modo edición inline** (`✏️ Editar info`): convierte los campos en inputs (título, autor, co-autores, editorial, año, país, edición) sin abrir el drawer lateral.
+  - `saveVpMeta()` → POST `indice/update`, actualiza `allDocs` en memoria y refresca el panel.
+- **Panel flotante de índice** (`📋 Agregar / Ver índice`): panel fijo bottom-right con textarea editable del `indice_libro`.
+  - Toggle: click abre, click vuelve a cerrar. `saveVpIndice()` → POST `indice/update`.
+  - Animación `slideUp` al aparecer.
+- `fetchIndex` mapeado con nuevos campos: `editorial`, `isbn`, `edicion`, `coautores`, `pais`.
+- GAS `EDITABLES` ampliado con `pais` y `estado`.
+
+---
+
+## v2.5.0 — 2026-05-01 *(versión en pantalla: v2.5.0)*
+
+### Añadido — Flujo de revisión de categoría para 542 libros General
+
+- **Filtro "Pendientes"** en barra de biblioteca: checkbox que muestra exclusivamente docs con `estado: pendiente_revision`.
+- **Materia "General"** agregada al selector de filtro y al formulario de edición.
+- **Badge `⏳ pendiente`** en tabla bajo el badge de materia, visible al activar el filtro.
+- **Sub-categoría** visible en tabla y en detalle del drawer (para libros General).
+- **Bloque de confirmación** en drawer: aparece solo para docs `pendiente_revision`, con botones "Confirmar categoría" y "Cambiar categoría".
+  - `confirmarCategoria(id)` → POST `indice/update` con `{estado:'activo'}` → actualiza allDocs en memoria, remueve de vista pendiente sin recargar.
+- **Campo Sub-categoría** en formulario de edición de libros.
+- `fetchIndex` ahora incluye `pendiente_revision` y `estado` en los objetos cargados.
+- Vista inicial excluye `pendiente_revision` por defecto; solo aparecen al activar el checkbox.
+  - *Motivo*: 542 libros sin categoría legal definitiva no deben contaminar la vista principal.
+
+---
+
+## v2.4.0 — 2026-05-01 *(versión en pantalla: v2.4.0)*
+
+### Añadido — Ingesta mejorada (ISBN, índice de libro), verificación Drive, correcciones de bugs
+
+- **Lookup automático por ISBN** (ingesta manual):
+  - Nuevo campo ISBN con botón "Auto" que consulta Google Books API → fallback OpenLibrary.
+  - Auto-completa: título, autor, editorial, año, descripción al ingresar el ISBN.
+  - Nuevo endpoint GAS `GET /isbn/buscar?isbn=XXXXX`.
+
+- **Campo `indice_libro`** — índice/tabla de contenido del libro:
+  - Disponible en formulario de ingesta (solo tipo "Libro").
+  - Visible en drawer (vista) como bloque plegable con scroll.
+  - Editable desde el drawer (pestaña Editar).
+  - Guardado en `jurista_index.json` y replicado a GitHub.
+
+- **Botón "Buscar archivo en Drive"** para libros sin `drive_id`:
+  - Aparece en el drawer cuando el libro no tiene ID de archivo verificado.
+  - Llama a `libro/pdf-id` → si encuentra el archivo, guarda el `drive_id` en el índice y actualiza el botón a "Abrir archivo en Google Drive".
+
+- **Endpoint `GET /verificar/drive`** (GAS):
+  - Escanea todas las carpetas de materias + LIBROS y devuelve lista de archivos con sus `drive_id` reales.
+  - Permite cruzar el índice con los archivos físicos en Drive.
+
+- **`systemStatus` con ping real** (Dashboard):
+  - Ya no muestra siempre verde. Hace fetch real al GAS y muestra latencia en ms.
+  - Muestra cuántos docs tienen `drive_id` verificado vs. cuántos no.
+
+- **`LIBROS_FOLDER_ID` movido al CONFIG** del GAS (antes estaba hardcodeado fuera del objeto).
+
+### Corregido
+
+- **Bug filtro de tipos** (`applyFilters`): `d.subtipo` no existe — se comparaba contra campo inexistente, haciendo que los filtros de sub-tipos de legislación nunca encontraran resultados. Corregido a `d.tipo`.
+- **`corregirClasificacionTipos()`**: la réplica a GitHub omitía `drive_id`, `fuente`, `autor`, `resumen` y otros campos. Corregido para replicar el índice completo.
+- **`getLibroDriveId`**: ahora usa `CONFIG.LIBROS_FOLDER_ID` y tiene fallback de búsqueda en todo Drive si no encuentra en la carpeta LIBROS.
+- **`getIndiceResumen`**: ahora incluye `fuente`, `fecha_ingesta`, `isbn` — campos necesarios para la lógica del frontend.
+
+### Pendiente (acciones manuales)
+- Redesplegar `gas/Code.gs` en Apps Script para activar todos los nuevos endpoints.
+- Ejecutar `corregirClasificacionTipos()` desde el editor GAS.
+
+---
+
+## v2.3.0 — 2026-04-30 *(versión en pantalla: v2.3.0)*
+
+### Añadido — Links directos a libros desde la Biblioteca
+
+- **Drive IDs populados** para 747 de 954 libros vía `xattr com.google.drivefs.item-id#S` (macOS Google Drive).
+  - *Motivo*: los libros no tenían `drive_id` — la web abría una búsqueda de Drive en vez del archivo.
+  - *Fix*: script que lee el atributo extendido del sistema de archivos, sin necesidad de llamadas API.
+  - *Cobertura*: 747/954 (78%) libros con link directo; 207 sin xattr disponible (sin botón en esos).
+
+- **Índice actualizado**: 3,933 docs en `jurista_index.json` (2,979 LEXIUS + 954 libros).
+  - *Desplegado*: GitHub Pages (`data/jurista_index.json`) — commit 976cf7f2ec12.
+  - *Carga*: la Web App carga el índice completo incluyendo libros desde GitHub CDN.
+
+- **Web App `driveBtn` corregido** (`index.html`):
+  - *Antes*: `isLibro ? driveSearchUrl` — abría carpeta de búsqueda de Drive.
+  - *Ahora*: `d.drive_id ? drive.google.com/file/d/{id}/view` — abre el archivo directamente.
+  - *Aplica a*: todos los tipos de documento, no solo libros. Funciona en cualquier dispositivo.
+
+### Pendiente
+- Redesplegar `gas/Code.gs` en Apps Script (incluye fix `documento/texto` para LIBROS).
+- Ejecutar `corregirClasificacionTipos()` para 181 docs mal clasificados.
+- Obtener Drive IDs para los 207 libros restantes sin xattr (posiblemente en subcarpetas no sincronizadas).
+
+---
+
+## v2.2.0 — 2026-04-29 *(versión en pantalla: v2.2.0)*
+
+### Añadido — Indexación de 954 libros jurídicos (doctrina)
+
+- **954 libros jurídicos** indexados desde carpeta `LIBROS/` en Drive.
+  - *Fuente*: 612 carpetas de autor, clasificadas por keywords desde `clasificacion_libros.csv`.
+  - *Extracción*: pdfplumber (PDF completo) + MarkItDown (DOC/DOCX). Timeout 120s por archivo.
+  - *Contenido por entrada*: resumen 80 palabras + 3 fragmentos del inicio/medio/final del libro.
+  - *Distribución*: General (302) · Constitucional (205) · Laboral (160) · Procesal (120) · Penal (65) · Administrativo (41) · Civil (35) · Probatorio (32) · Mercantil (5) · Filosofía (78).
+  - *Excluidos*: 146 no jurídicos + 418 OMEBA (enciclopedia — se indexa aparte).
+
+- **GAS `documento/texto`**: fix para docs `fuente: "LIBROS"` sin `drive_id`.
+  - *Antes*: error "El documento no tiene archivo asociado".
+  - *Fix*: retorna `resumen + fragmentos_clave` del índice cuando no hay `drive_id`.
+
+- **Total índice**: 4,019 docs activos (3,065 previos + 954 libros).
+
+- **Scripts generados**: `clasificar_libros.py`, `indexar_libros.py`, `clasificacion_libros.csv`.
+  - *Motivo*: reutilizables para futuras cargas de doctrina.
+
+### Pendiente
+- Redesplegar `gas/Code.gs` en Apps Script (incluye fix `documento/texto` para LIBROS).
+- Indexar OMEBA (418 volúmenes enciclopédicos) — flujo separado.
+
+---
+
 ## v2.1.0 — 2026-04-29 *(versión en pantalla: v2.1.0)*
 
 ### Añadido — Enriquecimiento masivo del índice + sentencias SCS
