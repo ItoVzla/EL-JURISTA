@@ -180,6 +180,50 @@
   .recent-meta { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
 
   /* ── INGESTA ────────────────────────────────────── */
+  /* ── Enciclopedias ── */
+  .enc-header { margin-bottom: 20px; }
+  .enc-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .enc-subtitle { font-size: 13px; color: var(--text-muted); }
+  .enc-special-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .enc-special-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-radius: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer;
+    text-decoration: none; transition: border-color .15s, background .15s;
+  }
+  .enc-special-btn:hover { border-color: var(--gold); background: rgba(201,162,39,.08); color: var(--gold); }
+  .enc-az { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+  .enc-letter-btn {
+    min-width: 36px; height: 36px; padding: 0 8px;
+    border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all .15s; display: flex; align-items: center; justify-content: center;
+  }
+  .enc-letter-btn:hover, .enc-letter-btn.active {
+    background: var(--gold); color: #000; border-color: var(--gold);
+  }
+  .enc-letter-btn .cnt { font-size: 9px; opacity: .7; margin-left: 3px; }
+  .enc-volumes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; min-height: 40px; }
+  .enc-vol-btn {
+    padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-muted); font-size: 12px; font-weight: 500; cursor: pointer;
+    transition: all .15s;
+  }
+  .enc-vol-btn:hover, .enc-vol-btn.active {
+    border-color: var(--gold); color: var(--gold); background: rgba(201,162,39,.08);
+  }
+  .enc-viewer { width: 100%; height: 78vh; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--surface2); display: none; position: relative; }
+  .enc-viewer iframe { width: 100%; height: 100%; border: none; border-radius: 8px; }
+  .enc-viewer-bar { display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 14px; background: var(--surface); border-bottom: 1px solid var(--border);
+    border-radius: 8px 8px 0 0; font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
+  .enc-viewer-wrap { display: flex; flex-direction: column; height: 78vh; }
+  .enc-section-title { font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--text-muted); margin-bottom: 10px; font-weight: 600; }
   .ingesta-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
   .itab {
     padding: 10px 20px; cursor: pointer; font-size: 14px; color: var(--text-muted);
@@ -617,10 +661,11 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v2.5.1</span>
+    <span class="version-badge" id="versionBadge">v2.6.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
+      <button class="nav-btn" onclick="switchView('enciclopedias')">📖 Enciclopedias</button>
       <button class="nav-btn" onclick="switchView('ingesta')">📥 Ingesta</button>
     </nav>
     <div class="topbar-right">
@@ -763,6 +808,63 @@
         <div style="display:flex;flex-direction:column;gap:12px;font-size:13px" id="systemStatus">
           <div>🟡 Cargando estado…</div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VISTA: ENCICLOPEDIAS ─────────────────────────────── -->
+  <div class="view" id="view-enciclopedias">
+    <div class="enc-header">
+      <div class="enc-title">📖 Enciclopedias Jurídicas</div>
+      <div class="enc-subtitle" id="encSubtitle">Cargando…</div>
+    </div>
+
+    <!-- Documentos especiales -->
+    <div class="enc-section-title">Documentos de referencia</div>
+    <div class="enc-special-row" id="encSpecialRow">
+      <div style="color:var(--text-muted);font-size:13px">Cargando…</div>
+    </div>
+
+    <!-- Navegador A-Z -->
+    <div class="enc-section-title">Navegador por letra</div>
+    <div class="enc-az" id="encAZ"></div>
+
+    <!-- Volúmenes de la letra seleccionada -->
+    <div id="encVolSection" style="display:none">
+      <div class="enc-section-title" id="encVolTitle"></div>
+      <div class="enc-volumes" id="encVolumes"></div>
+    </div>
+
+    <!-- Apéndices -->
+    <div id="encApSection" style="display:none">
+      <div class="enc-section-title">Apéndices — selecciona volumen</div>
+      <div class="enc-az" id="encApAZ" style="margin-bottom:10px"></div>
+      <div class="enc-volumes" id="encApVolumes"></div>
+    </div>
+
+    <!-- Visor PDF -->
+    <div id="encViewerWrap" style="display:none" class="enc-viewer-wrap">
+      <div class="enc-viewer-bar">
+        <span id="encViewerLabel" style="font-weight:500;color:var(--text)"></span>
+        <div style="display:flex;gap:8px">
+          <a id="encViewerOpen" href="#" target="_blank" rel="noopener"
+             style="font-size:12px;color:var(--gold);text-decoration:none;padding:3px 10px;
+                    border:1px solid rgba(201,162,39,.35);border-radius:5px">↗ Abrir en pestaña</a>
+          <button onclick="encCloseViewer()"
+            style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 4px">✕</button>
+        </div>
+      </div>
+      <div style="flex:1;position:relative">
+        <div id="encPdfSkeleton"
+          style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+                 flex-direction:column;gap:12px;background:var(--surface2);border-radius:0 0 8px 8px">
+          <div style="font-size:28px">📄</div>
+          <div style="font-size:13px;color:var(--text-muted)">Cargando PDF…</div>
+        </div>
+        <iframe id="encPdfFrame" src="" style="width:100%;height:100%;border:none;border-radius:0 0 8px 8px;
+          opacity:0;transition:opacity .3s"
+          onload="document.getElementById('encPdfSkeleton').style.display='none';this.style.opacity='1'">
+        </iframe>
       </div>
     </div>
   </div>
@@ -949,6 +1051,9 @@
     </button>
     <button class="mobile-nav-btn" onclick="switchView('dashboard');setMobileActive(this)">
       <span class="ico">📊</span>Dashboard
+    </button>
+    <button class="mobile-nav-btn" onclick="switchView('enciclopedias');setMobileActive(this)">
+      <span class="ico">📖</span>Enciclo.
     </button>
     <button class="mobile-nav-btn" onclick="switchView('ingesta');setMobileActive(this)">
       <span class="ico">📥</span>Ingesta
@@ -3442,6 +3547,165 @@ async function confirmarCategoria(docId) {
   }
 }
 
+// ── ENCICLOPEDIAS ────────────────────────────────────────────
+const OMEBA_INDEX_URL = 'https://itovzla.github.io/EL-JURISTA/data/omeba_index.json';
+let omebaData = null;
+let encActiveLetter = null;
+let encActiveVol = null;
+
+async function loadEnciclopedias() {
+  if (omebaData) { renderEnciclopedias(); return; }
+  document.getElementById('encSubtitle').textContent = 'Cargando índice…';
+  try {
+    const r = await fetch(OMEBA_INDEX_URL);
+    omebaData = await r.json();
+    renderEnciclopedias();
+  } catch(e) {
+    document.getElementById('encSubtitle').textContent = '❌ Error al cargar el índice OMEBA';
+  }
+}
+
+function renderEnciclopedias() {
+  const d = omebaData;
+  const letters = Object.keys(d.letters).sort();
+  const totalVols = Object.values(d.letters).reduce((s,a)=>s+a.length, 0);
+
+  document.getElementById('encSubtitle').textContent =
+    `Enciclopedia Jurídica OMEBA · ${totalVols} tomos · ${d.apendices.length} apéndices`;
+
+  // Special docs row
+  const specials = [
+    { label: '📋 Tabla Sinóptica', sub: '1199 entradas', data: d.tabla_sinoptica },
+    { label: '📑 Índice General', sub: 'Ind00', data: d.indice },
+    { label: '⚖️ Sindicatos', sub: '365 entradas', data: d.sindicatos },
+  ].filter(s => s.data);
+  document.getElementById('encSpecialRow').innerHTML = specials.map(s =>
+    `<button class="enc-special-btn" onclick="encOpenPdf('${s.data.drive_id}','${esc(s.label)}')">
+       <span>${s.label.split(' ')[0]}</span>
+       <span>
+         <div style="font-weight:600">${s.label.split(' ').slice(1).join(' ')}</div>
+         <div style="font-size:11px;color:var(--text-muted)">${s.sub}</div>
+       </span>
+     </button>`
+  ).join('');
+
+  // A-Z navigator
+  document.getElementById('encAZ').innerHTML = letters.map(l =>
+    `<button class="enc-letter-btn" id="enc-btn-${l}" onclick="encSelectLetter('${l}')">
+       ${l}<span class="cnt">${d.letters[l].length}</span>
+     </button>`
+  ).join('') +
+  `<button class="enc-letter-btn" id="enc-btn-AP" onclick="encSelectApendices()"
+     style="background:rgba(201,162,39,.08);border-color:rgba(201,162,39,.3);color:var(--gold)">
+     AP<span class="cnt">${d.apendices.length}</span>
+   </button>`;
+}
+
+function encSelectLetter(letter) {
+  if (!omebaData) return;
+  encActiveLetter = letter;
+  encActiveVol = null;
+
+  // Update A-Z button states
+  document.querySelectorAll('.enc-letter-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('enc-btn-' + letter);
+  if (btn) btn.classList.add('active');
+
+  // Hide apendices
+  document.getElementById('encApSection').style.display = 'none';
+
+  // Show volumes for this letter
+  const vols = omebaData.letters[letter] || [];
+  document.getElementById('encVolTitle').textContent = `Letra ${letter} — ${vols.length} tomo${vols.length!==1?'s':''}`;
+  document.getElementById('encVolumes').innerHTML = vols.map(v =>
+    `<button class="enc-vol-btn" id="enc-vol-${v.filename}"
+       onclick="encOpenPdf('${v.drive_id}','${esc(v.filename.replace('.pdf',''))}')">
+       ${v.filename.replace('.pdf','').replace('OMEBA','').toUpperCase()}
+     </button>`
+  ).join('');
+  document.getElementById('encVolSection').style.display = 'block';
+
+  // Scroll to volumes
+  document.getElementById('encVolSection').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function encSelectApendices() {
+  if (!omebaData) return;
+  encActiveLetter = 'AP';
+
+  document.querySelectorAll('.enc-letter-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('enc-btn-AP');
+  if (btn) btn.classList.add('active');
+
+  // Hide main volumes
+  document.getElementById('encVolSection').style.display = 'none';
+
+  // Group apendices by volume number
+  const byVol = {};
+  omebaData.apendices.forEach(a => {
+    const k = 'AP' + a.vol;
+    byVol[k] = byVol[k] || [];
+    byVol[k].push(a);
+  });
+  const volKeys = Object.keys(byVol).sort();
+
+  document.getElementById('encApAZ').innerHTML = volKeys.map(k =>
+    `<button class="enc-letter-btn" id="enc-ap-${k}" onclick="encShowApVol('${k}')">
+       ${k}<span class="cnt">${byVol[k].length}</span>
+     </button>`
+  ).join('');
+  document.getElementById('encApVolumes').innerHTML = '';
+  document.getElementById('encApSection').style.display = 'block';
+
+  // Store for sub-selection
+  window._encApByVol = byVol;
+  document.getElementById('encApSection').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function encShowApVol(volKey) {
+  const byVol = window._encApByVol || {};
+  const vols = byVol[volKey] || [];
+  document.querySelectorAll('#encApAZ .enc-letter-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('enc-ap-' + volKey);
+  if (btn) btn.classList.add('active');
+  document.getElementById('encApVolumes').innerHTML = vols.map(v =>
+    `<button class="enc-vol-btn" onclick="encOpenPdf('${v.drive_id}','${esc(v.filename.replace('.pdf',''))}')">
+       ${v.filename.replace('.pdf','')}
+     </button>`
+  ).join('');
+}
+
+function encOpenPdf(driveId, label) {
+  const wrap = document.getElementById('encViewerWrap');
+  const frame = document.getElementById('encPdfFrame');
+  const skelEl = document.getElementById('encPdfSkeleton');
+  const labelEl = document.getElementById('encViewerLabel');
+  const openEl = document.getElementById('encViewerOpen');
+
+  // Highlight active vol button if in current letter
+  document.querySelectorAll('.enc-vol-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = [...document.querySelectorAll('.enc-vol-btn')]
+    .find(b => b.onclick?.toString().includes(driveId));
+  if (activeBtn) activeBtn.classList.add('active');
+
+  labelEl.textContent = label;
+  openEl.href = 'https://drive.google.com/file/d/' + driveId + '/view';
+
+  // Reset iframe
+  skelEl.style.display = 'flex';
+  frame.style.opacity = '0';
+  frame.src = '';
+  wrap.style.display = 'block';
+  frame.src = 'https://drive.google.com/file/d/' + driveId + '/preview';
+  wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function encCloseViewer() {
+  document.getElementById('encViewerWrap').style.display = 'none';
+  document.getElementById('encPdfFrame').src = '';
+  document.querySelectorAll('.enc-vol-btn').forEach(b => b.classList.remove('active'));
+}
+
 // ── NAVIGATION ───────────────────────────────────────────────
 function switchView(v) {
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
@@ -3449,6 +3713,8 @@ function switchView(v) {
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.textContent.toLowerCase().includes(v.substring(0,4)));
   });
+  if (v === 'enciclopedias') loadEnciclopedias();
+  if (v === 'dashboard') renderDashboard();
 }
 function setMobileActive(btn) {
   document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
