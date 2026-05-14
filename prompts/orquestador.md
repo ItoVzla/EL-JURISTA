@@ -104,8 +104,8 @@ Protocolo: Los documentos del índice incluyen el campo `notebooklm_id`. Usar es
 
 | ID | Notebook | UUID |
 |---|---|---|
-| NB-01 | Laboral / Legislación | 24ed6cae-e991-430f-ae13-14401eb44a9b |
-| NB-02 | Laboral / Doctrina y Jurisprudencia | 5cdb48aa-cfca-4698-9c60-9b13fd4ed3a0 |
+| NB-01 | Laboral / Legislación | fa4dc0db-f82f-47b2-85fe-0976cfd60bc3 |
+| NB-02 | Laboral / Doctrina y Jurisprudencia | 510a580f-7adf-4230-a1c2-aabd7b68c877 |
 | NB-03 | Civil / Completo | 5881d15d-7b82-4002-8613-df59b6eece4c |
 | NB-04 | Mercantil / Legislación | 0d064e3e-9d19-4c9b-bcb2-b4e7a0505b39 |
 | NB-05 | Mercantil / Doctrina y Jurisprudencia | e8f92277-5506-4325-9b50-d66578163ac9 |
