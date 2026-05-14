@@ -661,7 +661,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v2.6.5</span>
+    <span class="version-badge" id="versionBadge">v3.0.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -691,6 +691,8 @@
         <option value="Procesal">Procesal</option>
         <option value="Electoral">Electoral</option>
         <option value="Derecho_Probatorio">Derecho Probatorio</option>
+        <option value="Internacional">Internacional</option>
+        <option value="Tributario">Tributario</option>
         <option value="General">General</option>
       </select>
       <select id="filtTipo" onchange="applyFilters()">
@@ -936,6 +938,8 @@
               <option value="Procesal">Procesal</option>
               <option value="Electoral">Electoral</option>
               <option value="Derecho_Probatorio">Derecho Probatorio</option>
+              <option value="Internacional">Internacional</option>
+              <option value="Tributario">Tributario</option>
             </select>
           </div>
 
@@ -1184,7 +1188,8 @@ const MATERIA_MAP_VP = {
   Constitucional:'Constitucional', Laboral_Venezuela:'Laboral', Civil:'Civil',
   Mercantil:'Mercantil', Penal:'Penal', Administrativo:'Administrativo',
   Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio',
-  General:'General'
+  Internacional:'Internacional', Tributario:'Tributario',
+  General:'General', No_Juridico:'No Jurídico'
 };
 
 async function openDocView(id) {
@@ -1652,7 +1657,7 @@ async function fetchIndex() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     return (data.documentos || [])
-      .filter(d => (!d.estado || d.estado === 'activo' || d.estado === 'pendiente_revision') && !/^(omeba|AP\d|Ind00$|Tabla Sinoptica Enciclopedia)/i.test(d.titulo || ''))
+      .filter(d => (!d.estado || d.estado === 'activo' || d.estado === 'pendiente_revision') && !/^(omeba|AP\d|Ind00$|Tabla Sinoptica Enciclopedia)/i.test(d.titulo || '') && d.materia !== 'No_Juridico')
       .map(d => ({
         id:               d.id,
         drive_id:         d.drive_id         || '',
@@ -1684,7 +1689,7 @@ async function fetchIndex() {
     const r   = await fetch(GAS + '?path=indice/resumen');
     const raw = await r.json();
     const arr = Array.isArray(raw) ? raw : (raw.documentos || []);
-    return arr.filter(d => !/^(omeba|AP\d|Ind00$|Tabla Sinoptica Enciclopedia)/i.test(d.titulo || ''));
+    return arr.filter(d => !/^(omeba|AP\d|Ind00$|Tabla Sinoptica Enciclopedia)/i.test(d.titulo || '') && d.materia !== 'No_Juridico');
   }
 }
 
@@ -2833,7 +2838,8 @@ function renderDrawerBadges(d) {
     Constitucional:'Constitucional', Laboral_Venezuela:'Laboral', Civil:'Civil',
     Mercantil:'Mercantil', Penal:'Penal', Administrativo:'Administrativo',
     Procesal:'Procesal', Electoral:'Electoral', Derecho_Probatorio:'Probatorio',
-    General:'General'
+    Internacional:'Internacional', Tributario:'Tributario',
+    General:'General', No_Juridico:'No Jurídico'
   };
   const bgs = {
     vigente:'rgba(46,204,113,.15)', derogado:'rgba(231,76,60,.15)',
@@ -3029,7 +3035,8 @@ function renderViewMode(d) {
 
 function renderEditMode(d) {
   const MATERIAS = ['Constitucional','Laboral_Venezuela','Civil','Mercantil','Penal',
-                    'Administrativo','Procesal','Electoral','Derecho_Probatorio','General'];
+                    'Administrativo','Procesal','Electoral','Derecho_Probatorio',
+                    'Internacional','Tributario','General','No_Juridico'];
   const TIPOS = ['legislacion','sentencia','libro','convenio','resolucion','acto_legislativo','doctrina','articulo'];
   const VIGENCIAS = ['vigente','derogado','modificado','historico'];
 
