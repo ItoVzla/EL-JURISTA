@@ -6,6 +6,143 @@ Registra cambios al **sistema**: código de la Web App, endpoints GAS, system pr
 
 ---
 
+## v3.1.0 — 2026-05-14 *(versión en pantalla: v3.0.1)*
+
+### Añadido — Integración NotebookLM completa
+
+- **Campo `notebooklm_id`** agregado a los 4,031 docs del jurista_index.json.
+  - 3,508 docs mapeados a su NB correspondiente (NB-01 a NB-18).
+  - 523 sin NB (418 General/OMEBA + 105 No_Juridico — correcto, no tienen NB).
+  - Sincronizado a GitHub `main` y `pages`.
+- **GAS expone `notebooklm_id`** en endpoints `indice/resumen` y `indice/buscar`.
+- **Orquestador v1.1.0** actualizado:
+  - 14 materias reales (vs 9 anteriores).
+  - Tabla de 18 notebooks con UUID completo para routing.
+  - Nivel 2.5 de profundidad: cuándo y cómo usar NotebookLM.
+  - Routing a Tributario e Internacional agregado.
+  - GAS URL y GitHub repo corregidos al URL real operativo.
+- **13 Resoluciones DM Cancillería** eliminadas del índice (4,044 → 4,031 docs).
+  - *Motivo*: No son de interés jurídico para el sistema.
+
+---
+
+## v3.0.1 — 2026-05-13 *(versión en pantalla: v3.0.1)*
+
+### Añadido
+
+- **Nueva materia ACIENPOL en Web App** — dropdown filtMateria, f-materia, MATERIA_MAP_VP, MATERIA_MAP y MATERIAS array actualizados.
+  - *Motivo*: 24 boletines de la Academia de Ciencias Políticas y Sociales reclasificados a materia propia.
+- **Filtro de tipos de legislación** — dropdown filtTipo ya tenía los tipos; los datos del JSON ahora reflejan tipos específicos (ley_ordinaria, ley_orgánica, código, decreto_ley, decreto, reglamento, resolución, providencia, acta, constitución).
+  - *Motivo*: 1,986 docs con tipo genérico "legislacion" reclasificados a tipos concretos.
+
+---
+
+## v3.0.0 — 2026-05-13 *(versión en pantalla: v3.0.0)*
+
+### Añadido — Nueva materia: Tributario
+
+- **Materia "Tributario"** creada con 27 docs (Código Orgánico Tributario, Ley ISLR, IVA, reglamentos SENIAT).
+  - *Motivo*: El bucket "Constitucional" incluía toda la legislación tributaria mezclada. Tributario es una rama autónoma.
+  - *Pendiente*: agregar "Tributario" a `MATERIAS_IDS` en Code.gs y crear carpeta Drive correspondiente.
+
+### Cambiado — Fase 3: Desinflar Constitucional (1,087 → 686 docs)
+
+- **401 documentos** reclasificados fuera de Constitucional:
+  - 300 → Administrativo (Decretos presidenciales: nombramientos, creaciones, prórrogas)
+  - 46 → Internacional (tratados con tipo=tratado_internacional)
+  - 27 → Tributario (legislación fiscal)
+  - 12 → Procesal
+  - 6 → Electoral
+  - 5 → Laboral_Venezuela
+  - 4 → Mercantil
+  - 1 → Penal
+  - *Motivo*: LEXIUS clasificó toda la legislación bajo "Constitucional" por defecto. Los decretos presidenciales de nombramiento (170+ docs) no son materia constitucional.
+
+### Distribución final del sistema
+
+| Materia | Docs |
+|---|---|
+| Administrativo | 934 |
+| Constitucional | 686 |
+| Mercantil | 435 |
+| General | 418 (OMEBA/AP*) |
+| Laboral_Venezuela | 413 |
+| Procesal | 320 |
+| Civil | 243 |
+| Penal | 238 |
+| Internacional | 110 |
+| No_Juridico | 105 |
+| Derecho_Probatorio | 80 |
+| Electoral | 35 |
+| Tributario | 27 (NUEVO) |
+
+---
+
+## v2.9.0 — 2026-05-13 *(versión en pantalla: v2.9.0)*
+
+### Cambiado — Fase 2A: Reclasificación masiva de 418 docs de General
+
+- **418 documentos** del bucket "General" reclasificados con script Python automático.
+  - *Motivo*: 836 libros en General sin clasificar desde la ingesta LEXIUS. El bucket incluía legislación laboral, libros procesales, civil, constitucional, literatura no jurídica, archivos personales, y apéndices OMEBA mezclados.
+  - *Método*: Clasificación por título, autor y sub_materia (sin leer PDFs). Reglas por palabras clave con ~100 patrones regex.
+  - *Resultado*: 418 docs reclasificados a 10 materias. General queda solo con OMEBA (275) + Apéndices OMEBA AP1a–AP7v (141) + 2 sin identificar.
+  - *Nota*: `No_Juridico` (104 docs): ajedrez, literatura (El principito, Fausto, Kafka, Borges), marxismo no laboral, archivos personales. Excluidos de búsqueda principal.
+
+### Distribución de destinos (Fase 2A)
+
+| Materia | Docs reclasificados |
+|---|---|
+| Constitucional | 95 |
+| Civil | 62 |
+| Procesal | 57 |
+| Laboral_Venezuela | 51 |
+| No_Juridico | 104 |
+| Administrativo | 15 |
+| Derecho_Probatorio | 12 |
+| Penal | 6 |
+| Mercantil | 5 |
+| Internacional | 4 |
+
+---
+
+## v2.8.0 — 2026-05-13 *(versión en pantalla: v2.8.0)*
+
+### Añadido — Función GAS eliminarAcuerdosAN()
+
+- **`eliminarAcuerdosAN()`** agregada al final de `gas/Code.gs`.
+  - *Motivo*: 364 Acuerdos conmemorativos/designaciones AN fueron eliminados del índice. 67 tenían archivos físicos en Drive que deben borrarse.
+  - *Fix*: función con lista hardcodeada de 67 drive_ids. Llama a `setTrashed(true)` en cada archivo y luego replica el índice actualizado a GitHub.
+  - *Pendiente*: pegar `Code.gs` en Apps Script y ejecutar `eliminarAcuerdosAN()` una sola vez.
+
+### Cambiado — Índice maestro limpiado
+
+- `jurista_index.json` actualizado: **4,408 → 4,044 docs** (−364 Acuerdos AN).
+  - Procesado con Python directo sobre el archivo sincronizado con Drive.
+  - 297 docs eliminados no tenían Drive ID (eran LEXIUS .txt) → solo removidos del índice.
+  - 67 docs tenían archivo físico → pendiente borrado con `eliminarAcuerdosAN()`.
+
+---
+
+## v2.7.0 — 2026-05-13 *(versión en pantalla: v2.7.0)*
+
+### Añadido — Protocolo de Memoria y Changelog obligatorio
+
+- **Protocolo de memoria activado** en `CLAUDE.md`.
+  - *Motivo*: las sesiones anteriores no actualizaban la memoria entre conversaciones, causando que Claude trabajara con estado desactualizado (v2.1.0 cuando el sistema estaba en v2.6.5).
+  - *Fix*: sección "Protocolo de Memoria y Changelog" agregada al inicio de CLAUDE.md con instrucciones de lectura al iniciar y escritura al terminar cada sesión.
+- **Memoria actualizada** — `memory/project_el_jurista.md` sincronizado a v2.6.5 con auditoría de distribución real del índice.
+- **Nuevo archivo de memoria** — `memory/classification_plan.md` documenta el plan de reorganización masiva del índice (4 fases) + estructura de 15 notebooks NotebookLM.
+- **Auditoría del índice** — diagnóstico completo de los 4,408 docs revela: materias duplicadas (Laboral/Laboral_Venezuela, Probatorio/Derecho_Probatorio), 344 Acuerdos AN mal clasificados como "convenios" en Constitucional, 836 libros sin clasificar en "General".
+
+### Planificado — Reorganización + NotebookLM (próximas sesiones)
+
+- Fase 1: reclasificación automática por reglas sobre jurista_index.json
+- Fase 2: NotebookLM para clasificar 836 libros de "General" (lotes de 50)
+- Fase 3: revisión de PDFs para casos inciertos
+- Integración opciones A (búsqueda profunda), B (enrutamiento por NB), C (botón Web App), E (sincronización automática)
+
+---
+
 ## v2.6.5 — 2026-05-01 *(versión en pantalla: v2.6.5)*
 
 ### Añadido
