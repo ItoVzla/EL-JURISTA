@@ -661,7 +661,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v3.0.1</span>
+    <span class="version-badge" id="versionBadge">v3.1.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -696,6 +696,15 @@
         <option value="ACIENPOL">ACIENPOL</option>
         <option value="General">General</option>
       </select>
+      <a id="nbMateriaBtn" href="#" target="_blank" rel="noopener"
+         style="display:none;text-decoration:none;white-space:nowrap;
+                padding:6px 11px;border-radius:6px;font-size:12px;font-weight:600;
+                background:rgba(30,30,80,.7);border:1px solid rgba(100,100,220,.45);
+                color:#9090ee;transition:all .2s;letter-spacing:.3px"
+         onmouseover="this.style.borderColor='rgba(140,140,255,.8)';this.style.color='#bbbbff'"
+         onmouseout="this.style.borderColor='rgba(100,100,220,.45)';this.style.color='#9090ee'">
+        📓 Abrir NB
+      </a>
       <select id="filtTipo" onchange="applyFilters()">
         <option value="">Todos los tipos</option>
         <optgroup label="── Legislación ──">
@@ -1157,6 +1166,39 @@
 const GAS = 'https://script.google.com/macros/s/AKfycbyvaa2_vcdrqs_Vq0hRw30DvH2G3qTWceuVV2B1lERwYpSyk7C3hykqPizHdVSqv-I/exec';
 const CLAVE = 'ElJurista2026';
 const PER_PAGE = 50;
+
+// ── NOTEBOOKLM ───────────────────────────────────────────────
+const NB_UUIDS = {
+  'NB-01':'24ed6cae-e991-430f-ae13-14401eb44a9b',
+  'NB-02':'5cdb48aa-cfca-4698-9c60-9b13fd4ed3a0',
+  'NB-03':'5881d15d-7b82-4002-8613-df59b6eece4c',
+  'NB-04':'0d064e3e-9d19-4c9b-bcb2-b4e7a0505b39',
+  'NB-05':'e8f92277-5506-4325-9b50-d66578163ac9',
+  'NB-06':'76bf17dd-9f40-43dd-8deb-754353ade869',
+  'NB-07':'e71df04c-c4a6-4527-9c72-a1b8d0b0b663',
+  'NB-08':'5d59c206-1932-4a1e-871f-c37f7bd03b4a',
+  'NB-09':'61616592-d6f3-42ea-b766-8c802a501c57',
+  'NB-10':'c273aef9-3984-40be-b454-a40f8c645b5c',
+  'NB-11':'815fe997-7865-4345-a543-f25d364e311b',
+  'NB-12':'a2d94068-a7f7-43ea-a771-e6fab5758c71',
+  'NB-13':'dcf429c6-88d3-468a-b329-4447a84abd95',
+  'NB-14':'d9c7b6f8-d0f9-43b4-bfeb-c1d00888e9d9',
+  'NB-15':'b2f914ba-82d6-446a-b57b-57eabb1ff7f0',
+  'NB-16':'27c75c15-fae0-4fa7-b16a-0756410d5cb3',
+  'NB-17':'8c3f424b-393c-49ff-bf0a-bc0fc221075b',
+  'NB-18':'4317fa7d-4bff-4ceb-b251-f9efddeaabf6',
+};
+// Materia → NB principal (para botón de filtro)
+const MATERIA_NB = {
+  'Laboral_Venezuela':'NB-01','Civil':'NB-03','Mercantil':'NB-04',
+  'Penal':'NB-06','Administrativo':'NB-07','Constitucional':'NB-10',
+  'Procesal':'NB-13','Derecho_Probatorio':'NB-14','Internacional':'NB-15',
+  'Tributario':'NB-16','Electoral':'NB-17','ACIENPOL':'NB-18',
+};
+function nbUrl(nbId) {
+  const uuid = NB_UUIDS[nbId];
+  return uuid ? 'https://notebooklm.google.com/notebook/' + uuid : null;
+}
 
 let allDocs = [];
 let filtered = [];
@@ -2359,8 +2401,15 @@ function renderTable() {
       <td><span class="badge badge-tipo">${d.tipo || '—'}</span></td>
       <td style="color:var(--text-muted)">${d.año || '—'}</td>
       <td>${vigenciaBadge(d.vigencia)}</td>
-      <td>
+      <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
         <button class="action-btn" onclick="openDrawer('${esc(d.id)}')">Ver / Editar</button>
+        ${d.notebooklm_id && nbUrl(d.notebooklm_id) ? `
+        <a href="${nbUrl(d.notebooklm_id)}" target="_blank" rel="noopener"
+           class="action-btn" title="Abrir ${d.notebooklm_id} en NotebookLM"
+           style="text-decoration:none;font-size:11px;padding:4px 8px;
+                  background:rgba(30,30,60,.6);border-color:rgba(100,100,200,.4);color:#8888dd">
+          NB ↗
+        </a>` : ''}
       </td>
     </tr>`).join('');
 
@@ -2427,7 +2476,23 @@ function applyFilters() {
     return true;
   });
   currentPage = 1;
+  updateNbBtn(m);
   renderTable();
+}
+
+function updateNbBtn(materia) {
+  const btn = document.getElementById('nbMateriaBtn');
+  if (!btn) return;
+  const nbId = MATERIA_NB[materia];
+  const url  = nbId ? nbUrl(nbId) : null;
+  if (url) {
+    btn.href = url;
+    btn.textContent = '📓 ' + nbId;
+    btn.style.display = 'inline-flex';
+    btn.style.alignItems = 'center';
+  } else {
+    btn.style.display = 'none';
+  }
 }
 
 function clearFilters() {
