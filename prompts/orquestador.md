@@ -106,22 +106,22 @@ Protocolo: Los documentos del índice incluyen el campo `notebooklm_id`. Usar es
 |---|---|---|
 | NB-01 | Laboral / Legislación | fa4dc0db-f82f-47b2-85fe-0976cfd60bc3 |
 | NB-02 | Laboral / Doctrina y Jurisprudencia | 510a580f-7adf-4230-a1c2-aabd7b68c877 |
-| NB-03 | Civil / Completo | 5881d15d-7b82-4002-8613-df59b6eece4c |
-| NB-04 | Mercantil / Legislación | 0d064e3e-9d19-4c9b-bcb2-b4e7a0505b39 |
-| NB-05 | Mercantil / Doctrina y Jurisprudencia | e8f92277-5506-4325-9b50-d66578163ac9 |
-| NB-06 | Penal / Completo | 76bf17dd-9f40-43dd-8deb-754353ade869 |
-| NB-07 | Administrativo / Decretos y Leyes | e71df04c-c4a6-4527-9c72-a1b8d0b0b663 |
-| NB-08 | Administrativo / Resoluciones y Providencias | 5d59c206-1932-4a1e-871f-c37f7bd03b4a |
-| NB-09 | Administrativo / Doctrina, Jur. y Convenios | 61616592-d6f3-42ea-b766-8c802a501c57 |
-| NB-10 | Constitucional / Legislación | c273aef9-3984-40be-b454-a40f8c645b5c |
-| NB-11 | Constitucional / Jurisprudencia | 815fe997-7865-4345-a543-f25d364e311b |
-| NB-12 | Constitucional / Doctrina | a2d94068-a7f7-43ea-a771-e6fab5758c71 |
-| NB-13 | Procesal / Completo | dcf429c6-88d3-468a-b329-4447a84abd95 |
-| NB-14 | Derecho Probatorio / Completo | d9c7b6f8-d0f9-43b4-bfeb-c1d00888e9d9 |
-| NB-15 | Internacional / Tratados y Convenios | b2f914ba-82d6-446a-b57b-57eabb1ff7f0 |
-| NB-16 | Tributario / Completo | 27c75c15-fae0-4fa7-b16a-0756410d5cb3 |
-| NB-17 | Electoral / Completo | 8c3f424b-393c-49ff-bf0a-bc0fc221075b |
-| NB-18 | ACIENPOL / Boletines | 4317fa7d-4bff-4ceb-b251-f9efddeaabf6 |
+| NB-03 | Civil / Completo | c7ef21f8-5044-439c-9be1-5c4a252ec975 |
+| NB-04 | Mercantil / Legislación | 013e6203-d30d-48e0-9e74-23232bf80aea |
+| NB-05 | Mercantil / Doctrina y Jurisprudencia | a1fa54a4-3e4e-4b3b-a132-4017095b3655 |
+| NB-06 | Penal / Completo | 46a22f7b-49de-4477-b33e-bfef7463bfe4 |
+| NB-07 | Administrativo / Decretos y Leyes | 03e43e15-0477-4bc5-9342-9456a5aa4249 |
+| NB-08 | Administrativo / Resoluciones y Providencias | e1fd303b-8a93-4c04-b4f1-653bbec346d3 |
+| NB-09 | Administrativo / Doctrina, Jur. y Convenios | a5042850-6a11-4870-8455-3d07b5be7c11 |
+| NB-10 | Constitucional / Legislación | fcae5ae9-0768-431e-a2a0-c47b350bb3e8 |
+| NB-11 | Constitucional / Jurisprudencia | c088433f-7a91-4def-ad0b-2dfeba344be0 |
+| NB-12 | Constitucional / Doctrina | 4ec8e564-ccf4-40ac-bc5f-04804c1fe206 |
+| NB-13 | Procesal / Completo | 89c35da4-019a-4103-9388-f5faabde296a |
+| NB-14 | Derecho Probatorio / Completo | 0d3a6a5b-aa74-4665-8242-85595350ac15 |
+| NB-15 | Internacional / Tratados y Convenios | 9bd2e6f8-5026-4fca-997d-2c61e331cd67 |
+| NB-16 | Tributario / Completo | 79acc3e4-39df-4383-994c-a0e17614749e |
+| NB-17 | Electoral / Completo | d7a100f4-87fa-4379-82d6-dbb888c220b8 |
+| NB-18 | ACIENPOL / Boletines | 68a646a4-266a-4db5-bf39-e6d2b3b8db58 |
 
 URL de acceso: `https://notebooklm.google.com/notebook/{UUID}`
 
