@@ -1174,6 +1174,96 @@ function jsonResponse(data, code) {
 // CONFIGURAR TRIGGER DE BACKUP SEMANAL
 // Ejecutar esta función UNA VEZ manualmente desde GAS
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// REORGANIZACIÓN FÍSICA DE DRIVE
+// Mueve cada archivo con drive_id a la carpeta correcta según su materia.
+// Ejecutar desde Apps Script. Usa continuación por lotes para no agotar el tiempo.
+// ─────────────────────────────────────────────
+function reorganizarDrive() {
+  const props   = PropertiesService.getScriptProperties();
+  const index   = leerIndex();
+  const docs    = index.documentos;
+
+  // Materias que tienen carpeta en Drive (excluir General y No_Juridico)
+  const materiasConCarpeta = Object.keys(MATERIAS_IDS).filter(
+    m => m !== '_Por_Clasificar' && m !== 'No_Juridico'
+  );
+
+  // Leer posición de continuación (lote)
+  let startIdx = parseInt(props.getProperty('reorg_start') || '0', 10);
+  const BATCH  = 100; // docs por ejecución
+  const endIdx = Math.min(startIdx + BATCH, docs.length);
+
+  let moved = 0, skipped = 0, errors = 0;
+  const log = [];
+
+  for (let i = startIdx; i < endIdx; i++) {
+    const doc = docs[i];
+    if (!doc.drive_id || doc.drive_id === '') { skipped++; continue; }
+    if (!materiasConCarpeta.includes(doc.materia)) { skipped++; continue; }
+
+    const targetFolderId = MATERIAS_IDS[doc.materia];
+    if (!targetFolderId) { skipped++; continue; }
+
+    try {
+      const file         = DriveApp.getFileById(doc.drive_id);
+      const targetFolder = DriveApp.getFolderById(targetFolderId);
+      const parents      = file.getParents();
+
+      // Verificar si ya está en la carpeta correcta
+      let alreadyThere = false;
+      const parentList = [];
+      while (parents.hasNext()) {
+        const p = parents.next();
+        parentList.push(p);
+        if (p.getId() === targetFolderId) alreadyThere = true;
+      }
+
+      if (alreadyThere && parentList.length === 1) { skipped++; continue; }
+
+      // Agregar a carpeta correcta
+      if (!alreadyThere) targetFolder.addFile(file);
+
+      // Quitar de otras carpetas dentro de EL_JURISTA_DB (no quitar de targetFolder)
+      for (const p of parentList) {
+        if (p.getId() !== targetFolderId && p.getId() !== CONFIG.JURISTA_DB_ID) {
+          p.removeFile(file);
+        }
+      }
+
+      moved++;
+      log.push(`MOVIDO: ${doc.titulo ? doc.titulo.slice(0,50) : doc.drive_id} → ${doc.materia}`);
+    } catch (e) {
+      errors++;
+      log.push(`ERROR [${doc.drive_id}]: ${e.message}`);
+    }
+  }
+
+  // Guardar progreso
+  const done = endIdx >= docs.length;
+  if (done) {
+    props.deleteProperty('reorg_start');
+  } else {
+    props.setProperty('reorg_start', String(endIdx));
+  }
+
+  const msg = [
+    `Lote ${startIdx}–${endIdx} de ${docs.length}`,
+    `Movidos: ${moved} | Saltados: ${skipped} | Errores: ${errors}`,
+    done ? '✅ REORGANIZACIÓN COMPLETA' : `▶ Ejecuta de nuevo para continuar (desde ${endIdx})`,
+    ...log.slice(0, 20)
+  ].join('\n');
+
+  Logger.log(msg);
+  return msg;
+}
+
+// Reinicia el contador de reorganización (por si necesitas empezar de cero)
+function resetReorganizacion() {
+  PropertiesService.getScriptProperties().deleteProperty('reorg_start');
+  Logger.log('Contador de reorganización reiniciado. Ejecuta reorganizarDrive() para comenzar.');
+}
+
 // Ejecutar UNA VEZ desde el editor GAS: reemplaza PASTE_TOKEN_HERE con tu token
 // y ejecuta la función. Después borra el token de aquí o deja el placeholder.
 function setGithubToken() {
