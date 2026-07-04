@@ -661,12 +661,13 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v3.1.0</span>
+    <span class="version-badge" id="versionBadge">v3.2.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
       <button class="nav-btn" onclick="switchView('enciclopedias')">📖 Enciclopedias</button>
       <button class="nav-btn" onclick="switchView('ingesta')">📥 Ingesta</button>
+      <button class="nav-btn" onclick="switchView('notebooklm')">📓 NotebookLM</button>
     </nav>
     <div class="topbar-right">
       <div class="stats-pill">
@@ -755,6 +756,19 @@
     </div>
 
     <div class="pagination" id="paginationEl" style="display:none"></div>
+  </div>
+
+  <!-- ─── VISTA: NOTEBOOKLM ─────────────────────────────────── -->
+  <div class="view" id="view-notebooklm">
+    <div style="max-width:1200px;margin:0 auto;padding:10px 4px">
+      <h2 style="margin:6px 0 4px;color:var(--gold)">📓 Motor NotebookLM</h2>
+      <p style="color:var(--text-muted);font-size:13.5px;margin:0 0 16px;line-height:1.5">
+        Motor de búsqueda semántica de la biblioteca. Cada notebook contiene los lotes indexados de su materia:
+        pregunta en lenguaje natural y responde con citas a los documentos del corpus.
+        Elige el notebook según la materia y el tipo de fuente (legislación / jurisprudencia / doctrina).
+      </p>
+      <div id="nbHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
+    </div>
   </div>
 
   <!-- ─── VISTA: DASHBOARD ──────────────────────────────────── -->
@@ -3865,6 +3879,51 @@ function switchView(v) {
   });
   if (v === 'enciclopedias') loadEnciclopedias();
   if (v === 'dashboard') renderDashboard();
+  if (v === 'notebooklm') renderNBHub();
+}
+
+// ── NOTEBOOKLM HUB ───────────────────────────────────────────
+const NB_META = {
+  'NB-01':['Laboral · Legislación','LOTTT, LOPCYMAT, decretos y convenios laborales'],
+  'NB-02':['Laboral · Doctrina y Jur.','Doctrina laboral y sentencias SCS/TSJ'],
+  'NB-03':['Civil · Completo','Código Civil, jurisprudencia SCC y doctrina civilista'],
+  'NB-04':['Mercantil · Legislación','Código de Comercio, SUDEBAN, BCV, normativa cambiaria'],
+  'NB-05':['Mercantil · Doctrina y Jur.','Doctrina empresarial, bancaria y sentencias mercantiles'],
+  'NB-06':['Penal · Completo','Código Penal, COPP, leyes penales, jurisprudencia y doctrina'],
+  'NB-07':['Administrativo · Decretos y Leyes','Leyes orgánicas, decretos presidenciales, reglamentos'],
+  'NB-08':['Administrativo · Resoluciones','Resoluciones y providencias de ministerios y entes'],
+  'NB-09':['Administrativo · Doctrina y Jur.','Doctrina administrativista y sentencias SPA'],
+  'NB-10':['Constitucional · Legislación','CRBV, leyes orgánicas, decretos de excepción'],
+  'NB-11':['Constitucional · Jurisprudencia','Sentencias de la Sala Constitucional'],
+  'NB-12':['Constitucional · Doctrina','Doctrina constitucionalista y DDHH'],
+  'NB-13':['Procesal · Completo','CPC, legislación adjetiva, doctrina y jurisprudencia'],
+  'NB-14':['Probatorio · Completo','Teoría de la prueba, medios, carga y valoración'],
+  'NB-15':['Internacional · Tratados','Tratados DDHH, convenios OIT, acuerdos ratificados'],
+  'NB-16':['Tributario · Completo','COT, ISLR, IVA, providencias SENIAT'],
+  'NB-17':['Electoral · Completo','LOPRE, resoluciones CNE, jurisprudencia electoral'],
+  'NB-18':['ACIENPOL · Boletines','Boletines de la Academia de Ciencias Políticas y Sociales'],
+};
+function renderNBHub() {
+  const counts = {};
+  allDocs.forEach(d => { if (d.notebooklm_id) counts[d.notebooklm_id] = (counts[d.notebooklm_id]||0)+1; });
+  const total = allDocs.filter(d => d.notebooklm_id).length;
+  const hub = document.getElementById('nbHub');
+  hub.innerHTML = Object.keys(NB_META).map(id => {
+    const [nombre, desc] = NB_META[id];
+    const n = counts[id] || 0;
+    const url = nbUrl(id);
+    return `<div style="background:var(--card,rgba(255,255,255,.04));border:1px solid rgba(100,100,220,.3);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong style="color:#9090ee;font-size:13px">${id}</strong>
+        <span style="font-size:12px;color:var(--text-muted)">${n.toLocaleString()} docs</span>
+      </div>
+      <div style="font-weight:600;font-size:14px">${esc(nombre)}</div>
+      <div style="font-size:12.5px;color:var(--text-muted);line-height:1.4;flex:1">${esc(desc)}</div>
+      <a href="${url}" target="_blank" rel="noopener" style="align-self:flex-start;margin-top:4px;text-decoration:none;font-size:12px;font-weight:600;color:#9090ee;border:1px solid rgba(100,100,220,.45);border-radius:6px;padding:5px 10px">Abrir en NotebookLM ↗</a>
+    </div>`;
+  }).join('') + `<div style="grid-column:1/-1;font-size:12.5px;color:var(--text-muted);padding:6px 2px">
+    ${total.toLocaleString()} documentos indexados en notebooks · Los documentos sin materia jurídica (General / No Jurídico) no se indexan.
+  </div>`;
 }
 function setMobileActive(btn) {
   document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
