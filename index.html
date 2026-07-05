@@ -661,7 +661,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v3.4.0</span>
+    <span class="version-badge" id="versionBadge">v3.4.1</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -1185,6 +1185,7 @@ const PER_PAGE = 50;
 const NB_UUIDS = {
   'NB-01':'fa4dc0db-f82f-47b2-85fe-0976cfd60bc3',
   'NB-02':'510a580f-7adf-4230-a1c2-aabd7b68c877',
+  'NB-02-B':'256db9f1-55a4-45ce-b962-b8e5a510c836',
   'NB-03':'c7ef21f8-5044-439c-9be1-5c4a252ec975',
   'NB-04':'013e6203-d30d-48e0-9e74-23232bf80aea',
   'NB-05':'a1fa54a4-3e4e-4b3b-a132-4017095b3655',
@@ -3887,7 +3888,8 @@ function switchView(v) {
 // ── NOTEBOOKLM HUB ───────────────────────────────────────────
 const NB_META = {
   'NB-01':['Laboral · Legislación','LOTTT, LOPCYMAT, decretos y convenios laborales'],
-  'NB-02':['Laboral · Doctrina y Jur.','Doctrina laboral y sentencias SCS/TSJ'],
+  'NB-02':['Laboral · Doctrina y Jur.','Doctrina laboral y sentencias SCS/TSJ (300/300, en límite)'],
+  'NB-02-B':['Laboral · Doctrina y Jur. (cont.)','Continuación de NB-02 — 16 sentencias SCS 2026 (overflow)'],
   'NB-03':['Civil · Completo','Código Civil, jurisprudencia SCC y doctrina civilista'],
   'NB-04':['Mercantil · Legislación','Código de Comercio, SUDEBAN, BCV, normativa cambiaria'],
   'NB-05':['Mercantil · Doctrina y Jur.','Doctrina empresarial, bancaria y sentencias mercantiles'],
