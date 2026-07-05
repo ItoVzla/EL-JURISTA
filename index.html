@@ -661,7 +661,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar-logo"><span>⚖️</span> EL JURISTA</div>
-    <span class="version-badge" id="versionBadge">v3.2.0</span>
+    <span class="version-badge" id="versionBadge">v3.3.0</span>
     <nav class="topbar-nav">
       <button class="nav-btn active" onclick="switchView('biblioteca')">📚 Biblioteca</button>
       <button class="nav-btn" onclick="switchView('dashboard')">📊 Dashboard</button>
@@ -1201,6 +1201,8 @@ const NB_UUIDS = {
   'NB-16':'79acc3e4-39df-4383-994c-a0e17614749e',
   'NB-17':'d7a100f4-87fa-4379-82d6-dbb888c220b8',
   'NB-18':'68a646a4-266a-4db5-bf39-e6d2b3b8db58',
+  'NB-19':'a8a5d3ba-c380-4886-85e9-4b2ee18de3a6',
+  'NB-20':'e96e4f4e-ca23-40d5-a1d5-aef06aa19498',
 };
 // Materia → NB principal (para botón de filtro)
 const MATERIA_NB = {
@@ -3902,6 +3904,8 @@ const NB_META = {
   'NB-16':['Tributario · Completo','COT, ISLR, IVA, providencias SENIAT'],
   'NB-17':['Electoral · Completo','LOPRE, resoluciones CNE, jurisprudencia electoral'],
   'NB-18':['ACIENPOL · Boletines','Boletines de la Academia de Ciencias Políticas y Sociales'],
+  'NB-19':['OMEBA · Enciclopedia Jurídica','Enciclopedia Jurídica Omeba, referencia general de todas las ramas del derecho'],
+  'NB-20':['General · Legal Sin Clasificar','Gacetas Oficiales sueltas y documentos legales sin materia asignada'],
 };
 function renderNBHub() {
   const counts = {};
